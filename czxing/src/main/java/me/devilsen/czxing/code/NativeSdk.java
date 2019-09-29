@@ -8,7 +8,7 @@ import android.graphics.Bitmap;
  *
  * @author : dongsen
  */
-class NativeSdk {
+public class NativeSdk {
 
     private NativeSdk() {
     }
@@ -40,6 +40,14 @@ class NativeSdk {
         }
     }
 
+    public Bitmap getQRCodeArea(Bitmap sourceBitmap){
+        Bitmap result = Bitmap.createBitmap(sourceBitmap.getWidth(),
+                sourceBitmap.getHeight(),
+                Bitmap.Config.ARGB_8888);
+        drawQRCodeArea(sourceBitmap,result);
+        return result;
+    }
+
     /**
      * Native callback for brightness
      *
@@ -66,6 +74,8 @@ class NativeSdk {
 
     // write
     native int writeCode(String content, int width, int height, int color, String format, Object[] result);
+
+    native void drawQRCodeArea(Bitmap src,Bitmap dest);
 
     static {
         System.loadLibrary("czxing");

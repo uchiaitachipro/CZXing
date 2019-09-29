@@ -50,5 +50,10 @@
         android:textAllCaps="false"
         android:text="openScanBox"
         android:visibility="gone" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="findQRCode"
+        android:text="find QRArea"/>
 
 </LinearLayout>

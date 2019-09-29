@@ -28,6 +28,7 @@ import me.devilsen.czxing.Scanner;
 import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
+import me.devilsen.czxing.code.NativeSdk;
 import me.devilsen.czxing.view.ScanActivityDelegate;
 import me.devilsen.czxing.view.ScanView;
 
@@ -135,6 +136,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         resultTxt.setText(result.getText());
+    }
+
+    public void findQRCode(View view){
+        NativeSdk.getInstance().getQRCodeArea(Bitmap.createBitmap(200,300, Bitmap.Config.ARGB_8888));
     }
 
     private void requestPermission() {

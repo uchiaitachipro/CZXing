@@ -137,6 +137,13 @@ Java_me_devilsen_czxing_code_NativeSdk_readBarcode(JNIEnv *env, jobject instance
 }
 
 extern "C"
+JNIEXPORT void JNICALL
+Java_me_devilsen_czxing_code_NativeSdk_drawQRCodeArea(JNIEnv *env, jobject instance,
+        jobject srcBitmap,jobject destObject){
+    int i = 0;
+}
+
+extern "C"
 JNIEXPORT jint JNICALL
 Java_me_devilsen_czxing_code_NativeSdk_writeCode(JNIEnv *env, jobject instance, jstring content_,
                                                  jint width, jint height, jint color,
