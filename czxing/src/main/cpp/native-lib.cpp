@@ -12,6 +12,7 @@
 #include "BitMatrix.h"
 #include "ImageScheduler.h"
 #include "JavaCallHelper.h"
+#include "android_utils.h"
 #include <sys/time.h>
 
 JavaCallHelper *javaCallHelper;
@@ -139,8 +140,12 @@ Java_me_devilsen_czxing_code_NativeSdk_readBarcode(JNIEnv *env, jobject instance
 extern "C"
 JNIEXPORT void JNICALL
 Java_me_devilsen_czxing_code_NativeSdk_drawQRCodeArea(JNIEnv *env, jobject instance,
-        jobject srcBitmap,jobject destObject){
-    int i = 0;
+        jobject srcBitmap,jobject destBitmap){
+    Mat srcBitmapMat;
+    bitmap_to_mat(env, srcBitmap, srcBitmapMat);
+    Mat bgrData(srcBitmapMat.rows, srcBitmapMat.cols, CV_8UC3);
+    cvtColor(srcBitmapMat, bgrData, CV_RGBA2BGR);
+    mat_to_bitmap(env, srcBitmapMat, destBitmap);
 }
 
 extern "C"

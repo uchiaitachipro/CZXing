@@ -2,15 +2,17 @@ package me.sam.czxing;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Window;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import me.sam.czxing.loaders.FindQRCodeTransformer;
+
+import static com.bumptech.glide.load.EncodeStrategy.SOURCE;
 
 public class FindQRCodePositionActivity extends AppCompatActivity {
 
@@ -32,6 +34,8 @@ public class FindQRCodePositionActivity extends AppCompatActivity {
         }
         Glide.with(this)
                 .load(uri)
+                .diskCacheStrategy(DiskCacheStrategy.NONE) // override default RESULT cache and apply transform always
+                .skipMemoryCache(true) // do not reuse the transformed result while running
                 .transform(new FindQRCodeTransformer())
                 .into(imageView);
     }

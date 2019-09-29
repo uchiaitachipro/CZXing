@@ -10,17 +10,16 @@ import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 
+import me.devilsen.czxing.code.NativeSdk;
+
 
 public class FindQRCodeTransformer extends BitmapTransformation {
     private static final String ID = "com.bumptech.glide.transformations.FindQRCodeTransformer";
 
     @Override
     public Bitmap transform(BitmapPool pool, Bitmap toTransform, int outWidth, int outHeight) {
-        if (toTransform.getWidth() == outWidth && toTransform.getHeight() == outHeight) {
-            return toTransform;
-        }
-
-        return toTransform;
+        Bitmap result = NativeSdk.getInstance().getQRCodeArea(toTransform);
+        return result;
     }
 
     @Override
