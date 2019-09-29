@@ -2,6 +2,7 @@ package me.sam.czxing;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -20,6 +21,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.runtime.Permission;
+import com.zhihu.matisse.Matisse;
+import com.zhihu.matisse.MimeType;
+import com.zhihu.matisse.filter.Filter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,10 +35,12 @@ import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.code.NativeSdk;
 import me.devilsen.czxing.view.ScanActivityDelegate;
 import me.devilsen.czxing.view.ScanView;
+import me.sam.czxing.loaders.GlideEngine;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int CODE_SELECT_IMAGE = 1;
+    private static final int REQUEST_CODE_CHOOSE = 0x2019;
     private TextView resultTxt;
     private BarcodeReader reader;
 
@@ -138,8 +144,16 @@ public class MainActivity extends AppCompatActivity {
         resultTxt.setText(result.getText());
     }
 
-    public void findQRCode(View view){
-        NativeSdk.getInstance().getQRCodeArea(Bitmap.createBitmap(200,300, Bitmap.Config.ARGB_8888));
+    public void chooseQRCodePic(View view){
+        Matisse.from(MainActivity.this)
+                .choose(MimeType.ofAll())
+                .countable(true)
+                .maxSelectable(9)
+                .gridExpectedSize(getResources().getDimensionPixelSize(R.dimen.grid_expected_size))
+                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+                .thumbnailScale(0.85f)
+                .imageEngine(new GlideEngine())
+                .forResult(REQUEST_CODE_CHOOSE);
     }
 
     private void requestPermission() {
@@ -189,6 +203,15 @@ public class MainActivity extends AppCompatActivity {
             Log.e("Scan >>> ", result.getText());
         }
         resultTxt.setText(result.getText());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
+            List<Uri> mSelected = Matisse.obtainResult(data);
+            Log.d("Matisse", "mSelected: " + mSelected);
+        }
     }
 
 }

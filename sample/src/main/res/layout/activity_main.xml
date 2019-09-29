@@ -53,7 +53,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="findQRCode"
-        android:text="find QRArea"/>
+        android:onClick="chooseQRCodePic"
+        android:text="Choose a QRCode Picture"/>
 
 </LinearLayout>
