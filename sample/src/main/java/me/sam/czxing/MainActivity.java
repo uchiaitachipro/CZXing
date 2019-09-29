@@ -209,8 +209,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
-            List<Uri> mSelected = Matisse.obtainResult(data);
-            Log.d("Matisse", "mSelected: " + mSelected);
+            List<Uri> selected = Matisse.obtainResult(data);
+            if (selected.isEmpty()){
+                return;
+            }
+            Intent intent = new Intent(this,FindQRCodePositionActivity.class);
+            intent.putExtra("picture_path", selected.get(0));
+            startActivity(intent);
         }
     }
 
