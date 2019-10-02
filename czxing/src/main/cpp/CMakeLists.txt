@@ -17,6 +17,7 @@ include_directories(include)
 # 静态方式导入库
 add_library(opencv_core STATIC IMPORTED)
 add_library(opencv_imgproc STATIC IMPORTED)
+add_library(opencv_calib3d STATIC IMPORTED)
 
 add_library(cpufeatures STATIC IMPORTED)
 add_library(tbb STATIC IMPORTED)
@@ -25,6 +26,7 @@ add_library(tegra_hal STATIC IMPORTED)
 ## 设置库路径
 set_target_properties(opencv_core PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../opencv/libs/${ANDROID_ABI}/libopencv_core.a)
 set_target_properties(opencv_imgproc PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../opencv/libs/${ANDROID_ABI}/libopencv_imgproc.a)
+set_target_properties(opencv_calib3d PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../opencv/libs/${ANDROID_ABI}/libopencv_calib3d.a)
 
 set_target_properties(cpufeatures PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../opencv/3rdparty/libs/${ANDROID_ABI}/libcpufeatures.a)
 set_target_properties(tbb PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../opencv/3rdparty/libs/${ANDROID_ABI}/libtbb.a)
@@ -42,7 +44,9 @@ target_link_libraries(
         ZXingCore
 
         opencv_imgproc
+        opencv_calib3d
         opencv_core
+
 
         cpufeatures
         tbb

@@ -11,6 +11,16 @@ bool sortByArea(const std::vector<Point> &v1, const std::vector<Point> &v2) {
     return v1Area.area() > v2Area.area();
 }
 
+void drawMinRect(cv::Mat &imageContours, std::vector<cv::Point> &contour){
+    RotatedRect rect=minAreaRect(contour);
+    Point2f P[4];
+    rect.points(P);
+    for(int j=0;j<=3;j++)
+    {
+        line(imageContours,P[j],P[(j+1)%4],Scalar(255,0,0),1);
+    }
+}
+
 cv::Mat QRCodeFinder::locateQRCode(
         const Mat &source,
         int cannyValue,
@@ -42,16 +52,14 @@ cv::Mat QRCodeFinder::locateQRCode(
             }
         }
     }
+    Mat result = Mat::zeros(thresholdMat.size(), CV_8UC3);;
+    std::vector<float> angles;
+    for (int i = 0; i < potentialContours.size(); i++) {
+        RotatedRect rect = minAreaRect(potentialContours[i]);
+        if (rect.size.area() < 200) {
+            continue;
+        }
 
-    std::sort(contours.begin(),contours.end(),sortByArea);
-    return rotateArea(thresholdMat,minAreaRect(contours[0]));
-//    std::vector<float> angles;
-//    for (int i = 0; i < potentialContours.size(); i++) {
-//        RotatedRect rect = minAreaRect(potentialContours[i]);
-//        if (rect.size.area() < 200) {
-//            continue;
-//        }
-//
 //        if (rect.angle == 0) {
 //            Point2f points[4];
 //            rect.points(points);
@@ -60,10 +68,18 @@ cv::Mat QRCodeFinder::locateQRCode(
 //        } else {
 //            rotateArea(thresholdMat,rect);
 //        }
-////        drawContours(result, potentialContours, i, Scalar(255));
-//    }
+        drawContours(result, potentialContours, i, Scalar(255));
+        drawMinRect(result,potentialContours[i]);
+    }
 
-//    return thresholdMat;
+    return result;
+
+//    sort(potentialContours.begin(),potentialContours.end(),sortByArea);
+//    drawMinRect(result,potentialContours[0]);
+//    return result;
+
+//    sort(potentialContours.begin(),potentialContours.end(),sortByArea);
+//    return rotateArea(thresholdMat,minAreaRect(potentialContours[0]));
 }
 
 cv::Mat QRCodeFinder::preProcessMat(
@@ -81,24 +97,28 @@ cv::Mat QRCodeFinder::preProcessMat(
 }
 
 cv::Mat QRCodeFinder::rotateArea(cv::Mat &source,cv::RotatedRect area){
-    Mat result;
-//    std::vector<cv::Point2f> destArea;
-//    destArea.push_back(Point2f(0,0));
-//    destArea.push_back(Point2f(area.size.width - 1, 0));
-//    destArea.push_back(Point2f(area.size.width - 1, area.size.height -1));
-//    destArea.push_back(Point2f(0, area.size.height - 1));
-//
-//    Point2f points[4];
-//    area.points(points);
-//    std::vector<cv::Point2f> sourceArea;
-//    sourceArea.push_back(points[1]);
-//    sourceArea.push_back(points[2]);
-//    sourceArea.push_back(points[3]);
-//    sourceArea.emplace_back(points[0]);
-//
-//    Mat h = findHomography(sourceArea,destArea);
-//    warpPerspective(source, result, h, area.size);
+
+    std::vector<cv::Point2f> destArea;
+    destArea.push_back(Point2f(0,0));
+    destArea.push_back(Point2f(area.size.width - 1, 0));
+    destArea.push_back(Point2f(area.size.width - 1, area.size.height -1));
+    destArea.push_back(Point2f(0, area.size.height - 1));
+
+
+    Point2f points[4];
+    area.points(points);
+    std::vector<cv::Point2f> sourceArea;
+    sourceArea.push_back(points[1]);
+    sourceArea.push_back(points[2]);
+    sourceArea.push_back(points[3]);
+    sourceArea.push_back(points[0]);
+
+
+    Mat result = Mat::zeros(Size(area.boundingRect().width, area.boundingRect().height),CV_8UC3);
+    Mat h = findHomography(sourceArea,destArea,RANSAC);
+    warpPerspective(source, result, h, source.size());
     return result;
+
 }
 
 bool

@@ -2,7 +2,7 @@
 #define OPENCV_CVCONFIG_H_INCLUDED
 
 /* OpenCV compiled as static or dynamic libs */
-#define BUILD_SHARED_LIBS
+/* #undef BUILD_SHARED_LIBS */
 
 /* OpenCV intrinsics optimized code */
 #define CV_ENABLE_INTRINSICS
@@ -21,6 +21,12 @@
 
 /* Compile for 'virtual' NVIDIA PTX architectures */
 #define CUDA_ARCH_PTX ""
+
+/* AVFoundation video libraries */
+/* #undef HAVE_AVFOUNDATION */
+
+/* V4L2 capturing support */
+/* #undef HAVE_CAMV4L2 */
 
 /* AMD's Basic Linear Algebra Subprograms Library*/
 /* #undef HAVE_CLAMDBLAS */
@@ -43,18 +49,33 @@
 /* NVIDIA CUDA Fast Fourier Transform (FFT) API*/
 /* #undef HAVE_CUFFT */
 
+/* IEEE1394 capturing support */
+/* #undef HAVE_DC1394 */
+
+/* IEEE1394 capturing support - libdc1394 v2.x */
+/* #undef HAVE_DC1394_2 */
+
 /* DirectX */
-#define HAVE_DIRECTX
-#define HAVE_DIRECTX_NV12
-#define HAVE_D3D11
-#define HAVE_D3D10
-#define HAVE_D3D9
+/* #undef HAVE_DIRECTX */
+/* #undef HAVE_DIRECTX_NV12 */
+/* #undef HAVE_D3D11 */
+/* #undef HAVE_D3D10 */
+/* #undef HAVE_D3D9 */
+
+/* DirectShow Video Capture library */
+/* #undef HAVE_DSHOW */
 
 /* Eigen Matrix & Linear Algebra Library */
 /* #undef HAVE_EIGEN */
 
+/* FFMpeg video library */
+/* #undef HAVE_FFMPEG */
+
 /* Geospatial Data Abstraction Library */
 /* #undef HAVE_GDAL */
+
+/* GStreamer multimedia framework */
+/* #undef HAVE_GSTREAMER */
 
 /* GTK+ 2.0 Thread support */
 /* #undef HAVE_GTHREAD */
@@ -70,6 +91,9 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
+
+/* Intel Perceptual Computing SDK library */
+/* #undef HAVE_INTELPERC */
 
 /* Intel Integrated Performance Primitives */
 #define HAVE_IPP
@@ -89,6 +113,9 @@
 /* GDCM DICOM codec */
 /* #undef HAVE_GDCM */
 
+/* Microsoft Media Foundation Capture library */
+/* #undef HAVE_MSMF */
+
 /* NVIDIA Video Decoding API*/
 /* #undef HAVE_NVCUVID */
 
@@ -96,12 +123,9 @@
 /* #undef HAVE_NVCUVENC */
 
 /* OpenCL Support */
-#define HAVE_OPENCL
+/* #undef HAVE_OPENCL */
 /* #undef HAVE_OPENCL_STATIC */
 /* #undef HAVE_OPENCL_SVM */
-
-/* NVIDIA OpenCL D3D Extensions support */
-#define HAVE_OPENCL_D3D11_NV
 
 /* OpenEXR codec */
 #define HAVE_OPENEXR
@@ -109,14 +133,23 @@
 /* OpenGL support*/
 /* #undef HAVE_OPENGL */
 
+/* OpenNI library */
+/* #undef HAVE_OPENNI */
+
+/* OpenNI library */
+/* #undef HAVE_OPENNI2 */
+
+/* librealsense library */
+/* #undef HAVE_LIBREALSENSE */
+
 /* PNG codec */
 #define HAVE_PNG
 
 /* Posix threads (pthreads) */
-/* #undef HAVE_PTHREAD */
+#define HAVE_PTHREAD
 
 /* parallel_for with pthreads */
-/* #undef HAVE_PTHREADS_PF */
+#define HAVE_PTHREADS_PF
 
 /* Qt support */
 /* #undef HAVE_QT */
@@ -125,7 +158,7 @@
 /* #undef HAVE_QT_OPENGL */
 
 /* Intel Threading Building Blocks */
-/* #undef HAVE_TBB */
+#define HAVE_TBB
 
 /* Ste||ar Group High Performance ParallelX */
 /* #undef HAVE_HPX */
@@ -133,18 +166,33 @@
 /* TIFF codec */
 #define HAVE_TIFF
 
+/* V4L2 capturing support in videoio.h */
+/* #undef HAVE_VIDEOIO */
+
 /* Win32 UI */
-#define HAVE_WIN32UI
+/* #undef HAVE_WIN32UI */
+
+/* XIMEA camera support */
+/* #undef HAVE_XIMEA */
+
+/* Xine video library */
+/* #undef HAVE_XINE */
 
 /* Define if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
 /* #undef WORDS_BIGENDIAN */
+
+/* gPhoto2 library */
+/* #undef HAVE_GPHOTO2 */
 
 /* VA library (libva) */
 /* #undef HAVE_VA */
 
 /* Intel VA-API/OpenCL */
 /* #undef HAVE_VA_INTEL */
+
+/* Intel Media SDK */
+/* #undef HAVE_MFX */
 
 /* Lapack */
 /* #undef HAVE_LAPACK */
@@ -154,6 +202,23 @@
 
 /* OpenVX */
 /* #undef HAVE_OPENVX */
+
+#if defined(HAVE_XINE)         || \
+    defined(HAVE_GSTREAMER)    || \
+    defined(HAVE_AVFOUNDATION) || \
+    /*defined(HAVE_OPENNI)     || too specialized */ \
+    defined(HAVE_FFMPEG)       || \
+    defined(HAVE_MSMF)
+#define HAVE_VIDEO_INPUT
+#endif
+
+#if /*defined(HAVE_XINE)       || */\
+    defined(HAVE_GSTREAMER)    || \
+    defined(HAVE_AVFOUNDATION) || \
+    defined(HAVE_FFMPEG)       || \
+    defined(HAVE_MSMF)
+#define HAVE_VIDEO_OUTPUT
+#endif
 
 /* OpenCV trace utilities */
 #define OPENCV_TRACE
