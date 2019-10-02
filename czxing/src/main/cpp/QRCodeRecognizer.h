@@ -13,6 +13,7 @@ using namespace cv;
 class QRCodeRecognizer {
 public:
     void processData(const Mat &gray, Rect *resultRect);
+    cv::Mat locateQRCode(const Mat &source,int cannyValue,int blurValue, bool isHisEqual);
 };
 
 #endif //CZXING_OPENCVPROCESSOR_H

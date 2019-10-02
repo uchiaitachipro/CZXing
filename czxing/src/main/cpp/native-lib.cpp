@@ -145,7 +145,9 @@ Java_me_devilsen_czxing_code_NativeSdk_drawQRCodeArea(JNIEnv *env, jobject insta
     bitmap_to_mat(env, srcBitmap, srcBitmapMat);
     Mat bgrData(srcBitmapMat.rows, srcBitmapMat.cols, CV_8UC3);
     cvtColor(srcBitmapMat, bgrData, CV_RGBA2BGR);
-    mat_to_bitmap(env, srcBitmapMat, destBitmap);
+    QRCodeRecognizer recognizer;
+    Mat resultMat = recognizer.locateQRCode(bgrData,200,5,false);
+    mat_to_bitmap(env, resultMat, destBitmap);
 }
 
 extern "C"

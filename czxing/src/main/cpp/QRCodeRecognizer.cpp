@@ -2,9 +2,9 @@
 // Created by Devilsen on 2019/07/14 0014.
 //
 
-#include <opencv2/imgproc/types_c.h>
 #include "QRCodeRecognizer.h"
-#include "opencv2/opencv.hpp"
+#include "QRCodeFinder.h"
+#include "JNIUtils.h"
 
 using namespace cv;
 using namespace std;
@@ -136,4 +136,13 @@ void QRCodeRecognizer::processData(const Mat &gray, Rect *resultRect) {
             *resultRect = ROI;
         }
     }
+}
+
+cv::Mat QRCodeRecognizer::locateQRCode(
+        const Mat &source,
+        int cannyValue,
+        int blurValue,
+        bool isHisEqual) {
+    QRCodeFinder finder;
+    return finder.locateQRCode(source,cannyValue,blurValue,isHisEqual);
 }
