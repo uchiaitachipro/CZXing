@@ -15,4 +15,8 @@ void bitmap_to_mat(JNIEnv *env, jobject &srcBitmap, Mat &srcMat);
 
 void mat_to_bitmap(JNIEnv *env, Mat &srcMat, jobject &dstBitmap);
 
+std::string getTimes();
+
+void writeImage(const Mat& mat,std::string prefix = "");
+
 #endif //CZXING_ANDROID_UTILS_H

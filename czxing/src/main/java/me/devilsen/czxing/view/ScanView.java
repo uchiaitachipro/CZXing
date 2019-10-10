@@ -1,6 +1,10 @@
 package me.devilsen.czxing.view;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
@@ -8,6 +12,7 @@ import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.util.BarCodeUtil;
+import me.devilsen.czxing.util.SaveImageUtil;
 
 /**
  * @author : dongSen
@@ -36,6 +41,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     private boolean isDark;
     private int showCounter;
     private BarcodeReader reader;
+
 
     public ScanView(Context context) {
         this(context, null);
@@ -98,9 +104,13 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
                 mScanListener.onScanSuccess(result.getText(), result.getFormat());
             }
         } else if (result.getPoints() != null) {
+            mScanBoxView.currentResult = result;
+            mScanBoxView.invalidate();
             tryZoom(result);
         }
     }
+
+
 
     @Override
     public void onAnalysisBrightness(boolean isDark) {

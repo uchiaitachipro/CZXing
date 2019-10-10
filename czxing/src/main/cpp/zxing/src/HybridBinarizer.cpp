@@ -125,7 +125,7 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 			if (max - min <= MIN_DYNAMIC_RANGE) {
 				// If variation within the block is low, assume this is a block with only light or only
 				// dark pixels. In that case we do not want to use the average, as it would divide this
-				// low contrast area into black and white pixels, essentially creating data out of noise.
+				// low contrast rect into black and white pixels, essentially creating data out of noise.
 				//
 				// The default assumption is that the block is light/background. Since no estimate for
 				// the level of dark pixels exists locally, use half the min for the block.

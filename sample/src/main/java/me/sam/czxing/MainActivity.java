@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 .setBorderColor(resources.getColor(R.color.box_line))
                 .setCornerColor(resources.getColor(R.color.corner))
                 .setScanLineColors(scanColors)
-                .setScanMode(ScanView.SCAN_MODE_MIX)
+                .setScanMode(ScanView.SCAN_MODE_BIG)
                 .setTitle("我的扫一扫")
                 .showAlbum(true)
                 .continuousScan()

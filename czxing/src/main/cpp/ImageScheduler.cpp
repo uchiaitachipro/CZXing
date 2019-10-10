@@ -7,8 +7,12 @@
 #include <src/BinaryBitmap.h>
 #include "ImageScheduler.h"
 #include "JNIUtils.h"
+#include "opencv2/highgui.hpp"
+#include "android_utils.h"
 
 #define DEFAULT_MIN_LIGHT 70;
+
+
 
 ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
                                JavaCallHelper *javaCallHelper) {
@@ -114,7 +118,8 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
 
         Mat gray;
         cvtColor(src, gray, COLOR_YUV2GRAY_NV21);
-
+//        Mat rgbMat;
+//        cvtColor(src, rgbMat, COLOR_YUV2RGB_NV21);
         if (frameData.left != 0) {
             gray = gray(
                     Rect(frameData.left, frameData.top, frameData.cropWidth, frameData.cropHeight));
@@ -131,41 +136,33 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
     }
 }
 
+/**
+ * 处理单通道的图
+ * @param mat
+ */
+void ImageScheduler::decodeSingleChannel(const Mat& mat){
+    vector<Mat> channels;	//vector<Mat>： 可以理解为存放Mat类型的容器（数组）
+    split(mat, channels);  //对原图像进行通道分离，即把一个3通道图像转换成为3个单通道图像channels[0],channels[1] ,channels[2]
+    vector<Mat> mbgr(3);	//创建类型为Mat，数组长度为3的变量mbgr
+    Mat hideChannel(mat.size(), CV_8UC1, Scalar(0));//需要隐藏的通道。尺寸与srcImage相同，单通道黑色图像。
+    Mat imageR(mat.size(), CV_8UC3);//创建尺寸与srcImage相同，三通道图像imageR
+    mbgr[0] = hideChannel;
+    mbgr[1] = hideChannel;
+    mbgr[2] = channels[2];
+    merge(mbgr, imageR);
+    writeImage(imageR);
+}
+
 void ImageScheduler::decodeGrayPixels(const Mat &gray) {
     LOGE("start GrayPixels...");
 
     Mat mat;
     rotate(gray, mat, ROTATE_90_CLOCKWISE);
-
-    Result result = decodePixels(mat);
-
+    Result result = decodePixels(gray);
     if (result.isValid()) {
+        writeImage(gray,"gray-");
         javaCallHelper->onResult(result);
     }
-//    else if (result.isNeedScale()) {
-//        LOGE("is need scale image...");
-//        std::vector<ResultPoint> points = result.resultPoints();
-//        ResultPoint topLeft = points[1];
-//        ResultPoint topRight = points[2];
-//        ResultPoint bottomLeft = points[0];
-//
-//        int left = static_cast<int>(topLeft.x()) - 3 * 20;
-//        int top = static_cast<int>(topLeft.y()) - 3 * 20;
-//        int width = static_cast<int>(topRight.x() - topLeft.x()) + 3 * 25;
-//        int height = static_cast<int>(bottomLeft.y() - topLeft.y()) + 3 * 25;
-//
-//        LOGE("left = %d, top = %d, width = %d, height = %d", left, top, width, height);
-//
-//        mat = mat(Rect(left, top, width, height));
-//        imwrite("/storage/emulated/0/scan/scale.jpg", mat);
-//        Result result1 = decodePixels(mat);
-//
-//        if (result.isValid()) {
-//            javaCallHelper->onResult(result);
-//        } else {
-//            decodeThresholdPixels(gray);
-//        }
-//    }
     else {
         decodeThresholdPixels(gray);
     }
@@ -187,7 +184,9 @@ void ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     Result result = decodePixels(mat);
     if (result.isValid()) {
         javaCallHelper->onResult(result);
-    } else {
+        writeImage(mat,std::string("threshold-"));
+    }
+    else {
         decodeAdaptivePixels(gray);
     }
 }
@@ -208,8 +207,11 @@ void ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
     Result result = decodePixels(lightMat);
     if (result.isValid()) {
         javaCallHelper->onResult(result);
+        writeImage(lightMat,"adaptive-");
+        qrCodeFinder.locateQRCode(mat, 200, 5, false);
     } else {
         recognizerQrCode(gray);
+
     }
 }
 
@@ -217,7 +219,13 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
     LOGE("start recognizerQrCode...");
 
     cv::Rect rect;
+    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
+    LOGE("recognizerQrCode -> (%d,%d)  width = %d height = %d", rect.x, rect.y, rect.width,
+         rect.height);
+    if (rect.empty()) {
     qrCodeRecognizer->processData(mat, &rect);
+    }
+
     if (rect.empty()) {
         return;
     }
@@ -240,7 +248,16 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
 
 }
 
+bool isInArea(Rect &r, int i, int j) {
+    if (i > r.br().x || i < r.tl().x) {
+        return false;
+    }
+    return j <= r.br().y && j >= r.tl().y;
+}
+
 Result ImageScheduler::decodePixels(Mat mat) {
+
+//    Rect rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
     try {
         int width = mat.cols;
         int height = mat.rows;
@@ -250,12 +267,23 @@ Result ImageScheduler::decodePixels(Mat mat) {
         int index = 0;
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
+//                if (rect.empty()){
                 pixels[index++] = mat.at<unsigned char>(i, j);
+//                } else {
+//                    if (isInArea(rect,i,j)){
+//                        pixels[index++] = mat.at<unsigned char>(i, j);
+//                    } else {
+//                        pixels[index++] = 0;
+//                    }
+//                }
             }
         }
 
-//    Mat resultMat(height, width, CV_8UC1, pixels);
-//    imwrite("/storage/emulated/0/scan/result.jpg", resultMat);
+
+//        if (!rect.empty()){
+//            rectangle(mat,rect,Scalar(128),2);
+//            writeImage(Mat(mat));
+//        }
 
         auto binImage = BinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
         Result result = reader->read(*binImage);

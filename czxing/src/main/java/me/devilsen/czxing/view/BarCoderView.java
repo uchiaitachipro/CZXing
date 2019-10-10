@@ -34,7 +34,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
     private int mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private Camera mCamera;
     CameraSurface mCameraSurface;
-    ScanBoxView mScanBoxView;
+    protected ScanBoxView mScanBoxView;
 
     protected boolean mSpotAble;
     private int scanSequence;

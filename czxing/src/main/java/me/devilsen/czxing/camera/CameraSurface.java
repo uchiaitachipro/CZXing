@@ -2,6 +2,8 @@ package me.devilsen.czxing.camera;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Camera;
@@ -118,7 +120,7 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
             int action = event.getAction() & MotionEvent.ACTION_MASK;
             if (action == MotionEvent.ACTION_DOWN) {
                 long now = System.currentTimeMillis();
-                if (now - mLastTouchTime < 300) {
+                if (now - mLastTouchTime < 100) {
                     doubleTap();
                     mLastTouchTime = 0;
                     return true;
@@ -159,6 +161,9 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
             e.printStackTrace();
         }
     }
+
+
+
 
     public void stopCameraPreview() {
         if (mCamera == null) {

@@ -14,6 +14,7 @@
 #include "JavaCallHelper.h"
 #include "QRCodeRecognizer.h"
 #include "safe_queue.h"
+#include "QRCodeFinder.h"
 
 using namespace cv;
 using namespace ZXing;
@@ -52,6 +53,8 @@ public:
 
     void decodeAdaptivePixels(const Mat& gray);
 
+    void decodeSingleChannel(const Mat& mat);
+
     Result readBitmap(jobject bitmap, int left, int top, int width,int height);
 
 private:
@@ -63,6 +66,8 @@ private:
     double cameraLight{};
     QRCodeRecognizer *qrCodeRecognizer;
     SafeQueue<FrameData> frameQueue;
+    QRCodeFinder qrCodeFinder;
+
 
     pthread_t prepareThread{};
 

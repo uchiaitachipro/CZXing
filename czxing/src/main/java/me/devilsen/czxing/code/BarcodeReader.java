@@ -55,6 +55,7 @@ public class BarcodeReader {
     public CodeResult read(byte[] data, int cropLeft, int cropTop, int cropWidth, int cropHeight, int rowWidth, int rowHeight) {
         try {
             NativeSdk.getInstance().readBarcodeByte(_nativePtr, data, cropLeft, cropTop, cropWidth, cropHeight, rowWidth, rowHeight);
+//            Log.e(NativeSdk.class.getName(), "current time : " + System.currentTimeMillis());
         } catch (Exception e) {
             e.printStackTrace();
         }
