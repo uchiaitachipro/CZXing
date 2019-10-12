@@ -13,7 +13,6 @@
 #define DEFAULT_MIN_LIGHT 70;
 
 
-
 ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
                                JavaCallHelper *javaCallHelper) {
     this->env = env;
@@ -130,52 +129,69 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
         if (cameraLight < 40) {
             return;
         }
-        decodeGrayPixels(gray);
+        for (int i = 0; i < _strategies.size(); ++i) {
+            bool result = false;
+            switch (_strategies[i]) {
+                case DecodeStrategy::STRATEGY_RAW_PICTURE:
+                    result = decodeGrayPixels(gray);
+                    break;
+                case DecodeStrategy::STRATEGY_THRESHOLD:
+                    result = decodeThresholdPixels(gray);
+                    break;
+                case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD:
+                    result = decodeAdaptivePixels(gray);
+                    break;
+                case DecodeStrategy::STRATEGY_COLOR_EXTRACT:
+                    recognizerQrCode(gray);
+                    break;
+                default:
+                    break;
+            }
+            if (result) {
+                break;
+            }
+        }
     } catch (const std::exception &e) {
         LOGE("preTreatMat error...");
     }
 }
 
-void ImageScheduler::decodeGrayPixels(const Mat &gray) {
+bool ImageScheduler::decodeGrayPixels(const Mat &gray) {
     LOGE("start GrayPixels...");
 
     Mat mat;
     rotate(gray, mat, ROTATE_90_CLOCKWISE);
-//    Result result = decodePixels(gray);
-//    if (result.isValid()) {
-////        writeImage(gray,"gray-");
+    Result result = decodePixels(gray);
+    if (result.isValid()) {
+//        writeImage(gray,"gray-");
 //        qrCodeFinder.locateQRCode(mat, 200, 5, false);
-//        javaCallHelper->onResult(result);
-//    }
-//    else {
-        decodeThresholdPixels(gray);
-//    }
+        javaCallHelper->onResult(result);
+    }
+    return result.isValid();
 }
 
-void ImageScheduler::decodeThresholdPixels(const Mat &gray) {
+bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     LOGE("start ThresholdPixels...");
 
-//    Mat mat;
-//    rotate(gray, mat, ROTATE_180);
-//
-//    // 提升亮度
-//    if (cameraLight < 80) {
-//        mat.convertTo(mat, -1, 1.0, 30);
-//    }
-//
-//    threshold(mat, mat, 50, 255, CV_THRESH_OTSU);
-//
-//    Result result = decodePixels(mat);
-//    if (result.isValid()) {
-//        javaCallHelper->onResult(result);
+    Mat mat;
+    rotate(gray, mat, ROTATE_180);
+
+    // 提升亮度
+    if (cameraLight < 80) {
+        mat.convertTo(mat, -1, 1.0, 30);
+    }
+
+    threshold(mat, mat, 50, 255, CV_THRESH_OTSU);
+
+    Result result = decodePixels(mat);
+    if (result.isValid()) {
+        javaCallHelper->onResult(result);
 //        writeImage(mat,std::string("threshold-"));
-//    }
-//    else {
-        decodeAdaptivePixels(gray);
-//    }
+    }
+    return result.isValid();
 }
 
-void ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
+bool ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
     LOGE("start AdaptivePixels...");
 
     Mat mat;
@@ -191,11 +207,12 @@ void ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
     Result result = decodePixels(lightMat);
     if (result.isValid()) {
         javaCallHelper->onResult(result);
-        writeImage(lightMat,"adaptive-");
+        writeImage(lightMat, "adaptive-");
         qrCodeFinder.locateQRCode(lightMat, 200, 5, false);
     } else {
         recognizerQrCode(gray);
     }
+    return result.isValid();
 }
 
 void ImageScheduler::recognizerQrCode(const Mat &mat) {
@@ -206,7 +223,7 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
     LOGE("recognizerQrCode -> (%d,%d)  width = %d height = %d", rect.x, rect.y, rect.width,
          rect.height);
     if (rect.empty()) {
-    qrCodeRecognizer->processData(mat, &rect);
+        qrCodeRecognizer->processData(mat, &rect);
     }
 
     if (rect.empty()) {
@@ -238,7 +255,7 @@ bool isInArea(Rect &r, int i, int j) {
     return j <= r.br().y && j >= r.tl().y;
 }
 
-Result ImageScheduler::decodePixels(Mat mat) {
+Result ImageScheduler::decodePixels(const Mat &mat) {
 
 //    Rect rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
     try {

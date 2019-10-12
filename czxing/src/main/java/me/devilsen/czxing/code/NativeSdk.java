@@ -10,6 +10,11 @@ import android.graphics.Bitmap;
  */
 public class NativeSdk {
 
+    public static final int STRATEGY_RAW_PICTURE = 1;
+    public static final int STRATEGY_THRESHOLD = 2;
+    public static final int STRATEGY_ADAPTIVE_THRESHOLD = 4;
+    public static final int STRATEGY_COLOR_EXTRACT = 8;
+
     private NativeSdk() {
     }
 
@@ -76,6 +81,8 @@ public class NativeSdk {
     native int writeCode(String content, int width, int height, int color, String format, Object[] result);
 
     native void drawQRCodeArea(Bitmap src,Bitmap dest);
+
+    native void setDecodeStrategies(long objPtr,int[] strategyArray);
 
     static {
         System.loadLibrary("czxing");

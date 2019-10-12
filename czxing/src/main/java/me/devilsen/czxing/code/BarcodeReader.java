@@ -31,6 +31,17 @@ public class BarcodeReader {
             nativeFormats[i] = formats[i].ordinal();
         }
         _nativePtr = NativeSdk.getInstance().createInstance(nativeFormats);
+        setDecodeStrategies(new int[]{
+                NativeSdk.STRATEGY_THRESHOLD,
+                NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD
+        });
+    }
+
+    public void setDecodeStrategies(int[] strategies) {
+        if (_nativePtr <= 0) {
+            return;
+        }
+        NativeSdk.getInstance().setDecodeStrategies(_nativePtr, strategies);
     }
 
     public CodeResult read(Bitmap bitmap) {
@@ -62,11 +73,11 @@ public class BarcodeReader {
         return null;
     }
 
-    public void prepareRead(){
+    public void prepareRead() {
         NativeSdk.getInstance().prepareRead(_nativePtr);
     }
 
-    public void stopRead(){
+    public void stopRead() {
         NativeSdk.getInstance().stopRead(_nativePtr);
     }
 

@@ -140,7 +140,7 @@ Java_me_devilsen_czxing_code_NativeSdk_readBarcode(JNIEnv *env, jobject instance
 extern "C"
 JNIEXPORT void JNICALL
 Java_me_devilsen_czxing_code_NativeSdk_drawQRCodeArea(JNIEnv *env, jobject instance,
-        jobject srcBitmap,jobject destBitmap){
+                                                      jobject srcBitmap, jobject destBitmap) {
 //    Mat srcBitmapMat;
 //    bitmap_to_mat(env, srcBitmap, srcBitmapMat);
 //    Mat bgrData(srcBitmapMat.rows, srcBitmapMat.cols, CV_8UC3);
@@ -191,4 +191,35 @@ Java_me_devilsen_czxing_code_NativeSdk_writeCode(JNIEnv *env, jobject instance, 
         ThrowJavaException(env, "Unknown exception");
     }
     return 0;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_me_devilsen_czxing_code_NativeSdk_setDecodeStrategies(JNIEnv *env, jobject instance,
+                                                           jlong objPtr, jintArray array) {
+    std::vector<int> strategies;
+    jsize len = env->GetArrayLength(array);
+    if (len > 0) {
+        std::vector<jint> e(len);
+        env->GetIntArrayRegion(array, 0, e.size(), e.data());
+        strategies.resize(len);
+        for (jsize i = 0; i < len; ++i) {
+            strategies[i] = e[i];
+        }
+    }
+
+    if (strategies.empty()) {
+        return;
+    }
+
+    try {
+        auto imageScheduler = reinterpret_cast<ImageScheduler *>(objPtr);
+        imageScheduler->setStrategies(strategies);
+    } catch (const std::exception &e) {
+        ThrowJavaException(env, e.what());
+    } catch (...) {
+        ThrowJavaException(env, "Unknown exception");
+    }
+
+
 }

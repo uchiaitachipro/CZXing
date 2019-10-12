@@ -15,7 +15,6 @@
 #include "QRCodeRecognizer.h"
 #include "safe_queue.h"
 #include "QRCodeFinder.h"
-#include <stdarg.h>
 
 using namespace cv;
 using namespace ZXing;
@@ -33,19 +32,17 @@ typedef struct FrameData {
 class ImageScheduler {
 
 public:
-
-    const int STRATEGY_RAW_PICTRUE = 1;
-    const int STRATEGY_THRESHOLD = 2;
-    const int STRATEGY_ADAPTIVE_THRESHOLD = 4;
-    const int STRATEGY_COLOR_EXTRACT = 8;
+    enum DecodeStrategy{
+        STRATEGY_RAW_PICTURE = 1,
+        STRATEGY_THRESHOLD = 2,
+        STRATEGY_ADAPTIVE_THRESHOLD = 4,
+        STRATEGY_COLOR_EXTRACT = 8,
+        STRATEGY_LOCATE_QR_CODE = 16
+    };
 
     ImageScheduler(JNIEnv *env, MultiFormatReader *_reader, JavaCallHelper *javaCallHelper);
 
     ~ImageScheduler();
-
-    void
-    process(jbyte *bytes, int left, int top, int width, int height, int rowWidth,
-            int rowHeight);
 
     void prepare();
 
@@ -53,20 +50,14 @@ public:
 
     void stop();
 
-    void preTreatMat(const FrameData& frameData);
-
-    void decodeGrayPixels(const Mat& gray);
-
-    void decodeThresholdPixels(const Mat& gray);
-
-    void decodeAdaptivePixels(const Mat& gray);
+    void process(jbyte *bytes, int left, int top, int width, int height, int rowWidth,int rowHeight);
 
     Result readBitmap(jobject bitmap, int left, int top, int width,int height);
 
-//    void setStrategies(const int s,...){
-//        _
-//    }
-//
+    void setStrategies(vector<int> &strategies){
+        _strategies.assign(strategies.begin(),strategies.end());
+        _strategies.push_back(DecodeStrategy::STRATEGY_LOCATE_QR_CODE);
+    }
 
 private:
     JNIEnv *env;
@@ -79,17 +70,18 @@ private:
     QRCodeRecognizer *qrCodeRecognizer;
     SafeQueue<FrameData> frameQueue;
     QRCodeFinder qrCodeFinder;
-
-
     pthread_t prepareThread{};
 
-    Result decodePixels(Mat mat);
-
+    void preTreatMat(const FrameData& frameData);
+    Result decodePixels(const Mat &mat);
+    bool decodeGrayPixels(const Mat& gray);
+    bool decodeThresholdPixels(const Mat& gray);
+    bool decodeAdaptivePixels(const Mat& gray);
     void recognizerQrCode(const Mat& mat);
 
     Result *analyzeResult();
 
-    bool  analysisBrightness(const Mat& gray);
+    bool analysisBrightness(const Mat& gray);
 
 };
 
