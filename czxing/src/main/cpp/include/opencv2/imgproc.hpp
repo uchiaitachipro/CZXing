@@ -3835,7 +3835,7 @@ non-zero pixels of gray-scale image.
 
 @param array Input gray-scale image or 2D point set, stored in std::vector or Mat.
  */
-CV_EXPORTS_W Rect boundingRect( InputArray array );
+CV_EXPORTS_W Rect   boundingRect( InputArray array );
 
 /** @brief Calculates a contour area.
 

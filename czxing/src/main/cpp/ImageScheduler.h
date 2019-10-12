@@ -15,6 +15,7 @@
 #include "QRCodeRecognizer.h"
 #include "safe_queue.h"
 #include "QRCodeFinder.h"
+#include <stdarg.h>
 
 using namespace cv;
 using namespace ZXing;
@@ -30,7 +31,14 @@ typedef struct FrameData {
 } FrameData;
 
 class ImageScheduler {
+
 public:
+
+    const int STRATEGY_RAW_PICTRUE = 1;
+    const int STRATEGY_THRESHOLD = 2;
+    const int STRATEGY_ADAPTIVE_THRESHOLD = 4;
+    const int STRATEGY_COLOR_EXTRACT = 8;
+
     ImageScheduler(JNIEnv *env, MultiFormatReader *_reader, JavaCallHelper *javaCallHelper);
 
     ~ImageScheduler();
@@ -53,9 +61,12 @@ public:
 
     void decodeAdaptivePixels(const Mat& gray);
 
-    void decodeSingleChannel(const Mat& mat);
-
     Result readBitmap(jobject bitmap, int left, int top, int width,int height);
+
+//    void setStrategies(const int s,...){
+//        _
+//    }
+//
 
 private:
     JNIEnv *env;
@@ -63,6 +74,7 @@ private:
     JavaCallHelper *javaCallHelper;
     std::atomic<bool> isProcessing{};
     std::atomic<bool> stopProcessing{};
+    vector<int> _strategies;
     double cameraLight{};
     QRCodeRecognizer *qrCodeRecognizer;
     SafeQueue<FrameData> frameQueue;

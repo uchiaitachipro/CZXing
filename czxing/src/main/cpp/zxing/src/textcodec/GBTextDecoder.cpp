@@ -1903,7 +1903,7 @@ static const uint16_t gb18030_2byte_to_ucs[22046] = {
 
 
 static const uint16_t gb18030_4byte_to_ucs[6793] = {
-	/* Contiguous area: GB+81 30 81 30 .. GB+81 30 D2 39 */
+	/* Contiguous rect: GB+81 30 81 30 .. GB+81 30 D2 39 */
 	/* GB+81 30 81 30 */        0x0080,        0x0081,        0x0082,        0x0083,        0x0084,
 	/* GB+81 30 81 35 */        0x0085,        0x0086,        0x0087,        0x0088,        0x0089,
 	/* GB+81 30 82 30 */        0x008A,        0x008B,        0x008C,        0x008D,        0x008E,
@@ -2068,7 +2068,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+81 30 D1 35 */        0x0402,        0x0403,        0x0404,        0x0405,        0x0406,
 	/* GB+81 30 D2 30 */        0x0407,        0x0408,        0x0409,        0x040A,        0x040B,
 	/* GB+81 30 D2 35 */        0x040C,        0x040D,        0x040E,        0x040F,        0x0450,
-	/* Contiguous area: GB+81 36 A5 32 .. GB+81 37 A8 38 */
+	/* Contiguous rect: GB+81 36 A5 32 .. GB+81 37 A8 38 */
 	/* GB+81 36 A5 32 */                        0x2011,        0x2012,        0x2017,
 	/* GB+81 36 A5 35 */        0x201A,        0x201B,        0x201E,        0x201F,        0x2020,
 	/* GB+81 36 A6 30 */        0x2021,        0x2022,        0x2023,        0x2024,        0x2027,
@@ -2329,7 +2329,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+81 37 A7 35 */        0x2633,        0x2634,        0x2635,        0x2636,        0x2637,
 	/* GB+81 37 A8 30 */        0x2638,        0x2639,        0x263A,        0x263B,        0x263C,
 	/* GB+81 37 A8 35 */        0x263D,        0x263E,        0x263F,        0x2641,
-	/* Contiguous area: GB+81 38 FD 39 .. GB+82 30 A6 32 */
+	/* Contiguous rect: GB+81 38 FD 39 .. GB+82 30 A6 32 */
 	/* GB+81 38 FD 39 */                                        0x2E82,
 	/* GB+81 38 FE 30 */        0x2E83,        0x2E85,        0x2E86,        0x2E87,        0x2E89,
 	/* GB+81 38 FE 35 */        0x2E8A,        0x2E8D,        0x2E8E,        0x2E8F,        0x2E90,
@@ -2660,7 +2660,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+82 30 A5 30 */        0x360C,        0x360D,        0x360F,        0x3610,        0x3611,
 	/* GB+82 30 A5 35 */        0x3612,        0x3613,        0x3614,        0x3615,        0x3616,
 	/* GB+82 30 A6 30 */        0x3617,        0x3618,        0x3619,
-	/* Contiguous area: GB+82 30 F2 38 .. GB+82 31 D4 37 */
+	/* Contiguous rect: GB+82 30 F2 38 .. GB+82 31 D4 37 */
 	/* GB+82 30 F2 38 */                                0x3919,        0x391A,
 	/* GB+82 30 F3 30 */        0x391B,        0x391C,        0x391D,        0x391E,        0x391F,
 	/* GB+82 30 F3 35 */        0x3920,        0x3921,        0x3922,        0x3923,        0x3924,
@@ -2854,7 +2854,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+82 31 D3 35 */        0x3CD3,        0x3CD4,        0x3CD5,        0x3CD6,        0x3CD7,
 	/* GB+82 31 D4 30 */        0x3CD8,        0x3CD9,        0x3CDA,        0x3CDB,        0x3CDC,
 	/* GB+82 31 D4 35 */        0x3CDD,        0x3CDE,        0x3CDF,
-	/* Contiguous area: GB+82 32 AF 33 .. GB+82 32 C9 36 */
+	/* Contiguous rect: GB+82 32 AF 33 .. GB+82 32 C9 36 */
 	/* GB+82 32 AF 33 */                                0x4057,        0x4058,
 	/* GB+82 32 AF 35 */        0x4059,        0x405A,        0x405B,        0x405C,        0x405D,
 	/* GB+82 32 B0 30 */        0x405E,        0x405F,        0x4060,        0x4061,        0x4062,
@@ -2909,7 +2909,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+82 32 C8 35 */        0x4153,        0x4154,        0x4155,        0x4156,        0x4157,
 	/* GB+82 32 C9 30 */        0x4158,        0x4159,        0x415A,        0x415B,        0x415C,
 	/* GB+82 32 C9 35 */        0x415D,        0x415E,
-	/* Contiguous area: GB+82 32 F8 38 .. GB+82 33 A3 38 */
+	/* Contiguous rect: GB+82 32 F8 38 .. GB+82 33 A3 38 */
 	/* GB+82 32 F8 38 */                                0x4338,        0x4339,
 	/* GB+82 32 F9 30 */        0x433A,        0x433B,        0x433C,        0x433D,        0x433E,
 	/* GB+82 32 F9 35 */        0x433F,        0x4340,        0x4341,        0x4342,        0x4343,
@@ -2993,7 +2993,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+82 33 A2 35 */        0x44C8,        0x44C9,        0x44CA,        0x44CB,        0x44CC,
 	/* GB+82 33 A3 30 */        0x44CD,        0x44CE,        0x44CF,        0x44D0,        0x44D1,
 	/* GB+82 33 A3 35 */        0x44D2,        0x44D3,        0x44D4,        0x44D5,
-	/* Contiguous area: GB+82 33 C9 32 .. GB+82 33 E8 37 */
+	/* Contiguous rect: GB+82 33 C9 32 .. GB+82 33 E8 37 */
 	/* GB+82 33 C9 32 */                        0x464D,        0x464E,        0x464F,
 	/* GB+82 33 C9 35 */        0x4650,        0x4651,        0x4652,        0x4653,        0x4654,
 	/* GB+82 33 CA 30 */        0x4655,        0x4656,        0x4657,        0x4658,        0x4659,
@@ -3058,7 +3058,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+82 33 E7 35 */        0x4780,        0x4781,        0x4782,        0x4783,        0x4784,
 	/* GB+82 33 E8 30 */        0x4785,        0x4786,        0x4787,        0x4788,        0x4789,
 	/* GB+82 33 E8 35 */        0x478A,        0x478B,        0x478C,
-	/* Contiguous area: GB+82 34 96 39 .. GB+82 34 A1 30 */
+	/* Contiguous rect: GB+82 34 96 39 .. GB+82 34 A1 30 */
 	/* GB+82 34 96 39 */                                        0x4948,
 	/* GB+82 34 97 30 */        0x4949,        0x494A,        0x494B,        0x494C,        0x494D,
 	/* GB+82 34 97 35 */        0x494E,        0x494F,        0x4950,        0x4951,        0x4952,
@@ -3081,7 +3081,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+82 34 A0 30 */        0x49AB,        0x49AC,        0x49AD,        0x49AE,        0x49AF,
 	/* GB+82 34 A0 35 */        0x49B0,        0x49B1,        0x49B2,        0x49B3,        0x49B4,
 	/* GB+82 34 A1 30 */        0x49B5,
-	/* Contiguous area: GB+82 34 E7 34 .. GB+82 35 8F 32 */
+	/* Contiguous rect: GB+82 34 E7 34 .. GB+82 35 8F 32 */
 	/* GB+82 34 E7 34 */                                        0x4C78,
 	/* GB+82 34 E7 35 */        0x4C79,        0x4C7A,        0x4C7B,        0x4C7C,        0x4C7D,
 	/* GB+82 34 E8 30 */        0x4C7E,        0x4C7F,        0x4C80,        0x4C81,        0x4C82,
@@ -3159,7 +3159,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+82 35 8E 30 */        0x4DF3,        0x4DF4,        0x4DF5,        0x4DF6,        0x4DF7,
 	/* GB+82 35 8E 35 */        0x4DF8,        0x4DF9,        0x4DFA,        0x4DFB,        0x4DFC,
 	/* GB+82 35 8F 30 */        0x4DFD,        0x4DFE,        0x4DFF,
-	/* Contiguous area: GB+83 36 C7 39 .. GB+83 36 CF 39 */
+	/* Contiguous rect: GB+83 36 C7 39 .. GB+83 36 CF 39 */
 	/* GB+83 36 C7 39 */                                        0xE76C,
 	/* GB+83 36 C8 30 */        0xE7C8,        0xE7E7,        0xE7E8,        0xE7E9,        0xE7EA,
 	/* GB+83 36 C8 35 */        0xE7EB,        0xE7EC,        0xE7ED,        0xE7EE,        0xE7EF,
@@ -3177,7 +3177,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+83 36 CE 35 */        0xE853,        0xE856,        0xE857,        0xE858,        0xE859,
 	/* GB+83 36 CF 30 */        0xE85A,        0xE85B,        0xE85C,        0xE85D,        0xE85E,
 	/* GB+83 36 CF 35 */        0xE85F,        0xE860,        0xE861,        0xE862,        0xE863,
-	/* Contiguous area: GB+84 30 85 35 .. GB+84 30 9C 37 */
+	/* Contiguous rect: GB+84 30 85 35 .. GB+84 30 9C 37 */
 	/* GB+84 30 85 35 */        0xF92D,        0xF92E,        0xF92F,        0xF930,        0xF931,
 	/* GB+84 30 86 30 */        0xF932,        0xF933,        0xF934,        0xF935,        0xF936,
 	/* GB+84 30 86 35 */        0xF937,        0xF938,        0xF939,        0xF93A,        0xF93B,
@@ -3225,7 +3225,7 @@ static const uint16_t gb18030_4byte_to_ucs[6793] = {
 	/* GB+84 30 9B 35 */        0xFA12,        0xFA15,        0xFA16,        0xFA17,        0xFA19,
 	/* GB+84 30 9C 30 */        0xFA1A,        0xFA1B,        0xFA1C,        0xFA1D,        0xFA1E,
 	/* GB+84 30 9C 35 */        0xFA22,        0xFA25,        0xFA26,
-	/* Contiguous area: GB+84 31 85 38 .. GB+84 31 A2 33 */
+	/* Contiguous rect: GB+84 31 85 38 .. GB+84 31 A2 33 */
 	/* GB+84 31 85 38 */                                0xFE32,        0xFE45,
 	/* GB+84 31 86 30 */        0xFE46,        0xFE47,        0xFE48,        0xFE53,        0xFE58,
 	/* GB+84 31 86 35 */        0xFE67,        0xFE6C,        0xFE6D,        0xFE6E,        0xFE6F,
@@ -3406,7 +3406,7 @@ static unsigned qt_Gb18030ToUnicode(const uint8_t *gbstr, int& len) {
 					uni = gb4lin - 0xE248;
 				}
 				else {
-					/* undefined or reserved area */
+					/* undefined or reserved rect */
 					len = 1;
 					uni = REPLACEMENT;
 				}

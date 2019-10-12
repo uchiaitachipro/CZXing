@@ -97,7 +97,9 @@ cv::Rect QRCodeFinder::locateQRCode(
 //    }
 //    Mat thresholdMat;
 //    threshold(source, thresholdMat, 0, 255, CV_THRESH_OTSU);
+//    writeImage(source,"source-");
     Mat preResultMat = preProcessMat(source, cannyValue, blurValue);
+//    writeImage(preResultMat,"pre-process");
     std::vector<std::vector<Point>> contours;
     std::vector<Vec4i> hierarchy;
     std::vector<std::vector<Point>> potentialContours;
@@ -136,6 +138,7 @@ cv::Rect QRCodeFinder::locateQRCode(
         drawContours(result,potentialContours,i,Scalar(255,0,0));
         candidates.push_back(candidateRegion);
     }
+
     writeImage(result,"locateQRCode-");
     // 计算矩形之间的 timing pattern
     for (int i = 0; i < candidates.size(); i++) {
@@ -299,11 +302,11 @@ bool QRCodeFinder::checkPositionDetectionPattern(const cv::Mat &source, cv::Rota
 
 
     LineIterator vLine(source, startPoint, endPoint);
-//    LineIterator l(source, startPoint, endPoint);
-//    for (int i = 0; i < (l.count); ++i, ++l) {
-//        circle(source, l.pos(), 2, Scalar(128), -1);
-//    }
     if (check11311Pattern(source, vLine)) {
+        LineIterator l(source, startPoint, endPoint);
+        for (int i = 0; i < (l.count); ++i, ++l) {
+            circle(source, l.pos(), 2, Scalar(128), -1);
+        }
         return true;
     }
 
@@ -373,7 +376,7 @@ bool QRCodeFinder::check11311Pattern(const cv::Mat &source, LineIterator &l) {
 
     // 跳过白边
     int start = 0;
-    while ((int) source.at<uchar>(l.pos()) == 255) {
+    while ((int) source.at<uchar>(l.pos()) == canTolerate(255,255)) {
         ++l;
         ++start;
     }
@@ -383,9 +386,9 @@ bool QRCodeFinder::check11311Pattern(const cv::Mat &source, LineIterator &l) {
     int currentPhase = 0;
     for (int i = start; i < totalCount; ++i, ++l) {
         int value = (int) source.at<uchar>(l.pos());
-        if (currentPhase % 2 == 0 && value == 0) {
+        if (currentPhase % 2 == 0 && canTolerate(0,value)) {
             phase[currentPhase] += 1;
-        } else if (currentPhase % 2 == 1 && value == 255) {
+        } else if (currentPhase % 2 == 1 && canTolerate(255,value)) {
             phase[currentPhase] += 1;
         } else {
             ++currentPhase;
@@ -515,4 +518,11 @@ QRCodeFinder::checkTimingPattern(const cv::Mat &source, const RotatedRect &r1, c
         pairs.push_back(potentialPairs[1]);
     }
     return pairs;
+}
+
+bool QRCodeFinder::canTolerate(int basePixel,int currentPixel){
+    int minPixel = MAX(0,basePixel - 255 * pixel_tolerance);
+    int maxPixel = MIN(255, basePixel + 255 * pixel_tolerance);
+
+    return currentPixel >= minPixel && currentPixel <= maxPixel;
 }

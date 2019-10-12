@@ -136,59 +136,43 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
     }
 }
 
-/**
- * 处理单通道的图
- * @param mat
- */
-void ImageScheduler::decodeSingleChannel(const Mat& mat){
-    vector<Mat> channels;	//vector<Mat>： 可以理解为存放Mat类型的容器（数组）
-    split(mat, channels);  //对原图像进行通道分离，即把一个3通道图像转换成为3个单通道图像channels[0],channels[1] ,channels[2]
-    vector<Mat> mbgr(3);	//创建类型为Mat，数组长度为3的变量mbgr
-    Mat hideChannel(mat.size(), CV_8UC1, Scalar(0));//需要隐藏的通道。尺寸与srcImage相同，单通道黑色图像。
-    Mat imageR(mat.size(), CV_8UC3);//创建尺寸与srcImage相同，三通道图像imageR
-    mbgr[0] = hideChannel;
-    mbgr[1] = hideChannel;
-    mbgr[2] = channels[2];
-    merge(mbgr, imageR);
-    writeImage(imageR);
-}
-
 void ImageScheduler::decodeGrayPixels(const Mat &gray) {
     LOGE("start GrayPixels...");
 
     Mat mat;
     rotate(gray, mat, ROTATE_90_CLOCKWISE);
-    Result result = decodePixels(gray);
-    if (result.isValid()) {
-        writeImage(gray,"gray-");
-        javaCallHelper->onResult(result);
-    }
-    else {
+//    Result result = decodePixels(gray);
+//    if (result.isValid()) {
+////        writeImage(gray,"gray-");
+//        qrCodeFinder.locateQRCode(mat, 200, 5, false);
+//        javaCallHelper->onResult(result);
+//    }
+//    else {
         decodeThresholdPixels(gray);
-    }
+//    }
 }
 
 void ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     LOGE("start ThresholdPixels...");
 
-    Mat mat;
-    rotate(gray, mat, ROTATE_180);
-
-    // 提升亮度
-    if (cameraLight < 80) {
-        mat.convertTo(mat, -1, 1.0, 30);
-    }
-
-    threshold(mat, mat, 50, 255, CV_THRESH_OTSU);
-
-    Result result = decodePixels(mat);
-    if (result.isValid()) {
-        javaCallHelper->onResult(result);
-        writeImage(mat,std::string("threshold-"));
-    }
-    else {
+//    Mat mat;
+//    rotate(gray, mat, ROTATE_180);
+//
+//    // 提升亮度
+//    if (cameraLight < 80) {
+//        mat.convertTo(mat, -1, 1.0, 30);
+//    }
+//
+//    threshold(mat, mat, 50, 255, CV_THRESH_OTSU);
+//
+//    Result result = decodePixels(mat);
+//    if (result.isValid()) {
+//        javaCallHelper->onResult(result);
+//        writeImage(mat,std::string("threshold-"));
+//    }
+//    else {
         decodeAdaptivePixels(gray);
-    }
+//    }
 }
 
 void ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
@@ -208,10 +192,9 @@ void ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
     if (result.isValid()) {
         javaCallHelper->onResult(result);
         writeImage(lightMat,"adaptive-");
-        qrCodeFinder.locateQRCode(mat, 200, 5, false);
+        qrCodeFinder.locateQRCode(lightMat, 200, 5, false);
     } else {
         recognizerQrCode(gray);
-
     }
 }
 
@@ -219,7 +202,7 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
     LOGE("start recognizerQrCode...");
 
     cv::Rect rect;
-    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
+//    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
     LOGE("recognizerQrCode -> (%d,%d)  width = %d height = %d", rect.x, rect.y, rect.width,
          rect.height);
     if (rect.empty()) {

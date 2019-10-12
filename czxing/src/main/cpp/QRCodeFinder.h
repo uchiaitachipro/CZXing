@@ -18,15 +18,20 @@ private:
     const float DEVIATION_RATIO = 0.02;
     const float DEVIATION_PIXEL = 5;
 
+    float pixel_tolerance = 0.1;
     bool checkPositionDetectionPattern(const cv::Mat &source, cv::RotatedRect area);
     bool check11311Pattern(const cv::Mat &source, LineIterator &l);
     std::vector<std::pair<cv::Point2f,cv::Point2f>> checkTimingPattern(const cv::Mat &source,const RotatedRect &r1, const RotatedRect &r2);
     void filterInscribedRect(std::vector<std::vector<cv::Point>> &source);
     cv::Rect findRegion(std::vector<CandidateRegion> &candidates);
+    bool canTolerate(int basePixel,int currentPixel);
 //    cv::Mat rotateArea(const cv::Mat &source,cv::RotatedRect area);
 public:
     cv::Mat preProcessMat(const Mat &source,int cannyValue,int blurValue);
     cv::Rect locateQRCode(const Mat &source,int cannyValue,int blurValue,bool isHisEqual);
+    void setPixelTolerance(float t){
+        pixel_tolerance = t;
+    }
 };
 
 const int QUALITY_BAD = 1;
