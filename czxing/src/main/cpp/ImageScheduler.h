@@ -32,7 +32,7 @@ typedef struct FrameData {
 class ImageScheduler {
 
 public:
-    enum DecodeStrategy{
+    enum DecodeStrategy {
         STRATEGY_RAW_PICTURE = 1,
         STRATEGY_THRESHOLD = 2,
         STRATEGY_ADAPTIVE_THRESHOLD = 4,
@@ -50,13 +50,17 @@ public:
 
     void stop();
 
-    void process(jbyte *bytes, int left, int top, int width, int height, int rowWidth,int rowHeight);
+    void
+    process(jbyte *bytes, int left, int top, int width, int height, int rowWidth, int rowHeight);
 
-    Result readBitmap(jobject bitmap, int left, int top, int width,int height);
+    Result readBitmap(jobject bitmap, int left, int top, int width, int height);
 
-    void setStrategies(vector<int> &strategies){
-        _strategies.assign(strategies.begin(),strategies.end());
-        _strategies.push_back(DecodeStrategy::STRATEGY_LOCATE_QR_CODE);
+    void setStrategies(vector<int> &strategies) {
+        _strategies.assign(strategies.begin(), strategies.end());
+    }
+
+    void setApplyAllStrategie(bool r) {
+        isApplyAllStrategies = r;
     }
 
 private:
@@ -66,22 +70,31 @@ private:
     std::atomic<bool> isProcessing{};
     std::atomic<bool> stopProcessing{};
     vector<int> _strategies;
-    double cameraLight{};
     QRCodeRecognizer *qrCodeRecognizer;
     SafeQueue<FrameData> frameQueue;
     QRCodeFinder qrCodeFinder;
     pthread_t prepareThread{};
+    double cameraLight{};
+    bool isApplyAllStrategies = true;
+    int currentStrategyIndex = 0;
 
-    void preTreatMat(const FrameData& frameData);
+    void preTreatMat(const FrameData &frameData);
+
+    void applyStrategy(const Mat &mat);
+
     Result decodePixels(const Mat &mat);
-    bool decodeGrayPixels(const Mat& gray);
-    bool decodeThresholdPixels(const Mat& gray);
-    bool decodeAdaptivePixels(const Mat& gray);
-    void recognizerQrCode(const Mat& mat);
 
-    Result *analyzeResult();
+    bool decodeGrayPixels(const Mat &gray);
 
-    bool analysisBrightness(const Mat& gray);
+    bool decodeThresholdPixels(const Mat &gray);
+
+    bool decodeAdaptivePixels(const Mat &gray);
+
+    void recognizerQrCode(const Mat &mat);
+
+    void filterColorInImage(const Mat &raw, Mat &outImage);
+
+    bool analysisBrightness(const Mat &gray);
 
 };
 

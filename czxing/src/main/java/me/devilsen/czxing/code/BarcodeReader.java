@@ -32,7 +32,7 @@ public class BarcodeReader {
         }
         _nativePtr = NativeSdk.getInstance().createInstance(nativeFormats);
         setDecodeStrategies(new int[]{
-                NativeSdk.STRATEGY_THRESHOLD,
+//                NativeSdk.STRATEGY_THRESHOLD,
                 NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD
         });
     }

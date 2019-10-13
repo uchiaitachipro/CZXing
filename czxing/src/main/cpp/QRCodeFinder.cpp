@@ -118,7 +118,7 @@ cv::Rect QRCodeFinder::locateQRCode(
     }
     // 过滤掉内接轮廓
     filterInscribedRect(potentialContours);
-    Mat result = Mat::zeros(source.size(), CV_8UC3);
+//    Mat result = Mat::zeros(source.size(), CV_8UC3);
     std::vector<CandidateRegion> candidates;
 
     // 计算矩形是为position pattern
@@ -135,11 +135,11 @@ cv::Rect QRCodeFinder::locateQRCode(
             candidateRegion.quality = QUALITY_MEDIUM;
 //            drawMinRect(result, potentialContours[i]);
         }
-        drawContours(result,potentialContours,i,Scalar(255,0,0));
+//        drawContours(result,potentialContours,i,Scalar(255,0,0));
         candidates.push_back(candidateRegion);
     }
 
-    writeImage(result,"locateQRCode-");
+//    writeImage(result,"locateQRCode-");
     // 计算矩形之间的 timing pattern
     for (int i = 0; i < candidates.size(); i++) {
         for (int j = i + 1; j < candidates.size(); j++) {
@@ -178,7 +178,10 @@ cv::Rect QRCodeFinder::locateQRCode(
 
 
 
-    Rect region = findRegion(candidates);
+    Rect region =  findRegion(candidates);
+    if (!region.empty()){
+        expandRegion(source,region);
+    }
 //    if (region.size.area() > 0){
 //        Point2f P[4];
 //        region.points(P);
@@ -303,10 +306,10 @@ bool QRCodeFinder::checkPositionDetectionPattern(const cv::Mat &source, cv::Rota
 
     LineIterator vLine(source, startPoint, endPoint);
     if (check11311Pattern(source, vLine)) {
-        LineIterator l(source, startPoint, endPoint);
-        for (int i = 0; i < (l.count); ++i, ++l) {
-            circle(source, l.pos(), 2, Scalar(128), -1);
-        }
+//        LineIterator l(source, startPoint, endPoint);
+//        for (int i = 0; i < (l.count); ++i, ++l) {
+//            circle(source, l.pos(), 2, Scalar(128), -1);
+//        }
         return true;
     }
 
@@ -525,4 +528,16 @@ bool QRCodeFinder::canTolerate(int basePixel,int currentPixel){
     int maxPixel = MIN(255, basePixel + 255 * pixel_tolerance);
 
     return currentPixel >= minPixel && currentPixel <= maxPixel;
+}
+
+cv::Rect QRCodeFinder::expandRegion(const cv::Mat &mat,cv::Rect &region){
+    int expandWidth = round(region.width * EXPAND_RATIO);
+    int expandHeight = round(region.height * EXPAND_RATIO);
+
+    int x = MAX(region.x - expandWidth,0);
+    int y = MAX(region.y - expandHeight,0);
+    int width = MIN(mat.cols,x + 2 * expandWidth + region.width);
+    int height = MIN(mat.rows,y + 2 * expandHeight + region.height);
+    return Rect(x,y,width,height);
+
 }
