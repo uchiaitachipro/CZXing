@@ -2,8 +2,10 @@ package me.devilsen.czxing.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -55,4 +57,12 @@ public class ScreenUtil {
         return 0;
     }
 
+
+    public static int[] getScreenDimen(Context context) {
+        Resources resources = context.getResources();
+        DisplayMetrics dm = resources.getDisplayMetrics();
+        int width = dm.widthPixels;
+        int height = dm.heightPixels;
+        return new int[]{width, height};
+    }
 }

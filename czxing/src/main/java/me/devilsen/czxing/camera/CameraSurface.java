@@ -8,7 +8,9 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import me.devilsen.czxing.util.BarCodeUtil;
+import me.devilsen.czxing.util.ScreenUtil;
 
 /**
  * @author : dongSen
@@ -39,6 +42,11 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
     private SensorController mSensorController;
     private CameraConfigurationManager mCameraConfigurationManager;
     private SurfacePreviewListener scanListener;
+    private int minZoomValue = 1;
+    private int maxZoomValue = 1;
+    private int zoomStep = 1;
+    private double maxscaleDistance;
+    private ScaleGestureDetector scaleDetector;
 
     public CameraSurface(Context context) {
         this(context, null);
@@ -52,6 +60,20 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
         super(context, attrs, defStyleAttr);
         mSensorController = new SensorController(context);
         mSensorController.setCameraFocusListener(this);
+        int[] dimen = ScreenUtil.getScreenDimen(getContext());
+        maxscaleDistance = Math.sqrt(Math.pow(dimen[0], 2) + Math.pow(dimen[1], 2));
+        scaleDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                float s = detector.getScaleFactor();
+                if (s >= 1) {
+                    handleZoom(true, s);
+                } else {
+                    handleZoom(false, s);
+                }
+                return true;
+            }
+        });
     }
 
     public void setCamera(Camera camera) {
@@ -59,6 +81,17 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
             return;
         }
         this.mCamera = camera;
+        Camera.Parameters cp = mCamera.getParameters();
+        if (cp.isZoomSupported()) {
+            maxZoomValue = cp.getMaxZoom();
+            double p = (int) Math.log10(maxZoomValue);
+            zoomStep = (int) (maxZoomValue / Math.pow(10, p) + .5f);
+
+            if (p < 3 || zoomStep == 1) {
+                zoomStep = 2;
+            }
+
+        }
 
         mCameraConfigurationManager = new CameraConfigurationManager(getContext());
         mCameraConfigurationManager.initFromCameraParameters(mCamera);
@@ -120,7 +153,7 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
             int action = event.getAction() & MotionEvent.ACTION_MASK;
             if (action == MotionEvent.ACTION_DOWN) {
                 long now = System.currentTimeMillis();
-                if (now - mLastTouchTime < 100) {
+                if (now - mLastTouchTime < 240) {
                     doubleTap();
                     mLastTouchTime = 0;
                     return true;
@@ -135,7 +168,8 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
                 BarCodeUtil.d("手指触摸，触发对焦测光");
             }
         } else if (event.getPointerCount() == 2) {
-            handleZoom(event);
+//            handleZoom(event);
+            scaleDetector.onTouchEvent(event);
         }
         return true;
     }
@@ -161,8 +195,6 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
             e.printStackTrace();
         }
     }
-
-
 
 
     public void stopCameraPreview() {
@@ -211,7 +243,7 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
      * 双击放大
      */
     private void doubleTap() {
-        handleZoom(true, 5);
+        handleZoom(true, 1.5);
     }
 
     /**
@@ -223,14 +255,6 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
         handleFocus(focusCenter.x, focusCenter.y);
     }
 
-    /**
-     * 放大缩小
-     *
-     * @param isZoomIn true：缩小
-     */
-    void handleZoom(boolean isZoomIn) {
-        handleZoom(isZoomIn, 1);
-    }
 
     /**
      * 放大缩小
@@ -238,18 +262,18 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
      * @param isZoomIn true：缩小
      * @param scale    放大缩小的数值
      */
-    void handleZoom(boolean isZoomIn, int scale) {
+    void handleZoom(boolean isZoomIn, double scale) {
         try {
             Camera.Parameters params = mCamera.getParameters();
             if (params.isZoomSupported()) {
                 int zoom = params.getZoom();
                 if (isZoomIn && zoom < params.getMaxZoom()) {
                     BarCodeUtil.d("放大");
-                    zoom += scale;
+                    zoom += (scale * zoomStep);
                 } else if (!isZoomIn && zoom > 0) {
                     BarCodeUtil.d("缩小");
                     mZoomOutFlag = true;
-                    zoom -= scale;
+                    zoom -= (scale * zoomStep);
                 } else {
                     BarCodeUtil.d("既不放大也不缩小");
                 }
@@ -373,9 +397,9 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
             case MotionEvent.ACTION_MOVE:
                 float newDist = CameraUtil.calculateFingerSpacing(event);
                 if (newDist > mOldDist) {
-                    handleZoom(true);
+                    handleZoom(true, newDist / maxscaleDistance);
                 } else if (newDist < mOldDist) {
-                    handleZoom(false);
+                    handleZoom(false, newDist / maxscaleDistance);
                 }
                 break;
         }
