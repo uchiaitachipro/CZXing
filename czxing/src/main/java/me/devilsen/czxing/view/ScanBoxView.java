@@ -177,24 +177,24 @@ public class ScanBoxView extends View {
         // 移动扫描线的位置
         moveScanLine();
 
-        drawRect(canvas);
+//        drawRect(canvas);
     }
 
-        protected void drawRect(Canvas canvas) {
-        if (currentResult != null && currentResult.getPoints() != null){
-            float[] points = currentResult.getPoints();
-            int left = (int)points[0];
-            int top = (int)points[1];
-            int right = (int)(points[2] - points[0]);
-            int bottom = (int)(points[5] - points[1]);
-
-            if (right <= 0 || bottom <= 0){
-                return;
-            }
-            Rect r = new Rect(left, top, right,bottom);
-            canvas.drawRect(r,mLocaleQRCodePaint);
-        }
-    }
+//        protected void drawRect(Canvas canvas) {
+//        if (currentResult != null && currentResult.getPoints() != null){
+//            float[] points = currentResult.getPoints();
+//            int left = (int)points[0];
+//            int top = (int)points[1];
+//            int right = (int)(points[2] - points[0]);
+//            int bottom = (int)(points[5] - points[1]);
+//
+//            if (right <= 0 || bottom <= 0){
+//                return;
+//            }
+//            Rect r = new Rect(left, top, right,bottom);
+//            canvas.drawRect(r,mLocaleQRCodePaint);
+//        }
+//    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {

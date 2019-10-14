@@ -104,7 +104,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
                 mScanListener.onScanSuccess(result.getText(), result.getFormat());
             }
         } else if (result.getPoints() != null) {
-            mScanBoxView.currentResult = result;
+//            mScanBoxView.currentResult = result;
             mScanBoxView.invalidate();
             tryZoom(result);
         }
