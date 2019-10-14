@@ -178,7 +178,7 @@ cv::Rect QRCodeFinder::locateQRCode(
 
 
 
-    Rect region =  findRegion(candidates);
+    Rect region = findRegion(candidates);
     if (!region.empty()){
         expandRegion(source,region);
     }

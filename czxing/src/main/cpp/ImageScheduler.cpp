@@ -276,9 +276,11 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
     LOGE("start recognizerQrCode...");
 
     cv::Rect rect;
-//    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
+    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
 
-    qrCodeRecognizer->processData(mat, &rect);
+    if (rect.empty()){
+        qrCodeRecognizer->processData(mat, &rect);
+    }
 
     if (rect.empty()) {
         return;

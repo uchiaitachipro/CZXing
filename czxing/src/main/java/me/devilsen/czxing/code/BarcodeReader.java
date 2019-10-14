@@ -9,6 +9,10 @@ public class BarcodeReader {
 
     private long _nativePtr;
     private static BarcodeReader instance;
+    private int[] decodeStrategies = new int[]{
+//                NativeSdk.STRATEGY_THRESHOLD,
+            NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD
+    };
 
     public static BarcodeReader getInstance() {
         if (instance == null) {
@@ -31,17 +35,15 @@ public class BarcodeReader {
             nativeFormats[i] = formats[i].ordinal();
         }
         _nativePtr = NativeSdk.getInstance().createInstance(nativeFormats);
-        setDecodeStrategies(new int[]{
-//                NativeSdk.STRATEGY_THRESHOLD,
-                NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD
-        });
+        setDecodeStrategies(decodeStrategies);
     }
 
     public void setDecodeStrategies(int[] strategies) {
         if (_nativePtr <= 0) {
             return;
         }
-        NativeSdk.getInstance().setDecodeStrategies(_nativePtr, strategies);
+        this.decodeStrategies = strategies;
+        NativeSdk.getInstance().setDecodeStrategies(_nativePtr, this.decodeStrategies);
     }
 
     public CodeResult read(Bitmap bitmap) {

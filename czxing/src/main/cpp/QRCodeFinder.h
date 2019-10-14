@@ -17,7 +17,7 @@ class QRCodeFinder {
 private:
     const float DEVIATION_RATIO = 0.02;
     const float DEVIATION_PIXEL = 5;
-    const float EXPAND_RATIO = 0.15;
+    const float EXPAND_RATIO = 0.05;
 
     float pixel_tolerance = 0.1;
     bool checkPositionDetectionPattern(const cv::Mat &source, cv::RotatedRect area);
