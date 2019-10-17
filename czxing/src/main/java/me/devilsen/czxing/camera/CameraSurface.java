@@ -153,7 +153,7 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
             int action = event.getAction() & MotionEvent.ACTION_MASK;
             if (action == MotionEvent.ACTION_DOWN) {
                 long now = System.currentTimeMillis();
-                if (now - mLastTouchTime < 240) {
+                if (now - mLastTouchTime < 360) {
                     doubleTap();
                     mLastTouchTime = 0;
                     return true;
@@ -243,7 +243,7 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
      * 双击放大
      */
     private void doubleTap() {
-        handleZoom(true, 1.5);
+        handleZoom(true, 5);
     }
 
     /**
@@ -387,22 +387,6 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
         }
         int focusSize = CameraUtil.dp2px(getContext(), 120);
         handleFocusMetering(centerX, centerY, focusSize, focusSize);
-    }
-
-    private void handleZoom(MotionEvent event) {
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_POINTER_DOWN:
-                mOldDist = CameraUtil.calculateFingerSpacing(event);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                float newDist = CameraUtil.calculateFingerSpacing(event);
-                if (newDist > mOldDist) {
-                    handleZoom(true, newDist / maxscaleDistance);
-                } else if (newDist < mOldDist) {
-                    handleZoom(false, newDist / maxscaleDistance);
-                }
-                break;
-        }
     }
 
     public void setPreviewListener(SurfacePreviewListener listener) {
