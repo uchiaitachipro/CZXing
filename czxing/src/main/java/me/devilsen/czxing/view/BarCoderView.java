@@ -16,8 +16,8 @@ import me.devilsen.czxing.thread.ExecutorUtil;
 import me.devilsen.czxing.util.BarCodeUtil;
 import me.devilsen.czxing.util.ResolutionAdapterUtil;
 
-import static me.devilsen.czxing.view.ScanView.SCAN_MODE_MIX;
-import static me.devilsen.czxing.view.ScanView.SCAN_MODE_TINY;
+import static me.devilsen.czxing.view.ScanView.CAPTURE_MODE_MIX;
+import static me.devilsen.czxing.view.ScanView.CAPTURE_MODE_TINY;
 
 /**
  * @author : dongSen
@@ -46,7 +46,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
     private long mLastAutoZoomTime;
     private long mDelayTime = ONE_HUNDRED_MILLISECONDS;
     private ResolutionAdapterUtil resolutionAdapter;
-    private int scanMode;
+    private int previewMode;
 
     public BarCoderView(Context context) {
         this(context, null);
@@ -98,7 +98,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
 
         try {
             Rect scanBoxRect = mScanBoxView.getScanBoxRect();
-            int scanBoxSize = mScanBoxView.getScanBoxSizeExpand();
+            int[] scanBoxSize = mScanBoxView.getScanBoxSizeExpand();
             int expandTop = mScanBoxView.getExpandTop();
             Camera.Parameters parameters = mCamera.getParameters();
             Camera.Size size = parameters.getPreviewSize();
@@ -120,15 +120,16 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
             resolutionAdapter.setCameraSize(portrait, rowWidth, rowHeight);
             left = resolutionAdapter.getAdapterWidth(left);
             top = resolutionAdapter.getAdapterHeight(top);
-            scanBoxSize = resolutionAdapter.getAdapterWidth(scanBoxSize);
-            scanDataStrategy(data, left, top, scanBoxSize, scanBoxSize, rowWidth, rowHeight);
+            int w = resolutionAdapter.getAdapterWidth(scanBoxSize[0]);
+            int h = resolutionAdapter.getAdapterHeight(scanBoxSize[1]);
+            scanDataStrategy(data, left, top, w, h, rowWidth, rowHeight);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void scanDataStrategy(byte[] data, int left, int top, int width, int height, int rowWidth, int rowHeight) {
-        if (scanMode == SCAN_MODE_MIX) {
+        if (previewMode == CAPTURE_MODE_MIX) {
             if (scanSequence < 5) {
                 onPreviewFrame(data, left, top, width, height, rowWidth, rowHeight);
             } else {
@@ -137,7 +138,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
                 onPreviewFrame(data, 0, top, bisSize, bisSize, rowWidth, rowHeight);
             }
             scanSequence++;
-        } else if (scanMode == SCAN_MODE_TINY) {
+        } else if (previewMode == CAPTURE_MODE_TINY) {
             onPreviewFrame(data, left, top, width, height, rowWidth, rowHeight);
         } else {
             int bisSize = rowWidth < rowHeight ? rowWidth : rowHeight;
@@ -314,7 +315,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
                 return;
             }
 
-            int scanBoxWidth = mScanBoxView.getScanBoxSize();
+            int scanBoxWidth = mScanBoxView.getScanBoxWidth();
             if (len > scanBoxWidth / DEFAULT_ZOOM_SCALE) {
                 if (mAutoZoomAnimator != null && mAutoZoomAnimator.isRunning()) {
                     ExecutorUtil.runOnUiThread(new Runnable() {
@@ -420,7 +421,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
         mScanListener = null;
     }
 
-    public void setScanMode(int scanMode) {
-        this.scanMode = scanMode;
+    public void setPreviewMode(int previewMode) {
+        this.previewMode = previewMode;
     }
 }

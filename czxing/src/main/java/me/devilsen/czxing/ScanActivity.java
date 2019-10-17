@@ -84,11 +84,8 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
         if (option == null) {
             return;
         }
-        ScanBoxView scanBox = mScanView.getScanBox();
-        scanBox.setCornerColor(option.getCornerColor());
-        scanBox.setBorderColor(option.getBorderColor());
-        mScanView.setScanMode(option.getScanMode());
-        scanBox.setScanLineColor(option.getScanLineColors());
+
+        mScanView.applyScanOption(option);
 
         // 标题栏
         String title = option.getTitle();

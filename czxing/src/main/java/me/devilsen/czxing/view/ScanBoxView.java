@@ -11,15 +11,17 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Shader;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.TextView;
 
 import java.util.List;
 
 import me.devilsen.czxing.R;
-import me.devilsen.czxing.code.CodeResult;
+import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.util.BarCodeUtil;
 import me.devilsen.czxing.util.BitmapUtil;
 
@@ -83,8 +85,10 @@ public class ScanBoxView extends View {
     private String mFlashLightOnText;
     private String mFlashLightOffText;
     private String mScanNoticeText;
-
-    public CodeResult currentResult;
+    private ScannerManager.ScanOption option;
+    private boolean useBoxSize = true;
+    private int scanBoxWidth;
+    private int scanBoxHeight;
 
     public ScanBoxView(Context context) {
         this(context, null);
@@ -204,11 +208,18 @@ public class ScanBoxView extends View {
 
         int viewWidth = getWidth();
         int viewHeight = getHeight();
-        int minSize = Math.min(viewHeight, viewWidth);
-        mBoxSize = Math.min(minSize * 3 / 5, MAX_BOX_SIZE);
-        mBoxLeft = (viewWidth - mBoxSize) / 2;
-        mBoxTop = (viewHeight - mBoxSize) / 2 + mTopOffset;
-        mFramingRect = new Rect(mBoxLeft, mBoxTop, mBoxLeft + mBoxSize, mBoxTop + mBoxSize);
+
+        if (useBoxSize) {
+            int minSize = Math.min(viewHeight, viewWidth);
+            mBoxSize = Math.min(minSize * 3 / 5, MAX_BOX_SIZE);
+            mBoxLeft = (viewWidth - mBoxSize) / 2;
+            mBoxTop = (viewHeight - mBoxSize) / 2 + mTopOffset;
+            mFramingRect = new Rect(mBoxLeft, mBoxTop, mBoxLeft + mBoxSize, mBoxTop + mBoxSize);
+        } else {
+            mBoxLeft = (viewWidth - scanBoxWidth) / 2;
+            mBoxTop = (viewHeight - scanBoxHeight) / 2;
+            mFramingRect = new Rect(mBoxLeft,mBoxTop,mBoxLeft + scanBoxWidth,mBoxTop + scanBoxHeight);
+        }
     }
 
     private void drawMask(Canvas canvas) {
@@ -265,8 +276,10 @@ public class ScanBoxView extends View {
      * 画扫描线
      */
     private void drawScanLine(Canvas canvas) {
+        int width = useBoxSize ? mBoxSize : scanBoxWidth;
         if (mScanLineGradient == null) {
-            mScanLineGradient = new LinearGradient(mBoxLeft, mBoxTop, mBoxLeft + mBoxSize, mBoxTop,
+
+            mScanLineGradient = new LinearGradient(mBoxLeft, mBoxTop, mBoxLeft + width, mBoxTop,
                     new int[]{mScanLineColor1, mScanLineColor2, mScanLineColor3, mScanLineColor2, mScanLineColor1},
                     null,
                     Shader.TileMode.CLAMP);
@@ -275,27 +288,30 @@ public class ScanBoxView extends View {
 
         canvas.drawRect(mBoxLeft,
                 mBoxTop + mScanLinePosition,
-                mBoxLeft + mBoxSize,
+                mBoxLeft + width,
                 mBoxTop + mScanLinePosition + SCAN_LINE_HEIGHT,
                 mScanLinePaint);
     }
 
     private void drawTipText(Canvas canvas) {
+        int boxWidth = useBoxSize ? mBoxSize : scanBoxWidth;
         mTxtPaint.setTextSize(mTextSize);
         mTxtPaint.setColor(mTextColor);
         if (isDark || isLightOn) {
             canvas.drawText(isLightOn ? mFlashLightOffText : mFlashLightOnText,
-                    mFramingRect.left + (mBoxSize >> 1),
+                    mFramingRect.left + (boxWidth >> 1),
                     mFramingRect.bottom - mTextSize,
                     mTxtPaint);
 
             drawFlashLight(canvas);
         }
-        canvas.drawText(mScanNoticeText,
-                mFramingRect.left + (mBoxSize >> 1),
-                mFramingRect.bottom + mTextSize * 2,
-                mTxtPaint);
 
+        if (!TextUtils.isEmpty(mScanNoticeText)){
+            canvas.drawText(mScanNoticeText,
+                    mFramingRect.left + (boxWidth >> 1),
+                    mFramingRect.bottom + mTextSize * 2,
+                    mTxtPaint);
+        }
         // 隐藏 我的卡片 文字
         if (!mDrawCardText) {
             return;
@@ -305,7 +321,7 @@ public class ScanBoxView extends View {
         mTxtPaint.setColor(mTextColorBig);
         String clickText = "我的名片";
         canvas.drawText(clickText,
-                mFramingRect.left + (mBoxSize >> 1),
+                mFramingRect.left + (boxWidth >> 1),
                 mFramingRect.bottom + mTextSize * 6,
                 mTxtPaint);
 
@@ -314,7 +330,7 @@ public class ScanBoxView extends View {
             mTxtPaint.getTextBounds(clickText, 0, clickText.length() - 1, mTextRect);
             int width = mTextRect.width();
             int height = mTextRect.height();
-            mTextRect.left = mFramingRect.left + (mBoxSize >> 1) - 10;
+            mTextRect.left = mFramingRect.left + (boxWidth >> 1) - 10;
             mTextRect.right = mTextRect.left + width + 10;
             mTextRect.top = mFramingRect.bottom + mTextSize * 6 - 10;
             mTextRect.bottom = mTextRect.top + height + 10;
@@ -356,7 +372,8 @@ public class ScanBoxView extends View {
         if (mScanLineAnimator != null && mScanLineAnimator.isRunning()) {
             return;
         }
-        mScanLineAnimator = ValueAnimator.ofFloat(0, mBoxSize - mBorderSize * 2);
+        final int boxWidth = useBoxSize ? mBoxSize :  scanBoxWidth;
+        mScanLineAnimator = ValueAnimator.ofFloat(0, boxWidth - mBorderSize * 2);
         mScanLineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -364,7 +381,7 @@ public class ScanBoxView extends View {
                 // 这里如果用postInvalidate会导致所在Activity的onStop和onDestroy方法阻塞，感谢lhhseraph的反馈
                 postInvalidateOnAnimation(mBoxLeft,
                         ((int) (mBoxTop + mScanLinePosition - 10)),
-                        mBoxLeft + mBoxSize,
+                        mBoxLeft + boxWidth,
                         ((int) (mBoxTop + mScanLinePosition + SCAN_LINE_HEIGHT + 10)));
             }
         });
@@ -378,15 +395,16 @@ public class ScanBoxView extends View {
         return mFramingRect;
     }
 
-    public int getScanBoxSize() {
-        return mBoxSize;
+    public int getScanBoxWidth() {
+        return useBoxSize ? mBoxSize : scanBoxWidth;
     }
 
+    public int getScanBoxHeight() { return useBoxSize ? mBoxSize : scanBoxHeight;}
     /**
      * 有的手机得到的数据会有所偏移（如：华为P20），这里放大了获取到的数据
      */
-    public int getScanBoxSizeExpand() {
-        return mBoxSize + mBoxSizeOffset;
+    public int[] getScanBoxSizeExpand() {
+        return new int[] {getScanBoxWidth() + mBoxSizeOffset, getScanBoxHeight() + mBoxSizeOffset};
     }
 
     /**
@@ -397,8 +415,10 @@ public class ScanBoxView extends View {
     }
 
     public Point getScanBoxCenter() {
-        int centerX = mBoxLeft + (mBoxSize >> 1);
-        int centerY = mBoxTop + (mBoxSize >> 1);
+        int w = useBoxSize ? mBoxSize : scanBoxWidth;
+        int h = useBoxSize ? mBoxSize : scanBoxHeight;
+        int centerX = mBoxLeft + (w >> 1);
+        int centerY = mBoxTop + (h >> 1);
         return new Point(centerX, centerY);
     }
 
@@ -463,6 +483,49 @@ public class ScanBoxView extends View {
         if (mScanLineAnimator != null && mScanLineAnimator.isRunning()) {
             mScanLineAnimator.cancel();
         }
+    }
+
+    public void applyScanOptions(ScannerManager.ScanOption option) {
+        this.option = option;
+        if (this.option == null) {
+            return;
+        }
+
+        if (this.option.getScanBoxFrameMaskColor() != -1) {
+            this.mMaskColor = this.option.getScanBoxFrameMaskColor();
+        }
+        setScanLineColor(this.option.getScanLineColors());
+        if (this.option.getScanBoxFrameTopMargin() != -1) {
+            this.mTopOffset = this.option.getScanBoxFrameTopMargin();
+        }
+        if (this.option.getBorderColor() != -1) {
+            this.mBorderColor = this.option.getBorderColor();
+        }
+        if (this.option.getBorderSize() != -1) {
+            this.mBorderSize = this.option.getBorderSize();
+        }
+        if (this.option.getCornerColor() != -1) {
+            this.mCornerColor = this.option.getCornerColor();
+        }
+        if (this.option.getCornerLength() != -1) {
+            this.mCornerLength = this.option.getCornerLength();
+        }
+        if (this.option.getCornerThickness() != -1) {
+            this.mCornerSize = this.option.getCornerThickness();
+        }
+        mScanNoticeText = this.option.getScanBoxTips();
+        if (this.option.getScanBoxTipsTextSize() != -1) {
+            mTxtPaint.setTextSize(BarCodeUtil.sp2px(getContext(), this.option.getScanBoxTipsTextSize()));
+        }
+
+        if (this.option.getScanBoxWidth() == -1 || this.option.getScanBoxHeight() == -1){
+            useBoxSize = true;
+        } else {
+            useBoxSize = false;
+            scanBoxWidth = this.option.getScanBoxWidth();
+            scanBoxHeight = this.option.getScanBoxHeight();
+        }
+//        calFramingRect();
     }
 
     public interface ScanBoxClickListener {

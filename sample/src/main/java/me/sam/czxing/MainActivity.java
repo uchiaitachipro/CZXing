@@ -23,7 +23,6 @@ import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.runtime.Permission;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
-import com.zhihu.matisse.filter.Filter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +31,8 @@ import me.devilsen.czxing.Scanner;
 import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
-import me.devilsen.czxing.code.NativeSdk;
+import me.devilsen.czxing.util.BarCodeUtil;
+import me.devilsen.czxing.util.ScreenUtil;
 import me.devilsen.czxing.view.ScanActivityDelegate;
 import me.devilsen.czxing.view.ScanView;
 import me.sam.czxing.loaders.GlideEngine;
@@ -88,7 +88,8 @@ public class MainActivity extends AppCompatActivity {
                 .setBorderColor(resources.getColor(R.color.box_line))
                 .setCornerColor(resources.getColor(R.color.corner))
                 .setScanLineColors(scanColors)
-                .setScanMode(ScanView.SCAN_MODE_BIG)
+                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
+                .setCaptureMode(ScanView.CAPTURE_MODE_BIG)
                 .setTitle("我的扫一扫")
                 .showAlbum(true)
                 .continuousScan()

@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import me.devilsen.czxing.view.ScanActivityDelegate;
@@ -17,6 +18,32 @@ import me.devilsen.czxing.view.ScanActivityDelegate;
  * @author : dongsen
  */
 public class ScannerManager {
+
+    /**
+     * Decode only UPC and EAN barcodes. This is the right choice for shopping apps which get
+     * prices, reviews, etc. for products.
+     */
+    public static final int PRODUCT_MODE = 0;
+
+    /**
+     * Decode only 1D barcodes.
+     */
+    public static final int ONE_D_MODE = 1;
+
+    /**
+     * Decode only QR codes.
+     */
+    public static final int QR_CODE_MODE = 2;
+
+    /**
+     * Decode only Data Matrix codes.
+     */
+    public static final int DATA_MATRIX_MODE = 3;
+
+    /**
+     * support 1d 2d codes
+     */
+    public static final int ALL_MODE = 4;
 
     private Context context;
     private ScanOption scanOption;
@@ -31,12 +58,32 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager setCornerThickness(int width){
+        scanOption.cornerThickness = width;
+        return this;
+    }
+
+    public ScannerManager setCornerLength(int length){
+        scanOption.cornerLength = length;
+        return this;
+    }
+
     public ScannerManager setBorderColor(int borderColor) {
         scanOption.borderColor = borderColor;
         return this;
     }
 
-    public ScannerManager setScanMode(int scanMode) {
+    public ScannerManager setBorderSize(int borderWidth){
+        this.scanOption.borderSize = borderWidth;
+        return this;
+    }
+
+    public ScannerManager setCaptureMode(int captureMode) {
+        scanOption.captureMode = captureMode;
+        return this;
+    }
+
+    public ScannerManager setScanMode(int scanMode){
         scanOption.scanMode = scanMode;
         return this;
     }
@@ -56,13 +103,44 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager setFrameCornerColor(int scanColor){
+        scanOption.borderColor = scanColor;
+        return this;
+    }
+
+    public ScannerManager setLaserLineColor(int color){
+        scanOption.scanLineColors = (ArrayList<Integer>) Arrays.asList(color,color,color);
+        return this;
+    }
+
     public ScannerManager setScanLineColors(List<Integer> scanLineColors) {
-        scanOption.scanLineColors = scanLineColors;
+        scanOption.scanLineColors = new ArrayList<>(scanLineColors);
         return this;
     }
 
     public ScannerManager setOnScanResultDelegate(ScanActivityDelegate.OnScanDelegate delegate) {
         ScanActivityDelegate.getInstance().setScanResultDelegate(delegate);
+        return this;
+    }
+
+    public ScannerManager setFrameSize(int width,int height){
+        scanOption.scanBoxWidth = width;
+        scanOption.scanBoxHeight = height;
+        return this;
+    }
+
+    public ScannerManager setTipText(String tips){
+        scanOption.scanBoxTips = tips;
+        return this;
+    }
+
+    public ScannerManager setFrameTopMargin(int topMargin){
+        scanOption.scanBoxFrameTopMargin  =topMargin;
+        return this;
+    }
+
+    public ScannerManager setFrameLeftMargin(int leftMargin){
+        scanOption.scanBoxFrameLeftMargin = leftMargin;
         return this;
     }
 
@@ -79,24 +157,111 @@ public class ScannerManager {
 
     public static class ScanOption implements Parcelable {
 
-        private int cornerColor;
-        private int borderColor;
-        private int scanMode;
+        private int cornerColor = -1;
+        private int cornerLength = -1;
+        private int cornerThickness = -1;
+        private int borderColor = -1;
+        private int borderSize = -1;
+        private int captureMode = -1;
+        private int scanMode = -1;
+        private int scanBoxWidth = -1;
+        private int scanBoxHeight = -1;
+        private String scanBoxTips;
+        private int scanBoxTipsTextSize = -1;
+        private int scanBoxFrameTopMargin = -1;
+        private int scanBoxFrameLeftMargin = -1;
+        private int scanBoxFrameMaskColor = -1;
         private String title;
         private boolean showAlbum = true;
         private boolean continuousScan;
-        private List<Integer> scanLineColors;
+        private ArrayList<Integer> scanLineColors;
+
+        public ScanOption(){}
+
+
+        protected ScanOption(Parcel in) {
+            cornerColor = in.readInt();
+            cornerLength = in.readInt();
+            cornerThickness = in.readInt();
+            borderColor = in.readInt();
+            borderSize = in.readInt();
+            captureMode = in.readInt();
+            scanMode = in.readInt();
+            scanBoxWidth = in.readInt();
+            scanBoxHeight = in.readInt();
+            scanBoxTips = in.readString();
+            scanBoxTipsTextSize = in.readInt();
+            scanBoxFrameTopMargin = in.readInt();
+            scanBoxFrameLeftMargin = in.readInt();
+            scanBoxFrameMaskColor = in.readInt();
+            title = in.readString();
+            showAlbum = in.readByte() != 0;
+            continuousScan = in.readByte() != 0;
+            scanLineColors = (ArrayList<Integer>) in.readSerializable();
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(cornerColor);
+            dest.writeInt(cornerLength);
+            dest.writeInt(cornerThickness);
+            dest.writeInt(borderColor);
+            dest.writeInt(borderSize);
+            dest.writeInt(captureMode);
+            dest.writeInt(scanMode);
+            dest.writeInt(scanBoxWidth);
+            dest.writeInt(scanBoxHeight);
+            dest.writeString(scanBoxTips);
+            dest.writeInt(scanBoxTipsTextSize);
+            dest.writeInt(scanBoxFrameTopMargin);
+            dest.writeInt(scanBoxFrameLeftMargin);
+            dest.writeInt(scanBoxFrameMaskColor);
+            dest.writeString(title);
+            dest.writeByte((byte) (showAlbum ? 1 : 0));
+            dest.writeByte((byte) (continuousScan ? 1 : 0));
+            dest.writeSerializable(scanLineColors);
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        public static final Creator<ScanOption> CREATOR = new Creator<ScanOption>() {
+            @Override
+            public ScanOption createFromParcel(Parcel in) {
+                return new ScanOption(in);
+            }
+
+            @Override
+            public ScanOption[] newArray(int size) {
+                return new ScanOption[size];
+            }
+        };
 
         public int getCornerColor() {
             return cornerColor;
         }
 
+        public int getCornerLength() {
+            return cornerLength;
+        }
+
+        public int getCornerThickness() {
+            return cornerThickness;
+        }
+
+
         public int getBorderColor() {
             return borderColor;
         }
 
-        public int getScanMode(){
-            return scanMode;
+        public int getBorderSize() {
+            return borderSize;
+        }
+
+        public int getCaptureMode() {
+            return captureMode;
         }
 
         public String getTitle() {
@@ -107,7 +272,7 @@ public class ScannerManager {
             return showAlbum;
         }
 
-        public boolean isContinuousScan(){
+        public boolean isContinuousScan() {
             return continuousScan;
         }
 
@@ -115,46 +280,36 @@ public class ScannerManager {
             return scanLineColors;
         }
 
-        @Override
-        public int describeContents() {
-            return 0;
+        public int getScanBoxWidth() {
+            return scanBoxWidth;
         }
 
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeInt(this.cornerColor);
-            dest.writeInt(this.borderColor);
-            dest.writeInt(this.scanMode);
-            dest.writeString(this.title);
-            dest.writeByte(this.showAlbum ? (byte) 1 : (byte) 0);
-            dest.writeByte(this.continuousScan ? (byte) 1 : (byte) 0);
-            dest.writeList(this.scanLineColors);
+        public int getScanBoxHeight() {
+            return scanBoxHeight;
         }
 
-        public ScanOption() {
+        public String getScanBoxTips() {
+            return scanBoxTips;
         }
 
-        protected ScanOption(Parcel in) {
-            this.cornerColor = in.readInt();
-            this.borderColor = in.readInt();
-            this.scanMode = in.readInt();
-            this.title = in.readString();
-            this.showAlbum = in.readByte() != 0;
-            this.continuousScan = in.readByte() != 0;
-            this.scanLineColors = new ArrayList<>();
-            in.readList(this.scanLineColors, Integer.class.getClassLoader());
+        public int getScanBoxTipsTextSize() {
+            return scanBoxTipsTextSize;
         }
 
-        public static final Creator<ScanOption> CREATOR = new Creator<ScanOption>() {
-            @Override
-            public ScanOption createFromParcel(Parcel source) {
-                return new ScanOption(source);
-            }
+        public int getScanBoxFrameTopMargin() {
+            return scanBoxFrameTopMargin;
+        }
 
-            @Override
-            public ScanOption[] newArray(int size) {
-                return new ScanOption[size];
-            }
-        };
+        public int getScanBoxFrameLeftMargin() {
+            return scanBoxFrameLeftMargin;
+        }
+
+        public int getScanBoxFrameMaskColor() {
+            return scanBoxFrameMaskColor;
+        }
+
+        public int getScanMode() {
+            return scanMode;
+        }
     }
 }

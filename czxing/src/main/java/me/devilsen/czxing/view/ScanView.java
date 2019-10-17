@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
+import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
@@ -25,15 +26,15 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     /**
      * 混合扫描模式（默认），扫描4次扫码框里的内容，扫描1次以屏幕宽为边长的内容
      */
-    public static final int SCAN_MODE_MIX = 0;
+    public static final int CAPTURE_MODE_MIX = 0;
     /**
      * 只扫描扫码框里的内容
      */
-    public static final int SCAN_MODE_TINY = 1;
+    public static final int CAPTURE_MODE_TINY = 1;
     /**
      * 扫描以屏幕宽为边长的内容
      */
-    public static final int SCAN_MODE_BIG = 2;
+    public static final int CAPTURE_MODE_BIG = 2;
 
     private static final int DARK_LIST_SIZE = 4;
 
@@ -41,7 +42,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     private boolean isDark;
     private int showCounter;
     private BarcodeReader reader;
-
+    private ScannerManager.ScanOption option;
 
     public ScanView(Context context) {
         this(context, null);
@@ -111,7 +112,6 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     }
 
 
-
     @Override
     public void onAnalysisBrightness(boolean isDark) {
         BarCodeUtil.d("isDark : " + isDark);
@@ -144,6 +144,43 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     @Override
     public void onFlashLightClick() {
         mCameraSurface.toggleFlashLight(isDark);
+    }
+
+    public void applyScanOption(ScannerManager.ScanOption scanOption) {
+        this.option = scanOption;
+        setScanMode();
+        this.mScanBoxView.applyScanOptions(option);
+    }
+
+    private void setScanMode() {
+
+        if (option.getScanMode() == -1){
+            return;
+        }
+
+        switch (option.getScanMode()) {
+            case ScannerManager.PRODUCT_MODE:
+            case ScannerManager.ONE_D_MODE:
+                reader.setBarcodeFormat(BarcodeFormat.CODABAR,
+                        BarcodeFormat.CODE_128,
+                        BarcodeFormat.EAN_13,
+                        BarcodeFormat.UPC_A);
+                break;
+            case ScannerManager.QR_CODE_MODE:
+                reader.setBarcodeFormat(BarcodeFormat.QR_CODE);
+                break;
+            case ScannerManager.DATA_MATRIX_MODE:
+                reader.setBarcodeFormat(BarcodeFormat.DATA_MATRIX);
+                break;
+            case ScannerManager.ALL_MODE:
+            default:
+                reader.setBarcodeFormat(
+                        BarcodeFormat.QR_CODE,
+                        BarcodeFormat.CODABAR,
+                        BarcodeFormat.CODE_128,
+                        BarcodeFormat.EAN_13,
+                        BarcodeFormat.UPC_A);
+        }
     }
 
 }
