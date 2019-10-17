@@ -36,7 +36,6 @@ public class ScanBoxView extends View {
     private Paint mPaint;
     private Paint mTxtPaint;
     private Paint mScanLinePaint;
-    private Paint mLocaleQRCodePaint;
     private Rect mFramingRect;
     private Rect mTextRect;
 
@@ -137,11 +136,6 @@ public class ScanBoxView extends View {
         mTxtPaint.setColor(Color.GRAY);
         mTxtPaint.setStyle(Paint.Style.FILL);
 
-        mLocaleQRCodePaint = new Paint();
-        mLocaleQRCodePaint.setStyle(Paint.Style.STROKE);
-        mLocaleQRCodePaint.setStrokeWidth(2);
-        mLocaleQRCodePaint.setColor(Color.RED);
-
         mFlashLightOnText = getResources().getText(R.string.czxing_click_open_flash_light).toString();
         mFlashLightOffText = getResources().getText(R.string.czxing_click_close_flash_light).toString();
         mScanNoticeText = getResources().getText(R.string.czxing_scan_notice).toString();
@@ -176,25 +170,8 @@ public class ScanBoxView extends View {
 
         // 移动扫描线的位置
         moveScanLine();
-
-//        drawRect(canvas);
     }
 
-//        protected void drawRect(Canvas canvas) {
-//        if (currentResult != null && currentResult.getPoints() != null){
-//            float[] points = currentResult.getPoints();
-//            int left = (int)points[0];
-//            int top = (int)points[1];
-//            int right = (int)(points[2] - points[0]);
-//            int bottom = (int)(points[5] - points[1]);
-//
-//            if (right <= 0 || bottom <= 0){
-//                return;
-//            }
-//            Rect r = new Rect(left, top, right,bottom);
-//            canvas.drawRect(r,mLocaleQRCodePaint);
-//        }
-//    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
