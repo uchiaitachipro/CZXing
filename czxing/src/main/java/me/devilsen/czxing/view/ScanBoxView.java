@@ -372,8 +372,8 @@ public class ScanBoxView extends View {
         if (mScanLineAnimator != null && mScanLineAnimator.isRunning()) {
             return;
         }
-        final int boxWidth = useBoxSize ? mBoxSize :  scanBoxWidth;
-        mScanLineAnimator = ValueAnimator.ofFloat(0, boxWidth - mBorderSize * 2);
+        final int size = useBoxSize ? mBoxSize :  scanBoxHeight;
+        mScanLineAnimator = ValueAnimator.ofFloat(0, size - mBorderSize * 2);
         mScanLineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -381,7 +381,7 @@ public class ScanBoxView extends View {
                 // 这里如果用postInvalidate会导致所在Activity的onStop和onDestroy方法阻塞，感谢lhhseraph的反馈
                 postInvalidateOnAnimation(mBoxLeft,
                         ((int) (mBoxTop + mScanLinePosition - 10)),
-                        mBoxLeft + boxWidth,
+                        mBoxLeft + size,
                         ((int) (mBoxTop + mScanLinePosition + SCAN_LINE_HEIGHT + 10)));
             }
         });

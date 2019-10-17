@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 .setCornerColor(resources.getColor(R.color.corner))
                 .setScanLineColors(scanColors)
                 .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
+                .setFrameSize(BarCodeUtil.dp2px(this,335),BarCodeUtil.dp2px(this,200))
                 .setCaptureMode(ScanView.CAPTURE_MODE_BIG)
                 .setTitle("我的扫一扫")
                 .showAlbum(true)
