@@ -168,6 +168,10 @@ public class ScannerManager {
         return this;
     }
 
+    public ScanOption build(){
+        return scanOption;
+    }
+
     public void start() {
         Intent intent = new Intent(context, ScanActivity.class);
         intent.putExtra("option", scanOption);
