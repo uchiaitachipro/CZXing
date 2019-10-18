@@ -149,6 +149,9 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     public void applyScanOption(ScannerManager.ScanOption scanOption) {
         this.option = scanOption;
         setScanMode();
+        if (option != null && option.getCaptureMode() != -1){
+            setPreviewMode(option.getCaptureMode());
+        }
         this.mScanBoxView.applyScanOptions(option);
     }
 

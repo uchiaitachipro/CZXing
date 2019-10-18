@@ -88,15 +88,18 @@ ImageScheduler::process(jbyte *bytes, int left, int top, int cropWidth, int crop
     FrameData frameData;
     frameData.left = left;
     frameData.top = top;
-    frameData.cropWidth = cropWidth;
+    if (left + cropWidth > rowWidth) {
+        frameData.cropWidth = rowWidth - left;
+    } else {
+        frameData.cropWidth = cropWidth;
+    }
+
     if (top + cropHeight > rowHeight) {
         frameData.cropHeight = rowHeight - top;
     } else {
         frameData.cropHeight = cropHeight;
     }
-    if (frameData.cropHeight < frameData.cropWidth) {
-        frameData.cropWidth = frameData.cropHeight;
-    }
+
     frameData.rowWidth = rowWidth;
     frameData.rowHeight = rowHeight;
     frameData.bytes = bytes;
@@ -129,8 +132,6 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
         if (cameraLight < 40) {
             return;
         }
-        Mat raw;
-//        filterColorInImage(src, raw);
         applyStrategy(gray);
     } catch (const std::exception &e) {
         LOGE("preTreatMat error...");
@@ -141,6 +142,7 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
 
     int startIndex = isApplyAllStrategies ? 0 : currentStrategyIndex;
     bool result = false;
+
     for (int i = startIndex; i < _strategies.size(); ++i) {
 
         switch (_strategies[i]) {
@@ -172,9 +174,8 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
 void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
     Mat rgbMat;
 //    cvtColor(src, rgbMat, COLOR_YUV2BGR_NV21);
-    cvtColor(src, rgbMat, COLOR_YUV2BGR_NV21);
-//    Mat hsv;
-//    cvtColor(rgbMat,hsv,CV_BGR2HSV);
+    Mat hsv;
+    cvtColor(rgbMat, hsv, CV_BGR2HSV);
 
     for (int w = 0; w < rgbMat.rows; w++) {
         for (int h = 0; h < rgbMat.cols; h++) {
@@ -210,15 +211,15 @@ void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
 //    cvtColor(hsv,rgbMat,CV_HSV2BGR);
     Mat th;
     cvtColor(rgbMat, th, COLOR_BGR2GRAY);
-    threshold(th,th,50, 255, CV_THRESH_OTSU);
+    threshold(th, th, 50, 255, CV_THRESH_OTSU);
     writeImage(th, "color");
 }
 
 bool ImageScheduler::decodeGrayPixels(const Mat &gray) {
     LOGE("start GrayPixels...");
 
-    Mat mat;
-    rotate(gray, mat, ROTATE_90_CLOCKWISE);
+//    Mat mat;
+//    rotate(gray, mat, ROTATE_90_CLOCKWISE);
     Result result = decodePixels(gray);
     if (result.isValid()) {
 //        writeImage(gray,"gray-");
@@ -232,7 +233,8 @@ bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     LOGE("start ThresholdPixels...");
 
     Mat mat;
-    rotate(gray, mat, ROTATE_180);
+    rotate(gray, mat, ROTATE_90_COUNTERCLOCKWISE);
+//    rotate(gray, mat, ROTATE_180);
 
     // 提升亮度
     if (cameraLight < 80) {
@@ -245,7 +247,7 @@ bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     if (result.isValid()) {
         javaCallHelper->onResult(result);
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
-        writeImage(mat, std::string("threshold-"));
+//        writeImage(mat, std::string("threshold-"));
     }
     return result.isValid();
 }
@@ -267,20 +269,20 @@ bool ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
     if (result.isValid()) {
         javaCallHelper->onResult(result);
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
-        writeImage(mat, std::string("adaptive-threshold-ROI-"));
+//        writeImage(mat, std::string("adaptive-threshold-ROI-"));
     }
     return result.isValid();
 }
 
 void ImageScheduler::recognizerQrCode(const Mat &mat) {
     LOGE("start recognizerQrCode...");
-
     cv::Rect rect;
-    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
-
-    if (rect.empty()){
-        qrCodeRecognizer->processData(mat, &rect);
-    }
+//    rotate(mat, mat, ROTATE_90_COUNTERCLOCKWISE);
+//    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
+//
+//    if (rect.empty()){
+    qrCodeRecognizer->processData(mat, &rect);
+//    }
 
     if (rect.empty()) {
         return;

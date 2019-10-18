@@ -11,7 +11,7 @@ public class BarcodeReader {
     private static BarcodeReader instance;
     private int[] decodeStrategies = new int[]{
             NativeSdk.STRATEGY_THRESHOLD,
-            NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD
+//            NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD
     };
 
     public static BarcodeReader getInstance() {
