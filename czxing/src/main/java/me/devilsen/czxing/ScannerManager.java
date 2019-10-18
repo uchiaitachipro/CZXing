@@ -98,8 +98,8 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager continuousScan() {
-        scanOption.continuousScan = true;
+    public ScannerManager setcontinuousScanTime(long time) {
+        scanOption.continuousScanTime = time;
         return this;
     }
 
@@ -144,6 +144,30 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager setLightOffResourceId(int id){
+        scanOption.lightOffResource = id;
+        return this;
+    }
+
+    public ScannerManager setLightOnResourceId(int id){
+        scanOption.lightOnResource = id;
+        return this;
+    }
+
+    public ScannerManager setFrameStrategies(Integer... s){
+
+        if (s == null || s.length < 0){
+            return this;
+        }
+
+        ArrayList<Integer> list = new ArrayList<>(s.length);
+        for (Integer i : s){
+            list.add(i);
+        }
+        scanOption.applyFrameStrategies = list;
+        return this;
+    }
+
     public void start() {
         Intent intent = new Intent(context, ScanActivity.class);
         intent.putExtra("option", scanOption);
@@ -171,9 +195,12 @@ public class ScannerManager {
         private int scanBoxFrameTopMargin = -1;
         private int scanBoxFrameLeftMargin = -1;
         private int scanBoxFrameMaskColor = -1;
+        private int lightOffResource = -1;
+        private int lightOnResource = -1;
+        private ArrayList<Integer> applyFrameStrategies;
         private String title;
         private boolean showAlbum = true;
-        private boolean continuousScan;
+        private long continuousScanTime = -1;
         private ArrayList<Integer> scanLineColors;
 
         public ScanOption(){}
@@ -194,9 +221,12 @@ public class ScannerManager {
             scanBoxFrameTopMargin = in.readInt();
             scanBoxFrameLeftMargin = in.readInt();
             scanBoxFrameMaskColor = in.readInt();
+            lightOffResource = in.readInt();
+            lightOnResource = in.readInt();
+            applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             title = in.readString();
             showAlbum = in.readByte() != 0;
-            continuousScan = in.readByte() != 0;
+            continuousScanTime = in.readLong();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
         }
 
@@ -216,9 +246,12 @@ public class ScannerManager {
             dest.writeInt(scanBoxFrameTopMargin);
             dest.writeInt(scanBoxFrameLeftMargin);
             dest.writeInt(scanBoxFrameMaskColor);
+            dest.writeInt(lightOffResource);
+            dest.writeInt(lightOnResource);
+            dest.writeSerializable(applyFrameStrategies);
             dest.writeString(title);
             dest.writeByte((byte) (showAlbum ? 1 : 0));
-            dest.writeByte((byte) (continuousScan ? 1 : 0));
+            dest.writeLong(continuousScanTime);
             dest.writeSerializable(scanLineColors);
         }
 
@@ -272,8 +305,12 @@ public class ScannerManager {
             return showAlbum;
         }
 
-        public boolean isContinuousScan() {
-            return continuousScan;
+        public long getContinuousScanTime() {
+            return continuousScanTime;
+        }
+
+        public void setContinuousScanTime(long time){
+            continuousScanTime = time;
         }
 
         public List<Integer> getScanLineColors() {
@@ -311,5 +348,18 @@ public class ScannerManager {
         public int getScanMode() {
             return scanMode;
         }
+
+        public int getLightOffResource() {
+            return lightOffResource;
+        }
+
+        public int getLightOnResource() {
+            return lightOnResource;
+        }
+
+        public ArrayList<Integer> getApplyFrameStrategies() {
+            return applyFrameStrategies;
+        }
+
     }
 }

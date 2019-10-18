@@ -16,7 +16,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
-import android.widget.TextView;
 
 import java.util.List;
 
@@ -218,7 +217,7 @@ public class ScanBoxView extends View {
         } else {
             mBoxLeft = (viewWidth - scanBoxWidth) / 2;
             mBoxTop = (viewHeight - scanBoxHeight) / 2;
-            mFramingRect = new Rect(mBoxLeft,mBoxTop,mBoxLeft + scanBoxWidth,mBoxTop + scanBoxHeight);
+            mFramingRect = new Rect(mBoxLeft, mBoxTop, mBoxLeft + scanBoxWidth, mBoxTop + scanBoxHeight);
         }
     }
 
@@ -306,7 +305,7 @@ public class ScanBoxView extends View {
             drawFlashLight(canvas);
         }
 
-        if (!TextUtils.isEmpty(mScanNoticeText)){
+        if (!TextUtils.isEmpty(mScanNoticeText)) {
             canvas.drawText(mScanNoticeText,
                     mFramingRect.left + (boxWidth >> 1),
                     mFramingRect.bottom + mTextSize * 2,
@@ -342,10 +341,16 @@ public class ScanBoxView extends View {
      */
     private void drawFlashLight(Canvas canvas) {
         if (mLightOff == null) {
-            mLightOff = BitmapUtil.getBitmap(getContext(), R.drawable.ic_highlight_black_close_24dp);
+            int unLightResId = option != null && option.getLightOffResource() != -1
+                    ? option.getLightOffResource()
+                    : R.drawable.ic_highlight_black_close_24dp;
+            mLightOff = BitmapUtil.getBitmap(getContext(), unLightResId);
         }
         if (mLightOn == null) {
-            mLightOn = BitmapUtil.getBitmap(getContext(), R.drawable.ic_highlight_black_open_24dp);
+            int lightResId = option != null && option.getLightOnResource() != -1
+                    ? option.getLightOnResource()
+                    : R.drawable.ic_highlight_black_open_24dp;
+            mLightOn = BitmapUtil.getBitmap(getContext(), lightResId);
         }
         if (mFlashLightLeft == 0 && mLightOff != null) {
             mFlashLightLeft = mFramingRect.left + ((mFramingRect.width() - mLightOff.getWidth()) >> 1);
@@ -372,7 +377,7 @@ public class ScanBoxView extends View {
         if (mScanLineAnimator != null && mScanLineAnimator.isRunning()) {
             return;
         }
-        final int boxSize = useBoxSize ? mBoxSize :  scanBoxHeight;
+        final int boxSize = useBoxSize ? mBoxSize : scanBoxHeight;
         mScanLineAnimator = ValueAnimator.ofFloat(0, boxSize - mBorderSize * 2);
         mScanLineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -399,12 +404,15 @@ public class ScanBoxView extends View {
         return useBoxSize ? mBoxSize : scanBoxWidth;
     }
 
-    public int getScanBoxHeight() { return useBoxSize ? mBoxSize : scanBoxHeight;}
+    public int getScanBoxHeight() {
+        return useBoxSize ? mBoxSize : scanBoxHeight;
+    }
+
     /**
      * 有的手机得到的数据会有所偏移（如：华为P20），这里放大了获取到的数据
      */
     public int[] getScanBoxSizeExpand() {
-        return new int[] {
+        return new int[]{
                 getScanBoxWidth() + mBoxSizeOffset,
                 getScanBoxHeight() + mBoxSizeOffset
         };
@@ -521,7 +529,7 @@ public class ScanBoxView extends View {
             mTxtPaint.setTextSize(BarCodeUtil.sp2px(getContext(), this.option.getScanBoxTipsTextSize()));
         }
 
-        if (this.option.getScanBoxWidth() == -1 || this.option.getScanBoxHeight() == -1){
+        if (this.option.getScanBoxWidth() == -1 || this.option.getScanBoxHeight() == -1) {
             useBoxSize = true;
         } else {
             useBoxSize = false;

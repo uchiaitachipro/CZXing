@@ -16,6 +16,8 @@ public interface ScanListener {
      */
     void onScanSuccess(String result, BarcodeFormat format);
 
+    void onScanFail();
+
     /**
      * 处理打开相机出错
      */

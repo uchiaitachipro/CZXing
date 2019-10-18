@@ -218,8 +218,8 @@ void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
 bool ImageScheduler::decodeGrayPixels(const Mat &gray) {
     LOGE("start GrayPixels...");
 
-//    Mat mat;
-//    rotate(gray, mat, ROTATE_90_CLOCKWISE);
+    Mat mat;
+    rotate(gray, mat, ROTATE_90_CLOCKWISE);
     Result result = decodePixels(gray);
     if (result.isValid()) {
 //        writeImage(gray,"gray-");
