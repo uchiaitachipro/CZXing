@@ -15,7 +15,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.yanzhenjie.permission.Action;
@@ -31,8 +30,7 @@ import me.devilsen.czxing.Scanner;
 import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
-import me.devilsen.czxing.util.BarCodeUtil;
-import me.devilsen.czxing.util.ScreenUtil;
+import me.devilsen.czxing.code.NativeSdk;
 import me.devilsen.czxing.view.ScanActivityDelegate;
 import me.devilsen.czxing.view.ScanView;
 import me.sam.czxing.loaders.GlideEngine;
@@ -88,12 +86,14 @@ public class MainActivity extends AppCompatActivity {
                 .setBorderColor(resources.getColor(R.color.box_line))
                 .setCornerColor(resources.getColor(R.color.corner))
                 .setScanLineColors(scanColors)
-                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
-                .setFrameSize(BarCodeUtil.dp2px(this,335),BarCodeUtil.dp2px(this,200))
-                .setCaptureMode(ScanView.CAPTURE_MODE_BIG)
+                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD)
+                .setTipText("扫一扫撒黄金时代黄倒海翻代")
+                .setcontinuousScanTime(0)
+//                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
+//                .setFrameSize(BarCodeUtil.dp2px(this,325),BarCodeUtil.dp2px(this,250))
+                .setCaptureMode(ScanView.CAPTURE_MODE_TINY)
                 .setTitle("我的扫一扫")
                 .showAlbum(true)
-                .continuousScan()
                 .setOnClickAlbumDelegate(new ScanActivityDelegate.OnClickAlbumDelegate() {
                     @Override
                     public void onClickAlbum(Activity activity) {
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setOnScanResultDelegate(new ScanActivityDelegate.OnScanDelegate() {
                     @Override
-                    public void onScanResult(@NonNull String result, @NonNull BarcodeFormat format) {
+                    public void onScanResult(String result, BarcodeFormat format) {
                         // 如果有回调，则必然有值,因为要避免AndroidX和support包的差异，所以没有默认的注解
 
 //                        Intent intent = new Intent(MainActivity.this, DelegateActivity.class);
@@ -124,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.makeText(MainActivity.this, showContent, Toast.LENGTH_SHORT).show();
                             }
                         });
+
+
                     }
                 })
                 .start();

@@ -3,6 +3,9 @@ package me.devilsen.czxing.code;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import me.devilsen.czxing.thread.Dispatcher;
+import me.devilsen.czxing.thread.FrameData;
+import me.devilsen.czxing.thread.ProcessRunnable;
 import me.devilsen.czxing.util.BarCodeUtil;
 
 public class BarcodeReader {
@@ -13,6 +16,7 @@ public class BarcodeReader {
             NativeSdk.STRATEGY_THRESHOLD,
             NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD
     };
+    private Dispatcher dispatcher;
 
     public static BarcodeReader getInstance() {
         if (instance == null) {
@@ -27,6 +31,7 @@ public class BarcodeReader {
 
     private BarcodeReader() {
         setBarcodeFormat(BarcodeFormat.QR_CODE);
+        dispatcher = new Dispatcher();
     }
 
     public void setBarcodeFormat(BarcodeFormat... formats) {
@@ -72,6 +77,15 @@ public class BarcodeReader {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    public CodeResult readAsync(byte[] data, int cropLeft, int cropTop, int cropWidth, int cropHeight, int rowWidth, int rowHeight) {
+        FrameData frameData = new FrameData(data, cropLeft,
+                cropTop, cropWidth,
+                cropHeight, rowWidth, rowHeight);
+        ProcessRunnable pr = dispatcher.newRunnable(frameData,null);
+        pr.enqueue();
         return null;
     }
 

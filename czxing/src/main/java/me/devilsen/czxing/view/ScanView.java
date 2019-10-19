@@ -1,19 +1,16 @@
 package me.devilsen.czxing.view;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+
+import java.util.List;
 
 import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.util.BarCodeUtil;
-import me.devilsen.czxing.util.SaveImageUtil;
 
 /**
  * @author : dongSen
@@ -41,8 +38,11 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     private boolean isStop;
     private boolean isDark;
     private int showCounter;
+    private long nextStartTime;
     private BarcodeReader reader;
     private ScannerManager.ScanOption option;
+    private long nextScanTime = -1;
+    private long continuousScanStep = 0;
 
     public ScanView(Context context) {
         this(context, null);
@@ -71,7 +71,8 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
             return;
         }
 
-        reader.read(data, left, top, width, height, rowWidth, rowHeight);
+
+        reader.readAsync(data, left, top, width, height, rowWidth, rowHeight);
 //        SaveImageUtil.saveData(data, left, top, width, height, rowWidth);
     }
 
@@ -87,6 +88,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     public void stopScan() {
         super.stopScan();
         reader.stopRead();
+        nextStartTime = -1;
         isStop = true;
         reader.setReadCodeListener(null);
     }
@@ -98,16 +100,30 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         }
         BarCodeUtil.d("result : " + result.toString());
 
+        if (nextStartTime >= System.currentTimeMillis()) {
+            return;
+        }
+
         if (!TextUtils.isEmpty(result.getText()) && !isStop) {
-            isStop = true;
-            reader.stopRead();
+            if (option == null || option.getContinuousScanTime() < 0) {
+                isStop = true;
+                reader.stopRead();
+            } else {
+//                resetZoom();
+                nextStartTime = System.currentTimeMillis() + continuousScanStep;
+            }
+
             if (mScanListener != null) {
                 mScanListener.onScanSuccess(result.getText(), result.getFormat());
+                return;
             }
         } else if (result.getPoints() != null) {
 //            mScanBoxView.currentResult = result;
             mScanBoxView.postInvalidate();
             tryZoom(result);
+        }
+        if (mScanListener != null) {
+            mScanListener.onScanFail();
         }
     }
 
@@ -141,6 +157,16 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         setZoomValue(0);
     }
 
+    public void restartPreviewAfterDelay(long delayMS) {
+        if (option == null) {
+            return;
+        }
+        option.setContinuousScanTime(delayMS);
+        if (isStop) {
+            startScan();
+        }
+    }
+
     @Override
     public void onFlashLightClick() {
         mCameraSurface.toggleFlashLight(isDark);
@@ -150,11 +176,37 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         this.option = scanOption;
         setScanMode();
         this.mScanBoxView.applyScanOptions(option);
+        if (option == null) {
+            return;
+
+        }
+        if (option.getCaptureMode() != -1) {
+            setPreviewMode(option.getCaptureMode());
+        }
+        if (option.getApplyFrameStrategies() != null) {
+            List<Integer> list = option.getApplyFrameStrategies();
+            int[] ret = new int[list.size()];
+            for (int i = 0; i < ret.length; i++) {
+                ret[i] = list.get(i).intValue();
+            }
+            reader.setDecodeStrategies(ret);
+        }
+
+    }
+
+    public void onResume(){
+        openCamera(); // 打开后置摄像头开始预览，但是并未开始识别
+        startScan();  // 显示扫描框，并开始识别
+    }
+
+    public void onPause(){
+        stopScan();
+        closeCamera(); // 关闭摄像头预览，并且隐藏扫描框
     }
 
     private void setScanMode() {
 
-        if (option.getScanMode() == -1){
+        if (option.getScanMode() == -1) {
             return;
         }
 

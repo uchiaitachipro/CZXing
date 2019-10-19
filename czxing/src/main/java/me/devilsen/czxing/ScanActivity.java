@@ -21,7 +21,6 @@ import me.devilsen.czxing.util.BarCodeUtil;
 import me.devilsen.czxing.util.ScreenUtil;
 import me.devilsen.czxing.util.SoundPoolUtil;
 import me.devilsen.czxing.view.ScanActivityDelegate;
-import me.devilsen.czxing.view.ScanBoxView;
 import me.devilsen.czxing.view.ScanListener;
 import me.devilsen.czxing.view.ScanView;
 
@@ -43,11 +42,10 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
     private ScanView mScanView;
     private SoundPoolUtil mSoundPoolUtil;
 
-    private boolean isContinuousScan;
-
     private ScanActivityDelegate.OnScanDelegate scanDelegate;
     private ScanActivityDelegate.OnClickAlbumDelegate clickAlbumDelegate;
 
+    private ScannerManager.ScanOption option;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +78,7 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
     }
 
     private void initData() {
-        ScannerManager.ScanOption option = getIntent().getParcelableExtra("option");
+        option = getIntent().getParcelableExtra("option");
         if (option == null) {
             return;
         }
@@ -99,8 +97,6 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
             albumTxt.setVisibility(View.INVISIBLE);
             albumTxt.setOnClickListener(null);
         }
-        // 连续扫描
-        isContinuousScan = option.isContinuousScan();
     }
 
     @Override
@@ -109,7 +105,7 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
         mScanView.openCamera(); // 打开后置摄像头开始预览，但是并未开始识别
         mScanView.startScan();  // 显示扫描框，并开始识别
 
-        if (isContinuousScan) {
+        if (option != null && option.getContinuousScanTime() > 0) {
             mScanView.resetZoom();  // 重置相机扩大倍数
         }
     }
@@ -144,7 +140,7 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
 
     @Override
     public void onScanSuccess(String result, BarcodeFormat format) {
-        mSoundPoolUtil.play();
+//        mSoundPoolUtil.play();
 
         if (scanDelegate != null) {
             scanDelegate.onScanResult(result, format);
@@ -153,12 +149,14 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
             intent.putExtra("result", result);
             startActivity(intent);
         }
-        // 连续扫码，不关闭界面
-        if (isContinuousScan) {
-            handler.sendEmptyMessageDelayed(MESSAGE_WHAT_START_SCAN, DELAY_TIME);
-            return;
+        if (option != null && option.getContinuousScanTime() < 0){
+            finish();
         }
-        finish();
+    }
+
+    @Override
+    public void onScanFail() {
+
     }
 
     @Override

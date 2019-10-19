@@ -1,9 +1,8 @@
 package me.devilsen.czxing.thread;
 
 import me.devilsen.czxing.code.CodeResult;
-import me.devilsen.czxing.util.BarCodeUtil;
-import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.processor.BarcodeProcessor;
+import me.devilsen.czxing.util.BarCodeUtil;
 
 /**
  * desc : 二维码处理线程

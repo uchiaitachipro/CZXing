@@ -96,6 +96,11 @@ std::string getTimes() {
 
 long flag = 0;
 void writeImage(const Mat& mat,std::string prefix){
+
+    if (flag >= 10000){
+        flag = 0;
+    }
+
     Mat result;
     mat.copyTo(result);
     std::string str;

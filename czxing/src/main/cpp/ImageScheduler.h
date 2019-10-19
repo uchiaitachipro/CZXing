@@ -15,6 +15,8 @@
 #include "QRCodeRecognizer.h"
 #include "safe_queue.h"
 #include "QRCodeFinder.h"
+#include "BlockingQueue.h"
+#include "ThreadPool.h"
 
 using namespace cv;
 using namespace ZXing;
@@ -69,6 +71,7 @@ private:
     JavaCallHelper *javaCallHelper;
     std::atomic<bool> isProcessing{};
     std::atomic<bool> stopProcessing{};
+    std::atomic<bool> abortTask{};
     vector<int> _strategies;
     QRCodeRecognizer *qrCodeRecognizer;
     SafeQueue<FrameData> frameQueue;
@@ -77,6 +80,11 @@ private:
     double cameraLight{};
     bool isApplyAllStrategies = true;
     int currentStrategyIndex = 0;
+    int threadPoolCount = 1;
+    BlockingQueue<FrameData> queue;
+    ThreadPool* pool = NULL;
+
+    void initThreadPool();
 
     void preTreatMat(const FrameData &frameData);
 

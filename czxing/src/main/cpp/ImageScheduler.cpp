@@ -21,6 +21,8 @@ ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
     qrCodeRecognizer = new QRCodeRecognizer();
     stopProcessing.store(false);
     isProcessing.store(false);
+    abortTask.store(false);
+//    initThreadPool();
 }
 
 ImageScheduler::~ImageScheduler() {
@@ -28,11 +30,34 @@ ImageScheduler::~ImageScheduler() {
     DELETE(reader);
     DELETE(javaCallHelper);
     DELETE(qrCodeRecognizer);
+    DELETE(pool);
     frameQueue.clear();
+    queue.clear();
     delete &isProcessing;
     delete &stopProcessing;
     delete &cameraLight;
     delete &prepareThread;
+}
+
+
+void ImageScheduler::initThreadPool() {
+    if (pool == NULL) {
+        pool = new ThreadPool(threadPoolCount);
+    }
+    for (int i = 0; i < threadPoolCount; i++) {
+        pool->enqueue([&] {
+            while (true) {
+                if (abortTask.load()) {
+                    break;
+                }
+                FrameData frameData;
+                int ret = frameQueue.deQueue(frameData);
+                if (ret){
+                    preTreatMat(frameData);
+                }
+            }
+        });
+    }
 }
 
 void *prepareMethod(void *arg) {
@@ -44,6 +69,23 @@ void *prepareMethod(void *arg) {
 void ImageScheduler::prepare() {
     pthread_create(&prepareThread, nullptr, prepareMethod, this);
 }
+//
+//void ImageScheduler::prepare() {
+////    if (pool == NULL){
+////        pool = new ThreadPool(threadPoolCount);
+////    }
+////    for (int i = 0; i < threadPoolCount; i++){
+////        pool->enqueue([&]{
+////            while(true){
+////                if(abortTask.load()){
+////                    break;
+////                }
+////                FrameData frameData = queue.take();
+////                preTreatMat(frameData);
+////            }
+////        });
+////    }
+//}
 
 void ImageScheduler::start() {
     stopProcessing.store(false);
@@ -73,6 +115,7 @@ void ImageScheduler::stop() {
     currentStrategyIndex = 0;
     isProcessing.store(false);
     stopProcessing.store(true);
+    abortTask.store(true);
     frameQueue.setWork(0);
     frameQueue.clear();
 }
@@ -88,21 +131,26 @@ ImageScheduler::process(jbyte *bytes, int left, int top, int cropWidth, int crop
     FrameData frameData;
     frameData.left = left;
     frameData.top = top;
-    frameData.cropWidth = cropWidth;
+    if (left + cropWidth > rowWidth) {
+        frameData.cropWidth = rowWidth - left;
+    } else {
+        frameData.cropWidth = cropWidth;
+    }
+
     if (top + cropHeight > rowHeight) {
         frameData.cropHeight = rowHeight - top;
     } else {
         frameData.cropHeight = cropHeight;
     }
-    if (frameData.cropHeight < frameData.cropWidth) {
-        frameData.cropWidth = frameData.cropHeight;
-    }
+
     frameData.rowWidth = rowWidth;
     frameData.rowHeight = rowHeight;
     frameData.bytes = bytes;
 
-    frameQueue.enQueue(frameData);
-//    LOGE("frame data size : %d", frameQueue.size());
+//    frameQueue.enQueue(frameData);
+    preTreatMat(frameData);
+    LOGE("frame data size : %d", frameQueue.size());
+
 }
 
 /**
@@ -129,8 +177,6 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
         if (cameraLight < 40) {
             return;
         }
-        Mat raw;
-//        filterColorInImage(src, raw);
         applyStrategy(gray);
     } catch (const std::exception &e) {
         LOGE("preTreatMat error...");
@@ -141,6 +187,7 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
 
     int startIndex = isApplyAllStrategies ? 0 : currentStrategyIndex;
     bool result = false;
+
     for (int i = startIndex; i < _strategies.size(); ++i) {
 
         switch (_strategies[i]) {
@@ -172,9 +219,8 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
 void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
     Mat rgbMat;
 //    cvtColor(src, rgbMat, COLOR_YUV2BGR_NV21);
-    cvtColor(src, rgbMat, COLOR_YUV2BGR_NV21);
-//    Mat hsv;
-//    cvtColor(rgbMat,hsv,CV_BGR2HSV);
+    Mat hsv;
+    cvtColor(rgbMat, hsv, CV_BGR2HSV);
 
     for (int w = 0; w < rgbMat.rows; w++) {
         for (int h = 0; h < rgbMat.cols; h++) {
@@ -210,7 +256,7 @@ void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
 //    cvtColor(hsv,rgbMat,CV_HSV2BGR);
     Mat th;
     cvtColor(rgbMat, th, COLOR_BGR2GRAY);
-    threshold(th,th,50, 255, CV_THRESH_OTSU);
+    threshold(th, th, 50, 255, CV_THRESH_OTSU);
     writeImage(th, "color");
 }
 
@@ -232,7 +278,8 @@ bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     LOGE("start ThresholdPixels...");
 
     Mat mat;
-    rotate(gray, mat, ROTATE_180);
+    rotate(gray, mat, ROTATE_90_COUNTERCLOCKWISE);
+//    rotate(gray, mat, ROTATE_180);
 
     // 提升亮度
     if (cameraLight < 80) {
@@ -245,7 +292,7 @@ bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     if (result.isValid()) {
         javaCallHelper->onResult(result);
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
-        writeImage(mat, std::string("threshold-"));
+//        writeImage(mat, std::string("threshold-"));
     }
     return result.isValid();
 }
@@ -267,20 +314,20 @@ bool ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
     if (result.isValid()) {
         javaCallHelper->onResult(result);
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
-        writeImage(mat, std::string("adaptive-threshold-ROI-"));
+//        writeImage(mat, std::string("adaptive-threshold-ROI-"));
     }
     return result.isValid();
 }
 
 void ImageScheduler::recognizerQrCode(const Mat &mat) {
     LOGE("start recognizerQrCode...");
-
     cv::Rect rect;
-    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
-
-    if (rect.empty()){
-        qrCodeRecognizer->processData(mat, &rect);
-    }
+//    rotate(mat, mat, ROTATE_90_COUNTERCLOCKWISE);
+//    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
+//
+//    if (rect.empty()){
+    qrCodeRecognizer->processData(mat, &rect);
+//    }
 
     if (rect.empty()) {
         return;
@@ -302,13 +349,6 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
 
     LOGE("end recognizerQrCode...");
 
-}
-
-bool isInArea(Rect &r, int i, int j) {
-    if (i > r.br().x || i < r.tl().x) {
-        return false;
-    }
-    return j <= r.br().y && j >= r.tl().y;
 }
 
 Result ImageScheduler::decodePixels(const Mat &mat) {
