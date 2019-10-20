@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import me.devilsen.czxing.view.ScanActivityDelegate;
-import me.devilsen.czxing.view.ScanListener;
 
 /**
  * desc :
@@ -169,6 +168,12 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager setScanBoxOffset(int offset){
+        scanOption.scanBoxOffset = offset;
+        return this;
+    }
+
+
     public ScanOption build(){
         return scanOption;
     }
@@ -195,6 +200,7 @@ public class ScannerManager {
         private int scanMode = -1;
         private int scanBoxWidth = -1;
         private int scanBoxHeight = -1;
+        private int scanBoxOffset = -1;
         private String scanBoxTips;
         private int scanBoxTipsTextSize = -1;
         private int scanBoxFrameTopMargin = -1;
@@ -204,7 +210,6 @@ public class ScannerManager {
         private int lightOnResource = -1;
         private String title;
         private boolean showAlbum = true;
-        private boolean isFullFrame = true;
         private long continuousScanTime = -1;
         private ArrayList<Integer> applyFrameStrategies;
         private ArrayList<Integer> scanLineColors;
@@ -222,6 +227,7 @@ public class ScannerManager {
             scanMode = in.readInt();
             scanBoxWidth = in.readInt();
             scanBoxHeight = in.readInt();
+            scanBoxOffset = in.readInt();
             scanBoxTips = in.readString();
             scanBoxTipsTextSize = in.readInt();
             scanBoxFrameTopMargin = in.readInt();
@@ -231,7 +237,6 @@ public class ScannerManager {
             lightOnResource = in.readInt();
             title = in.readString();
             showAlbum = in.readByte() != 0;
-            isFullFrame = in.readByte() != 0;
             continuousScanTime = in.readLong();
             applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
@@ -248,6 +253,7 @@ public class ScannerManager {
             dest.writeInt(scanMode);
             dest.writeInt(scanBoxWidth);
             dest.writeInt(scanBoxHeight);
+            dest.writeInt(scanBoxOffset);
             dest.writeString(scanBoxTips);
             dest.writeInt(scanBoxTipsTextSize);
             dest.writeInt(scanBoxFrameTopMargin);
@@ -257,7 +263,6 @@ public class ScannerManager {
             dest.writeInt(lightOnResource);
             dest.writeString(title);
             dest.writeByte((byte) (showAlbum ? 1 : 0));
-            dest.writeByte((byte) (isFullFrame ? 1 : 0));
             dest.writeLong(continuousScanTime);
             dest.writeSerializable(applyFrameStrategies);
             dest.writeSerializable(scanLineColors);
@@ -369,9 +374,8 @@ public class ScannerManager {
             return applyFrameStrategies;
         }
 
-        public boolean isFullFrame() {
-            return isFullFrame;
+        public int getScanBoxOffset() {
+            return scanBoxOffset;
         }
-
     }
 }

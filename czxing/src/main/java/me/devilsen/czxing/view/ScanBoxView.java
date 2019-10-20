@@ -536,6 +536,10 @@ public class ScanBoxView extends View {
             scanBoxWidth = this.option.getScanBoxWidth();
             scanBoxHeight = this.option.getScanBoxHeight();
         }
+
+        if (this.option.getScanBoxOffset() != -1){
+            mBoxSizeOffset = this.option.getScanBoxOffset();
+        }
 //        calFramingRect();
     }
 

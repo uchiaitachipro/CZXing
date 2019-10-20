@@ -37,6 +37,7 @@ public class NotFullScanActivity extends AppCompatActivity {
                 .setFrameSize(BarCodeUtil.dp2px(this, 335), BarCodeUtil.dp2px(this, 250))
                 .setCaptureMode(CAPTURE_MODE_TINY)
                 .setcontinuousScanTime(100)
+                .setScanBoxOffset(0)
                 .setTipText("")
                 .setScanMode(ScannerManager.ONE_D_MODE)
                 .build();

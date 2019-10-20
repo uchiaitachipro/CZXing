@@ -295,7 +295,7 @@ bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
 //        writeImage(mat, std::string("threshold-"));
     }
-            writeImage(mat, std::string("threshold-"));
+//            writeImage(mat, std::string("threshold-"));
     return result.isValid();
 }
 
@@ -318,7 +318,7 @@ bool ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
 //        writeImage(mat, std::string("adaptive-threshold-ROI-"));
     }
-    writeImage(mat, std::string("adaptive-threshold-"));
+//    writeImage(mat, std::string("adaptive-threshold-"));
     return result.isValid();
 }
 
