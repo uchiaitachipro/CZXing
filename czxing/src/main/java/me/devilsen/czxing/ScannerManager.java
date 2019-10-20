@@ -45,6 +45,17 @@ public class ScannerManager {
      */
     public static final int ALL_MODE = 4;
 
+
+    /**
+     * 找到矩形区域放大
+     */
+    public static final int FIND_POTENTIAL_AREA_ZOOM = 1;
+
+    /**
+     * 找到矩形区域聚焦
+     */
+    public static final int FIND_POTENTIAL_AREA_FOCUS = 2;
+
     private Context context;
     private ScanOption scanOption;
 
@@ -173,6 +184,11 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager setPotentialAreaStrategy(int strategy){
+        scanOption.potentialAreaStrategies = strategy;
+        return this;
+    }
+
 
     public ScanOption build(){
         return scanOption;
@@ -213,6 +229,7 @@ public class ScannerManager {
         private long continuousScanTime = -1;
         private ArrayList<Integer> applyFrameStrategies;
         private ArrayList<Integer> scanLineColors;
+        private int potentialAreaStrategies = FIND_POTENTIAL_AREA_ZOOM;
 
         public ScanOption(){}
 
@@ -238,8 +255,10 @@ public class ScannerManager {
             title = in.readString();
             showAlbum = in.readByte() != 0;
             continuousScanTime = in.readLong();
+            potentialAreaStrategies = in.readInt();
             applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
+
         }
 
         @Override
@@ -264,6 +283,7 @@ public class ScannerManager {
             dest.writeString(title);
             dest.writeByte((byte) (showAlbum ? 1 : 0));
             dest.writeLong(continuousScanTime);
+            dest.writeInt(potentialAreaStrategies);
             dest.writeSerializable(applyFrameStrategies);
             dest.writeSerializable(scanLineColors);
         }
@@ -377,5 +397,10 @@ public class ScannerManager {
         public int getScanBoxOffset() {
             return scanBoxOffset;
         }
+
+        public int getPotentialAreaStrategies() {
+            return potentialAreaStrategies;
+        }
+
     }
 }

@@ -377,7 +377,7 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
         return mZoomOutFlag;
     }
 
-    private void handleFocus(float x, float y) {
+    public void handleFocus(float x, float y) {
         float centerX = x;
         float centerY = y;
         if (CameraUtil.isPortrait(getContext())) {

@@ -1,10 +1,12 @@
 package me.devilsen.czxing.view;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.code.BarcodeFormat;
@@ -41,8 +43,8 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     private long nextStartTime;
     private BarcodeReader reader;
     private ScannerManager.ScanOption option;
-    private long nextScanTime = -1;
     private long continuousScanStep = 0;
+    private AtomicInteger failCount = new AtomicInteger(0);
 
     public ScanView(Context context) {
         this(context, null);
@@ -109,7 +111,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
                 isStop = true;
                 reader.stopRead();
             } else {
-//                resetZoom();
+                resetZoom();
                 nextStartTime = System.currentTimeMillis() + continuousScanStep;
             }
 
@@ -121,6 +123,15 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
 //            mScanBoxView.currentResult = result;
             mScanBoxView.postInvalidate();
             tryZoom(result);
+        }
+
+        // 失败超过5次重新聚焦
+        if (failCount.get() >= 5) {
+            Point p = mScanBoxView.getScanBoxCenter();
+            mCameraSurface.handleFocus(p.x, p.y);
+            failCount.set(0);
+        } else {
+            failCount.addAndGet(1);
         }
         if (mScanListener != null) {
             mScanListener.onScanFail();
