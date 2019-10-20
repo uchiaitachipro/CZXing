@@ -47,6 +47,7 @@
         <activity android:name=".WriteQRCodeActivity" />
         <activity android:name=".CallBackTestActivity" />
         <activity android:name=".FindQRCodePositionActivity"/>
+        <activity android:name=".NotFullScanActivity" />
 
     </application>
 

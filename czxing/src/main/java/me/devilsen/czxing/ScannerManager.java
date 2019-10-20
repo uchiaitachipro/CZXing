@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import me.devilsen.czxing.view.ScanActivityDelegate;
+import me.devilsen.czxing.view.ScanListener;
 
 /**
  * desc :
@@ -201,10 +202,11 @@ public class ScannerManager {
         private int scanBoxFrameMaskColor = -1;
         private int lightOffResource = -1;
         private int lightOnResource = -1;
-        private ArrayList<Integer> applyFrameStrategies;
         private String title;
         private boolean showAlbum = true;
+        private boolean isFullFrame = true;
         private long continuousScanTime = -1;
+        private ArrayList<Integer> applyFrameStrategies;
         private ArrayList<Integer> scanLineColors;
 
         public ScanOption(){}
@@ -227,10 +229,11 @@ public class ScannerManager {
             scanBoxFrameMaskColor = in.readInt();
             lightOffResource = in.readInt();
             lightOnResource = in.readInt();
-            applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             title = in.readString();
             showAlbum = in.readByte() != 0;
+            isFullFrame = in.readByte() != 0;
             continuousScanTime = in.readLong();
+            applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
         }
 
@@ -252,10 +255,11 @@ public class ScannerManager {
             dest.writeInt(scanBoxFrameMaskColor);
             dest.writeInt(lightOffResource);
             dest.writeInt(lightOnResource);
-            dest.writeSerializable(applyFrameStrategies);
             dest.writeString(title);
             dest.writeByte((byte) (showAlbum ? 1 : 0));
+            dest.writeByte((byte) (isFullFrame ? 1 : 0));
             dest.writeLong(continuousScanTime);
+            dest.writeSerializable(applyFrameStrategies);
             dest.writeSerializable(scanLineColors);
         }
 
@@ -363,6 +367,10 @@ public class ScannerManager {
 
         public ArrayList<Integer> getApplyFrameStrategies() {
             return applyFrameStrategies;
+        }
+
+        public boolean isFullFrame() {
+            return isFullFrame;
         }
 
     }

@@ -27,10 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import me.devilsen.czxing.Scanner;
+import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.code.NativeSdk;
+import me.devilsen.czxing.util.BarCodeUtil;
 import me.devilsen.czxing.view.ScanActivityDelegate;
 import me.devilsen.czxing.view.ScanView;
 import me.sam.czxing.loaders.GlideEngine;
@@ -90,8 +92,9 @@ public class MainActivity extends AppCompatActivity {
                 .setTipText("扫一扫撒黄金时代黄倒海翻代")
                 .setcontinuousScanTime(0)
 //                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
-//                .setFrameSize(BarCodeUtil.dp2px(this,325),BarCodeUtil.dp2px(this,250))
+                .setFrameSize(BarCodeUtil.dp2px(this,325), BarCodeUtil.dp2px(this,250))
                 .setCaptureMode(ScanView.CAPTURE_MODE_TINY)
+                .setScanMode(ScannerManager.ONE_D_MODE)
                 .setTitle("我的扫一扫")
                 .showAlbum(true)
                 .setOnClickAlbumDelegate(new ScanActivityDelegate.OnClickAlbumDelegate() {
@@ -158,6 +161,11 @@ public class MainActivity extends AppCompatActivity {
                 .thumbnailScale(0.85f)
                 .imageEngine(new GlideEngine())
                 .forResult(REQUEST_CODE_CHOOSE);
+    }
+
+    public void customizeScanView(View v){
+        Intent intent = new Intent(this,NotFullScanActivity.class);
+        startActivity(intent);
     }
 
     private void requestPermission() {

@@ -56,4 +56,10 @@
         android:onClick="chooseQRCodePic"
         android:text="Choose a QRCode Picture"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="customizeScanView"
+        android:text="Customize ScanView"/>
+
 </LinearLayout>
