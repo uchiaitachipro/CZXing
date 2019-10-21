@@ -1,7 +1,6 @@
 package me.devilsen.czxing.code;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import me.devilsen.czxing.thread.Dispatcher;
 import me.devilsen.czxing.thread.FrameData;

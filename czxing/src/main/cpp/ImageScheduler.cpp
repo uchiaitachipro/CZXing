@@ -270,7 +270,7 @@ bool ImageScheduler::decodeGrayPixels(const Mat &gray) {
     if (result.isValid()) {
 //        writeImage(gray,"gray-");
 //        qrCodeFinder.locateQRCode(mat, 200, 5, false);
-        javaCallHelper->onResult(result);
+        javaCallHelper->onResult(result,cameraLight);
     }
     return result.isValid();
 }
@@ -291,7 +291,7 @@ bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
 
     Result result = decodePixels(mat);
     if (result.isValid()) {
-        javaCallHelper->onResult(result);
+        javaCallHelper->onResult(result,cameraLight);
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
 //        writeImage(mat, std::string("threshold-"));
     }
@@ -310,15 +310,15 @@ bool ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
     mat.convertTo(lightMat, -1, 1.0, -60);
 
     adaptiveThreshold(lightMat, lightMat, 255, ADAPTIVE_THRESH_MEAN_C,
-                      THRESH_BINARY, 55, 3);
+                      THRESH_BINARY, 25, 3);
 
     Result result = decodePixels(lightMat);
     if (result.isValid()) {
-        javaCallHelper->onResult(result);
+        javaCallHelper->onResult(result,cameraLight);
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
 //        writeImage(mat, std::string("adaptive-threshold-ROI-"));
     }
-//    writeImage(mat, std::string("adaptive-threshold-"));
+    writeImage(mat, std::string("adaptive-threshold-"));
     return result.isValid();
 }
 
@@ -348,7 +348,7 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
     Result result(DecodeStatus::NotFound);
     result.setResultPoints(std::move(points));
 
-    javaCallHelper->onResult(result);
+    javaCallHelper->onResult(result,cameraLight);
 
     LOGE("end recognizerQrCode...");
 

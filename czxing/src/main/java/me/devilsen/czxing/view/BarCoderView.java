@@ -307,6 +307,20 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
         handleAutoZoom(len);
     }
 
+    void tryFocus(CodeResult result){
+        float[] points = result.getPoints();
+
+        if (points.length >= 6){
+            float point2X = points[2];
+            float point2Y = points[3];
+            float point3X = points[4];
+            float point3Y = points[5];
+            float centerX = (point3X + point2X) / 2;
+            float centerY = (point3Y + point2Y) / 2;
+            mCameraSurface.handleFocus(centerX,centerY);
+        }
+    }
+
     private void handleAutoZoom(int len) {
         try {
             BarCodeUtil.d("len: " + len);
@@ -332,7 +346,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
                 return;
             }
 
-            if (System.currentTimeMillis() - mLastAutoZoomTime < 450) {
+            if (System.currentTimeMillis() - mLastAutoZoomTime < 500) {
                 return;
             }
 
@@ -344,8 +358,8 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
             // 二维码在扫描框中的宽度小于扫描框的 1/4，放大镜头
             final int maxZoom = parameters.getMaxZoom();
             // 在一些低端机上放太大，可能会造成画面过于模糊，无法识别
-            final int maxCanZoom = maxZoom / 2;
-            final int zoomStep = maxZoom / 6;
+            final int maxCanZoom = maxZoom / 4;
+            final int zoomStep = maxZoom / 8;
             final int zoom = parameters.getZoom();
 //        BarCodeUtil.d("maxZoom: " + maxZoom + " maxCanZoom:" + maxCanZoom + " current: " + zoom + " len:" + len);
 
@@ -358,6 +372,22 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public int getCurrentZoom(){
+        if (mCamera == null){
+            return -1;
+        }
+        Camera.Parameters parameters = mCamera.getParameters();
+        return parameters.getZoom();
+    }
+
+    public int getCurrentExposureCompensation(){
+        if (mCamera == null){
+            return -1;
+        }
+        Camera.Parameters parameters = mCamera.getParameters();
+        return parameters.getExposureCompensation();
     }
 
 

@@ -35,7 +35,7 @@ JavaCallHelper::JavaCallHelper(JavaVM *_javaVM, JNIEnv *_env, jobject &_jobj) : 
         return;
     }
 
-    jmid_on_result = env->GetMethodID(jSdkClass, "onDecodeCallback", "(Ljava/lang/String;I[F)V");
+    jmid_on_result = env->GetMethodID(jSdkClass, "onDecodeCallback", "(Ljava/lang/String;DI[F)V");
     jmid_on_brightness = env->GetMethodID(jSdkClass, "onBrightnessCallback", "(Z)V");
 
     if (jmid_on_result == nullptr) {
@@ -49,7 +49,7 @@ JavaCallHelper::~JavaCallHelper() {
     DELETE(env);
 }
 
-void JavaCallHelper::onResult(const ZXing::Result &result) {
+void JavaCallHelper::onResult(const ZXing::Result &result,double cameraLight = 0) {
 //    if (result.format() == ZXing::BarcodeFormat::QR_CODE) {
 //        if (result.resultPoints().size() < 2) {
 //            return;
@@ -99,7 +99,8 @@ void JavaCallHelper::onResult(const ZXing::Result &result) {
         env->SetFloatArrayRegion(pointsArray, 0, size, points);
     }
 
-    env->CallVoidMethod(jSdkObject, jmid_on_result, mJstring, format, pointsArray);
+
+    env->CallVoidMethod(jSdkObject, jmid_on_result, mJstring,cameraLight, format, pointsArray);
 
     //释放当前线程
     if (mNeedDetach) {

@@ -1,7 +1,10 @@
 package me.devilsen.czxing.thread;
 
 import java.util.Deque;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -21,16 +24,12 @@ public final class Dispatcher {
     private static final int MAX_RUNNABLE = 10;
     private ExecutorService executorService;
 
-    private final LinkedBlockingDeque<Runnable> blockingDeque;
+    private final BlockingDeque<Runnable> blockingDeque;
+    private int corePoolSize = 2;
+    private int maximumPoolSize = 4;
 
     public Dispatcher() {
         blockingDeque = new LinkedBlockingDeque<>();
-        executorService = new ThreadPoolExecutor(2,
-                4,
-                10,
-                TimeUnit.SECONDS,
-                blockingDeque,
-                ExecutorUtil.threadFactory("decode dispatcher", false));
     }
 
     public ProcessRunnable newRunnable(FrameData frameData, Callback callback) {
@@ -52,7 +51,7 @@ public final class Dispatcher {
     }
 
     private synchronized void execute(Runnable runnable) {
-        executorService.execute(runnable);
+        getService().execute(runnable);
     }
 
     public void finished(ProcessRunnable runnable) {
@@ -66,6 +65,18 @@ public final class Dispatcher {
                 promoteCalls();
             }
         }
+    }
+
+    private ExecutorService getService(){
+        if (executorService == null){
+            executorService = new ThreadPoolExecutor(corePoolSize,
+                    maximumPoolSize,
+                    10,
+                    TimeUnit.SECONDS,
+                    blockingDeque,
+                    ExecutorUtil.threadFactory("decode dispatcher", false));
+        }
+        return executorService;
     }
 
     private synchronized void promoteCalls() {
@@ -82,6 +93,22 @@ public final class Dispatcher {
             ((ProcessRunnable) runnable).cancel();
         }
         blockingDeque.clear();
+    }
+
+    public int getCorePoolSize() {
+        return corePoolSize;
+    }
+
+    public void setCorePoolSize(int corePoolSize) {
+        this.corePoolSize = corePoolSize;
+    }
+
+    public int getMaximumPoolSize() {
+        return maximumPoolSize;
+    }
+
+    public void setMaximumPoolSize(int maximumPoolSize) {
+        this.maximumPoolSize = maximumPoolSize;
     }
 
 }

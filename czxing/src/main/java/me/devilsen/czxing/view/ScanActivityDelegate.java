@@ -3,6 +3,7 @@ package me.devilsen.czxing.view;
 import android.app.Activity;
 import android.content.Intent;
 
+import me.devilsen.czxing.ScanResult;
 import me.devilsen.czxing.code.BarcodeFormat;
 
 /**
@@ -40,7 +41,7 @@ public class ScanActivityDelegate {
     }
 
     public interface OnScanDelegate {
-        void onScanResult(String result, BarcodeFormat format);
+        void onScanResult(ScanResult result);
     }
 
     public interface OnClickAlbumDelegate {

@@ -11,6 +11,7 @@ public class CodeResult {
     private BarcodeFormat format;
     private String text;
     private float[] points;
+    private double cameraLight;
 
 
     CodeResult(BarcodeFormat format, String text) {
@@ -18,8 +19,9 @@ public class CodeResult {
         this.text = text;
     }
 
-    public CodeResult(String content, int formatIndex, float[] points) {
+    public CodeResult(String content,double cameraLight, int formatIndex, float[] points) {
         this.text = content;
+        this.cameraLight = cameraLight;
         if (formatIndex < 0) {
             this.format = BarcodeFormat.QR_CODE;
         } else {
@@ -42,6 +44,10 @@ public class CodeResult {
 
     public float[] getPoints() {
         return points;
+    }
+
+    public double getCameraLight() {
+        return cameraLight;
     }
 
     @Override

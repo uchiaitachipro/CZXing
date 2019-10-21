@@ -139,11 +139,11 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
     }
 
     @Override
-    public void onScanSuccess(String result, BarcodeFormat format) {
-//        mSoundPoolUtil.play();
+    public void onScanSuccess(ScanResult result) {
+        mSoundPoolUtil.play();
 
         if (scanDelegate != null) {
-            scanDelegate.onScanResult(result, format);
+            scanDelegate.onScanResult(result);
         } else {
             Intent intent = new Intent(this, ResultActivity.class);
             intent.putExtra("result", result);

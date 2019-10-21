@@ -8,11 +8,15 @@ import android.util.AttributeSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import me.devilsen.czxing.ScanResult;
 import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.util.BarCodeUtil;
+
+import static me.devilsen.czxing.ScannerManager.FIND_POTENTIAL_AREA_FOCUS;
+import static me.devilsen.czxing.ScannerManager.FIND_POTENTIAL_AREA_ZOOM;
 
 /**
  * @author : dongSen
@@ -46,6 +50,10 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     private long continuousScanStep = 0;
     private AtomicInteger failCount = new AtomicInteger(0);
 
+    private boolean isFirstFrame = true;
+    private long startTime = -1;
+    private long scanSuccessDuration = -1;
+
     public ScanView(Context context) {
         this(context, null);
     }
@@ -73,6 +81,10 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
             return;
         }
 
+        if (isFirstFrame) {
+            startTime = System.currentTimeMillis();
+            isFirstFrame = false;
+        }
 
         reader.readAsync(data, left, top, width, height, rowWidth, rowHeight);
 //        SaveImageUtil.saveData(data, left, top, width, height, rowWidth);
@@ -92,6 +104,9 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         reader.stopRead();
         nextStartTime = -1;
         isStop = true;
+        isFirstFrame = true;
+        startTime = -1;
+        scanSuccessDuration = -1;
         reader.setReadCodeListener(null);
     }
 
@@ -107,22 +122,36 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         }
 
         if (!TextUtils.isEmpty(result.getText()) && !isStop) {
+            scanSuccessDuration = System.currentTimeMillis() - startTime;
             if (option == null || option.getContinuousScanTime() < 0) {
                 isStop = true;
                 reader.stopRead();
             } else {
-                resetZoom();
+//                resetZoom();
                 nextStartTime = System.currentTimeMillis() + continuousScanStep;
+                startTime = nextStartTime;
+
             }
 
             if (mScanListener != null) {
-                mScanListener.onScanSuccess(result.getText(), result.getFormat());
+                mScanListener.onScanSuccess(new ScanResult(
+                        result.getText(),
+                        result.getFormat(),
+                        result.getCameraLight(),
+                        scanSuccessDuration,
+                        getCurrentZoom(),
+                        getCurrentExposureCompensation()));
                 return;
             }
         } else if (result.getPoints() != null) {
 //            mScanBoxView.currentResult = result;
             mScanBoxView.postInvalidate();
-            tryZoom(result);
+            if (option.getPotentialAreaStrategies() == FIND_POTENTIAL_AREA_ZOOM) {
+                tryZoom(result);
+            } else if (option.getPotentialAreaStrategies() == FIND_POTENTIAL_AREA_FOCUS) {
+                tryFocus(result);
+            }
+
         }
 
         // 失败超过5次重新聚焦
@@ -202,15 +231,14 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
             }
             reader.setDecodeStrategies(ret);
         }
-
     }
 
-    public void onResume(){
+    public void onResume() {
         openCamera(); // 打开后置摄像头开始预览，但是并未开始识别
         startScan();  // 显示扫描框，并开始识别
     }
 
-    public void onPause(){
+    public void onPause() {
         stopScan();
         closeCamera(); // 关闭摄像头预览，并且隐藏扫描框
     }

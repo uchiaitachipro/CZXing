@@ -39,9 +39,9 @@ public class NativeSdk {
      * @param formatIndex 格式
      * @param points      定位点的位置
      */
-    public void onDecodeCallback(String content, int formatIndex, float[] points) {
+    public void onDecodeCallback(String content,double cameraLight, int formatIndex, float[] points) {
         if (readCodeListener != null) {
-            readCodeListener.onReadCodeResult(new CodeResult(content, formatIndex, points));
+            readCodeListener.onReadCodeResult(new CodeResult(content, cameraLight,formatIndex, points));
         }
     }
 

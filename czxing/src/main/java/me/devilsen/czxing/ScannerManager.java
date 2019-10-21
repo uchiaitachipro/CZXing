@@ -120,7 +120,11 @@ public class ScannerManager {
     }
 
     public ScannerManager setLaserLineColor(int color){
-        scanOption.scanLineColors = (ArrayList<Integer>) Arrays.asList(color,color,color);
+        ArrayList<Integer> list = new ArrayList<>();
+        list.add(color);
+        list.add(color);
+        list.add(color);
+        scanOption.scanLineColors = list;
         return this;
     }
 

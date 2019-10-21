@@ -26,6 +26,7 @@ import com.zhihu.matisse.MimeType;
 import java.util.Arrays;
 import java.util.List;
 
+import me.devilsen.czxing.ScanResult;
 import me.devilsen.czxing.Scanner;
 import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.code.BarcodeFormat;
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     public void openScan(View view) {
 //        Intent intent = new Intent(this, ScanActivity.class);
 //        startActivity(intent);
-        Resources resources = getResources();
+        final Resources resources = getResources();
         List<Integer> scanColors = Arrays.asList(resources.getColor(R.color.scan_side), resources.getColor(R.color.scan_partial), resources.getColor(R.color.scan_middle));
 
         Scanner.with(this)
@@ -90,9 +91,9 @@ public class MainActivity extends AppCompatActivity {
                 .setScanLineColors(scanColors)
                 .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD)
                 .setTipText("扫一扫撒黄金时代黄倒海翻代")
-                .setcontinuousScanTime(0)
+//                .setcontinuousScanTime(0)
 //                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
-                .setFrameSize(BarCodeUtil.dp2px(this,325), BarCodeUtil.dp2px(this,250))
+//                .setFrameSize(BarCodeUtil.dp2px(this,325), BarCodeUtil.dp2px(this,250))
                 .setCaptureMode(ScanView.CAPTURE_MODE_TINY)
                 .setScanMode(ScannerManager.ONE_D_MODE)
                 .setTitle("我的扫一扫")
@@ -113,14 +114,19 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setOnScanResultDelegate(new ScanActivityDelegate.OnScanDelegate() {
                     @Override
-                    public void onScanResult(String result, BarcodeFormat format) {
+                    public void onScanResult(ScanResult result) {
                         // 如果有回调，则必然有值,因为要避免AndroidX和support包的差异，所以没有默认的注解
 
 //                        Intent intent = new Intent(MainActivity.this, DelegateActivity.class);
 //                        intent.putExtra("result", result);
 //                        startActivity(intent);
 
-                        final String showContent = "format: " + format.name() + "  code: " + result;
+                        final String showContent = "format: " + result.getFormat().name()
+                                + " light: " + result.getCameraLight()
+                                + " zoom: " + result.getZoomTimes()
+                                + " exposure: " + result.getExposureCompensation()
+                                + " duration: " + result.getScanSuccessDuration()
+                                + "  code: " + result.getContent();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

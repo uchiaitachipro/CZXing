@@ -6,10 +6,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import me.devilsen.czxing.ScanResult;
 import me.devilsen.czxing.Scanner;
 import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.code.BarcodeFormat;
-import me.devilsen.czxing.code.NativeSdk;
 import me.devilsen.czxing.util.BarCodeUtil;
 import me.devilsen.czxing.view.ScanListener;
 import me.devilsen.czxing.view.ScanView;
@@ -33,10 +33,11 @@ public class NotFullScanActivity extends AppCompatActivity {
     private void initScanView() {
         scannerView = findViewById(R.id.scanner_view);
         ScannerManager.ScanOption option = Scanner.with(this)
-                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD)
+//                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD)
                 .setFrameSize(BarCodeUtil.dp2px(this, 335), BarCodeUtil.dp2px(this, 250))
                 .setCaptureMode(CAPTURE_MODE_TINY)
                 .setcontinuousScanTime(100)
+                .setPotentialAreaStrategy(ScannerManager.FIND_POTENTIAL_AREA_FOCUS)
                 .setScanBoxOffset(0)
                 .setTipText("")
                 .setScanMode(ScannerManager.ONE_D_MODE)
@@ -44,11 +45,14 @@ public class NotFullScanActivity extends AppCompatActivity {
         scannerView.applyScanOption(option);
         scannerView.setScanListener(new ScanListener() {
             @Override
-            public void onScanSuccess(final String result, BarcodeFormat format) {
+            public void onScanSuccess(final ScanResult result) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(NotFullScanActivity.this, result, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(NotFullScanActivity.this,
+                                "cameraLight: " + result.getCameraLight() +
+                                        " result " + result.getContent() +
+                                        " zoom: " + result.getZoomTimes(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
