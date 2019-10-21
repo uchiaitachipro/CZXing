@@ -193,6 +193,22 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager setCoreThreadPoolSize(int size){
+        if (size <= 0){
+            return this;
+        }
+        scanOption.coreThreadPoolSize = size;
+        return this;
+    }
+
+    public ScannerManager setMaxThreadPoolSize(int size){
+        if (size <= 0){
+            return this;
+        }
+        scanOption.maxThreadPoolSize = size;
+        return this;
+    }
+
 
     public ScanOption build(){
         return scanOption;
@@ -234,6 +250,8 @@ public class ScannerManager {
         private ArrayList<Integer> applyFrameStrategies;
         private ArrayList<Integer> scanLineColors;
         private int potentialAreaStrategies = FIND_POTENTIAL_AREA_ZOOM;
+        private int coreThreadPoolSize = -1;
+        private int maxThreadPoolSize = -1;
 
         public ScanOption(){}
 
@@ -260,6 +278,8 @@ public class ScannerManager {
             showAlbum = in.readByte() != 0;
             continuousScanTime = in.readLong();
             potentialAreaStrategies = in.readInt();
+            coreThreadPoolSize = in.readInt();
+            maxThreadPoolSize = in.readInt();
             applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
 
@@ -288,6 +308,8 @@ public class ScannerManager {
             dest.writeByte((byte) (showAlbum ? 1 : 0));
             dest.writeLong(continuousScanTime);
             dest.writeInt(potentialAreaStrategies);
+            dest.writeInt(coreThreadPoolSize);
+            dest.writeInt(maxThreadPoolSize);
             dest.writeSerializable(applyFrameStrategies);
             dest.writeSerializable(scanLineColors);
         }
@@ -404,6 +426,14 @@ public class ScannerManager {
 
         public int getPotentialAreaStrategies() {
             return potentialAreaStrategies;
+        }
+
+        public int getCoreThreadPoolSize() {
+            return coreThreadPoolSize;
+        }
+
+        public int getMaxThreadPoolSize() {
+            return maxThreadPoolSize;
         }
 
     }

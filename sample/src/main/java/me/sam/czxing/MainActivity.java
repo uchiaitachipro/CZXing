@@ -91,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
                 .setScanLineColors(scanColors)
                 .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD)
                 .setTipText("扫一扫撒黄金时代黄倒海翻代")
+                .setCoreThreadPoolSize(4)
+                .setMaxThreadPoolSize(4)
 //                .setcontinuousScanTime(0)
 //                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
 //                .setFrameSize(BarCodeUtil.dp2px(this,325), BarCodeUtil.dp2px(this,250))
