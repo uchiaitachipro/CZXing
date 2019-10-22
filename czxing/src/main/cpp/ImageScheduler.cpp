@@ -198,8 +198,11 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
             case DecodeStrategy::STRATEGY_THRESHOLD:
                 result = decodeThresholdPixels(mat);
                 break;
-            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD:
-                result = decodeAdaptivePixels(mat);
+            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY:
+                result = decodeAdaptivePixels(mat,ADAPTIVE_THRESH_MEAN_C,55,3);
+                break;
+            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_ROMOTELY:
+                result = decodeAdaptivePixels(mat,ADAPTIVE_THRESH_GAUSSIAN_C,25,5);
                 break;
             case DecodeStrategy::STRATEGY_COLOR_EXTRACT:
                 break;
@@ -299,7 +302,7 @@ bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     return result.isValid();
 }
 
-bool ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
+bool ImageScheduler::decodeAdaptivePixels(const Mat &gray,int adaptiveMethod,int blockSize,int delta) {
     LOGE("start AdaptivePixels...");
 
     Mat mat;
@@ -309,16 +312,15 @@ bool ImageScheduler::decodeAdaptivePixels(const Mat &gray) {
     Mat lightMat;
     mat.convertTo(lightMat, -1, 1.0, -60);
 
-    adaptiveThreshold(lightMat, lightMat, 255, ADAPTIVE_THRESH_MEAN_C,
-                      THRESH_BINARY, 25, 3);
-
+    adaptiveThreshold(lightMat, lightMat, 255, adaptiveMethod,
+                      THRESH_BINARY, blockSize, delta);
     Result result = decodePixels(lightMat);
     if (result.isValid()) {
         javaCallHelper->onResult(result,cameraLight);
 //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
 //        writeImage(mat, std::string("adaptive-threshold-ROI-"));
     }
-    writeImage(mat, std::string("adaptive-threshold-"));
+//    writeImage(lightMat, std::string("adaptive-threshold-"));
     return result.isValid();
 }
 

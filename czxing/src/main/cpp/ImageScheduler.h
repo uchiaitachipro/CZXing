@@ -37,9 +37,10 @@ public:
     enum DecodeStrategy {
         STRATEGY_RAW_PICTURE = 1,
         STRATEGY_THRESHOLD = 2,
-        STRATEGY_ADAPTIVE_THRESHOLD = 4,
+        STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY = 4,
         STRATEGY_COLOR_EXTRACT = 8,
-        STRATEGY_LOCATE_QR_CODE = 16
+        STRATEGY_LOCATE_QR_CODE = 16,
+        STRATEGY_ADAPTIVE_THRESHOLD_ROMOTELY= 32
     };
 
     ImageScheduler(JNIEnv *env, MultiFormatReader *_reader, JavaCallHelper *javaCallHelper);
@@ -96,7 +97,7 @@ private:
 
     bool decodeThresholdPixels(const Mat &gray);
 
-    bool decodeAdaptivePixels(const Mat &gray);
+    bool decodeAdaptivePixels(const Mat &gray,int adaptiveMethod,int blockSize,int delta);
 
     void recognizerQrCode(const Mat &mat);
 

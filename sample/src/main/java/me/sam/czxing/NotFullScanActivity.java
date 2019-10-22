@@ -33,7 +33,7 @@ public class NotFullScanActivity extends AppCompatActivity {
     private void initScanView() {
         scannerView = findViewById(R.id.scanner_view);
         ScannerManager.ScanOption option = Scanner.with(this)
-//                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD)
+//                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY)
                 .setFrameSize(BarCodeUtil.dp2px(this, 335), BarCodeUtil.dp2px(this, 250))
                 .setCaptureMode(CAPTURE_MODE_TINY)
                 .setcontinuousScanTime(100)
