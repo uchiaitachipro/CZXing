@@ -103,11 +103,11 @@ JNIEXPORT jint JNICALL
 Java_me_devilsen_czxing_code_NativeSdk_readBarcodeByte(JNIEnv *env, jobject instance, jlong objPtr,
                                                        jbyteArray bytes_, jint left, jint top,
                                                        jint cropWidth, jint cropHeight,
-                                                       jint rowWidth, jint rowHeight) {
+                                                       jint rowWidth, jint rowHeight,jint strategyIndex) {
     jbyte *bytes = env->GetByteArrayElements(bytes_, NULL);
 
     auto imageScheduler = reinterpret_cast<ImageScheduler *>(objPtr);
-    imageScheduler->process(bytes, left, top, cropWidth, cropHeight, rowWidth, rowHeight);
+    imageScheduler->process(bytes, left, top, cropWidth, cropHeight, rowWidth, rowHeight,strategyIndex);
 
     env->ReleaseByteArrayElements(bytes_, bytes, 0);
     return -1;

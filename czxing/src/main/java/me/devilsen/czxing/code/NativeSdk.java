@@ -12,8 +12,9 @@ public class NativeSdk {
 
     public static final int STRATEGY_RAW_PICTURE = 1;
     public static final int STRATEGY_THRESHOLD = 2;
-    public static final int STRATEGY_ADAPTIVE_THRESHOLD = 4;
+    public static final int STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY = 4;
     public static final int STRATEGY_COLOR_EXTRACT = 8;
+    public static final int STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY = 32;
 
     private NativeSdk() {
     }
@@ -71,7 +72,7 @@ public class NativeSdk {
 
     native int readBarcode(long objPtr, Bitmap bitmap, int left, int top, int width, int height, Object[] result);
 
-    native int readBarcodeByte(long objPtr, byte[] bytes, int left, int top, int width, int height, int rowWidth, int rowHeight);
+    native int readBarcodeByte(long objPtr, byte[] bytes, int left, int top, int width, int height, int rowWidth, int rowHeight,int strategyIndex);
 
     native void prepareRead(long objPtr);
 

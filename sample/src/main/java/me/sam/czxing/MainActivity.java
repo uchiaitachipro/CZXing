@@ -89,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
                 .setBorderColor(resources.getColor(R.color.box_line))
                 .setCornerColor(resources.getColor(R.color.corner))
                 .setScanLineColors(scanColors)
-                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD)
+                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY,
+                        NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY)
                 .setTipText("扫一扫撒黄金时代黄倒海翻代")
                 .setCoreThreadPoolSize(4)
                 .setMaxThreadPoolSize(4)
@@ -159,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         resultTxt.setText(result.getText());
     }
 
-    public void chooseQRCodePic(View view){
+    public void chooseQRCodePic(View view) {
         Matisse.from(MainActivity.this)
                 .choose(MimeType.ofAll())
                 .countable(true)
@@ -171,8 +172,8 @@ public class MainActivity extends AppCompatActivity {
                 .forResult(REQUEST_CODE_CHOOSE);
     }
 
-    public void customizeScanView(View v){
-        Intent intent = new Intent(this,NotFullScanActivity.class);
+    public void customizeScanView(View v) {
+        Intent intent = new Intent(this, NotFullScanActivity.class);
         startActivity(intent);
     }
 
@@ -230,10 +231,10 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             List<Uri> selected = Matisse.obtainResult(data);
-            if (selected.isEmpty()){
+            if (selected.isEmpty()) {
                 return;
             }
-            Intent intent = new Intent(this,FindQRCodePositionActivity.class);
+            Intent intent = new Intent(this, FindQRCodePositionActivity.class);
             intent.putExtra("picture_path", selected.get(0));
             startActivity(intent);
         }

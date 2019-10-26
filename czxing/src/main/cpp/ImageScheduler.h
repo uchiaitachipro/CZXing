@@ -17,6 +17,7 @@
 #include "QRCodeFinder.h"
 #include "BlockingQueue.h"
 #include "ThreadPool.h"
+#include <mutex>
 
 using namespace cv;
 using namespace ZXing;
@@ -40,7 +41,7 @@ public:
         STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY = 4,
         STRATEGY_COLOR_EXTRACT = 8,
         STRATEGY_LOCATE_QR_CODE = 16,
-        STRATEGY_ADAPTIVE_THRESHOLD_ROMOTELY= 32
+        STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY= 32
     };
 
     ImageScheduler(JNIEnv *env, MultiFormatReader *_reader, JavaCallHelper *javaCallHelper);
@@ -54,7 +55,7 @@ public:
     void stop();
 
     void
-    process(jbyte *bytes, int left, int top, int width, int height, int rowWidth, int rowHeight);
+    process(jbyte *bytes, int left, int top, int width, int height, int rowWidth, int rowHeight,int strategyIndex);
 
     Result readBitmap(jobject bitmap, int left, int top, int width, int height);
 
@@ -79,11 +80,13 @@ private:
     QRCodeFinder qrCodeFinder;
     pthread_t prepareThread{};
     double cameraLight{};
-    bool isApplyAllStrategies = true;
+    bool isApplyAllStrategies = false;
     int currentStrategyIndex = 0;
     int threadPoolCount = 1;
     BlockingQueue<FrameData> queue;
     ThreadPool* pool = NULL;
+    std::mutex counterMutex;
+
 
     void initThreadPool();
 

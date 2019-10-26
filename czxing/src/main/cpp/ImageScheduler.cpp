@@ -61,13 +61,13 @@ void ImageScheduler::initThreadPool() {
 }
 
 void *prepareMethod(void *arg) {
-    auto scheduler = static_cast<ImageScheduler *>(arg);
-    scheduler->start();
-    return nullptr;
+//    auto scheduler = static_cast<ImageScheduler *>(arg);
+//    scheduler->start();
+//    return nullptr;
 }
 
 void ImageScheduler::prepare() {
-    pthread_create(&prepareThread, nullptr, prepareMethod, this);
+//    pthread_create(&prepareThread, nullptr, prepareMethod, this);
 }
 //
 //void ImageScheduler::prepare() {
@@ -88,42 +88,40 @@ void ImageScheduler::prepare() {
 //}
 
 void ImageScheduler::start() {
-    stopProcessing.store(false);
-    isProcessing.store(false);
-    frameQueue.setWork(1);
-    currentStrategyIndex = 0;
-    while (true) {
-        if (stopProcessing.load()) {
-            break;
-        }
-
-        if (isProcessing.load()) {
-            continue;
-        }
-
-        FrameData frameData;
-        int ret = frameQueue.deQueue(frameData);
-        if (ret) {
-            isProcessing.store(true);
-            preTreatMat(frameData);
-            isProcessing.store(false);
-        }
-    }
+//    stopProcessing.store(false);
+//    isProcessing.store(false);
+//    frameQueue.setWork(1);
+//    while (true) {
+//        if (stopProcessing.load()) {
+//            break;
+//        }
+//
+//        if (isProcessing.load()) {
+//            continue;
+//        }
+//
+//        FrameData frameData;
+//        int ret = frameQueue.deQueue(frameData);
+//        if (ret) {
+//            isProcessing.store(true);
+//            preTreatMat(frameData);
+//            isProcessing.store(false);
+//        }
+//    }
 }
 
 void ImageScheduler::stop() {
-    currentStrategyIndex = 0;
-    isProcessing.store(false);
-    stopProcessing.store(true);
-    abortTask.store(true);
-    frameQueue.setWork(0);
-    frameQueue.clear();
+//    isProcessing.store(false);
+//    stopProcessing.store(true);
+//    abortTask.store(true);
+//    frameQueue.setWork(0);
+//    frameQueue.clear();
 }
 
 void
-ImageScheduler::process(jbyte *bytes, int left, int top, int cropWidth, int cropHeight,
-                        int rowWidth,
-                        int rowHeight) {
+ImageScheduler::process(jbyte *bytes, int left, int top,
+                        int cropWidth, int cropHeight,int rowWidth,
+                        int rowHeight, int strategyIndex) {
     if (isProcessing.load()) {
         return;
     }
@@ -146,7 +144,7 @@ ImageScheduler::process(jbyte *bytes, int left, int top, int cropWidth, int crop
     frameData.rowWidth = rowWidth;
     frameData.rowHeight = rowHeight;
     frameData.bytes = bytes;
-
+    currentStrategyIndex = strategyIndex;
 //    frameQueue.enQueue(frameData);
     preTreatMat(frameData);
     LOGE("frame data size : %d", frameQueue.size());
@@ -187,6 +185,7 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
 void ImageScheduler::applyStrategy(const Mat &mat) {
 
     int startIndex = isApplyAllStrategies ? 0 : currentStrategyIndex;
+    startIndex = startIndex <= 0 ? 0 : startIndex % _strategies.size();
     bool result = false;
 
     for (int i = startIndex; i < _strategies.size(); ++i) {
@@ -201,7 +200,7 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
             case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY:
                 result = decodeAdaptivePixels(mat,ADAPTIVE_THRESH_MEAN_C,55,3);
                 break;
-            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_ROMOTELY:
+            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY:
                 result = decodeAdaptivePixels(mat,ADAPTIVE_THRESH_GAUSSIAN_C,25,5);
                 break;
             case DecodeStrategy::STRATEGY_COLOR_EXTRACT:
@@ -209,7 +208,6 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
             default:
                 break;
         }
-        LOGE("current strategy index : %d", currentStrategyIndex);
         if (result || !isApplyAllStrategies) {
             break;
         }
@@ -217,7 +215,6 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
     if (!result) {
         recognizerQrCode(mat);
     }
-    currentStrategyIndex = (currentStrategyIndex + 1) % (_strategies.size());
 }
 
 void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
