@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -27,11 +28,12 @@ import static me.devilsen.czxing.view.ScanView.CAPTURE_MODE_TINY;
 abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallback {
 
     private static final int NO_CAMERA_ID = -1;
-    private static final int DEFAULT_ZOOM_SCALE = 4;
+
     private static final long ONE_HUNDRED_MILLISECONDS = 100_000_000;
     private final static long DELAY_STEP_TIME = 10_000_000;
 
     private int mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+
     private Camera mCamera;
     protected CameraSurface mCameraSurface;
     protected ScanBoxView mScanBoxView;
@@ -47,6 +49,8 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
     private long mDelayTime = ONE_HUNDRED_MILLISECONDS;
     private ResolutionAdapterUtil resolutionAdapter;
     private int previewMode;
+
+    protected IZoomQRCodeStrategy zoomQRCodeStrategy;
 
     public BarCoderView(Context context) {
         this(context, null);
@@ -79,6 +83,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
         addView(mScanBoxView, params);
 
         resolutionAdapter = new ResolutionAdapterUtil();
+        zoomQRCodeStrategy = new DefaultZoomStrategy(this);
     }
 
     @Override
@@ -279,66 +284,46 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
      * @param result 二维码定位信息
      */
     void tryZoom(CodeResult result) {
-        int len = 0;
-        float[] points = result.getPoints();
-        if (points.length > 3) {
-            float point1X = points[0];
-            float point1Y = points[1];
-            float point2X = points[2];
-            float point2Y = points[3];
-            float xLen = Math.abs(point1X - point2X);
-            float yLen = Math.abs(point1Y - point2Y);
-            len = (int) Math.sqrt(xLen * xLen + yLen * yLen);
+
+        if (!zoomQRCodeStrategy.needZoom(result)) {
+            return;
         }
 
-        if (points.length > 5) {
-            float point2X = points[2];
-            float point2Y = points[3];
-            float point3X = points[4];
-            float point3Y = points[5];
-            float xLen = Math.abs(point2X - point3X);
-            float yLen = Math.abs(point2Y - point3Y);
-            int len2 = (int) Math.sqrt(xLen * xLen + yLen * yLen);
-            if (len2 < len) {
-                len = len2;
-            }
+        int zoomStep = zoomQRCodeStrategy.calculateZoomRatio(result);
+        if (zoomStep == 0) {
+            return;
         }
-
-        handleAutoZoom(len);
+        handleAutoZoom(zoomStep);
     }
 
-    void tryFocus(CodeResult result){
+    void tryFocus(CodeResult result) {
         float[] points = result.getPoints();
 
-        if (points.length >= 6){
+        if (points.length >= 6) {
             float point2X = points[2];
             float point2Y = points[3];
             float point3X = points[4];
             float point3Y = points[5];
             float centerX = (point3X + point2X) / 2;
             float centerY = (point3Y + point2Y) / 2;
-            mCameraSurface.handleFocus(centerX,centerY);
+            mCameraSurface.handleFocus(centerX, centerY);
         }
     }
 
-    private void handleAutoZoom(int len) {
+    private void handleAutoZoom(final int zoomStep) {
         try {
-            BarCodeUtil.d("len: " + len);
 
-            if (mCamera == null || mScanBoxView == null || len <= 0 || mCameraSurface.hadZoomOut()) {
+            if (mCamera == null || mScanBoxView == null || mCameraSurface.hadZoomOut()) {
                 return;
             }
 
-            int scanBoxWidth = mScanBoxView.getScanBoxWidth();
-            if (len > scanBoxWidth / DEFAULT_ZOOM_SCALE) {
-                if (mAutoZoomAnimator != null && mAutoZoomAnimator.isRunning()) {
-                    ExecutorUtil.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAutoZoomAnimator.cancel();
-                        }
-                    });
-                }
+            if (mAutoZoomAnimator != null && mAutoZoomAnimator.isRunning()) {
+                ExecutorUtil.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAutoZoomAnimator.cancel();
+                    }
+                });
                 return;
             }
 
@@ -346,7 +331,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
                 return;
             }
 
-            if (System.currentTimeMillis() - mLastAutoZoomTime < 500) {
+            if (System.currentTimeMillis() - mLastAutoZoomTime < 800) {
                 return;
             }
 
@@ -359,9 +344,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
             final int maxZoom = parameters.getMaxZoom();
             // 在一些低端机上放太大，可能会造成画面过于模糊，无法识别
             final int maxCanZoom = maxZoom / 4;
-            final int zoomStep = maxZoom / 8;
             final int zoom = parameters.getZoom();
-//        BarCodeUtil.d("maxZoom: " + maxZoom + " maxCanZoom:" + maxCanZoom + " current: " + zoom + " len:" + len);
 
             ExecutorUtil.runOnUiThread(new Runnable() {
                 @Override
@@ -374,16 +357,16 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
         }
     }
 
-    public int getCurrentZoom(){
-        if (mCamera == null){
+    public int getCurrentZoom() {
+        if (mCamera == null) {
             return -1;
         }
         Camera.Parameters parameters = mCamera.getParameters();
         return parameters.getZoom();
     }
 
-    public int getCurrentExposureCompensation(){
-        if (mCamera == null){
+    public int getCurrentExposureCompensation() {
+        if (mCamera == null) {
             return -1;
         }
         Camera.Parameters parameters = mCamera.getParameters();
@@ -391,7 +374,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
     }
 
 
-    private void startAutoZoom(int oldZoom, int newZoom) {
+    private void startAutoZoom(final int oldZoom, final int newZoom) {
         mAutoZoomAnimator = ValueAnimator.ofInt(oldZoom, newZoom);
         mAutoZoomAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -400,6 +383,7 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
                     return;
                 }
                 int zoom = (int) animation.getAnimatedValue();
+                BarCodeUtil.d("oldZoom " + oldZoom + " newZoom " + newZoom + " zoom value: " + zoom);
                 Camera.Parameters parameters = mCamera.getParameters();
                 parameters.setZoom(zoom);
                 mCamera.setParameters(parameters);
@@ -449,6 +433,10 @@ abstract class BarCoderView extends FrameLayout implements Camera.PreviewCallbac
     public void onDestroy() {
         closeCamera();
         mScanListener = null;
+    }
+
+    public Camera getCamera() {
+        return mCamera;
     }
 
     public void setPreviewMode(int previewMode) {

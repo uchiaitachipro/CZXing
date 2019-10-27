@@ -123,6 +123,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
 
         if (!TextUtils.isEmpty(result.getText()) && !isStop) {
             scanSuccessDuration = System.currentTimeMillis() - startTime;
+            zoomQRCodeStrategy.clearFailCount();
             if (option == null || option.getContinuousScanTime() < 0) {
                 isStop = true;
                 reader.stopRead();
@@ -153,9 +154,9 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
             }
 
         }
-
-        // 失败超过5次重新聚焦
-        if (failCount.get() >= 5) {
+        zoomQRCodeStrategy.increaseFailCount();
+        // 失败超过10次重新聚焦
+        if (failCount.get() >= 10) {
             Point p = mScanBoxView.getScanBoxCenter();
             mCameraSurface.handleFocus(p.x, p.y);
             failCount.set(0);

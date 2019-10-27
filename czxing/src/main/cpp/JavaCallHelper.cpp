@@ -77,7 +77,7 @@ void JavaCallHelper::onResult(const ZXing::Result &result,double cameraLight = 0
     jint format = -1;
     jfloatArray pointsArray = env->NewFloatArray(0);
 
-    if (result.isValid()) {
+    if (result.isValid() && !result.text().empty()) {
         contentWString = UnicodeToANSI(result.text());
         mJstring = env->NewStringUTF(contentWString.c_str());
         format = static_cast<int>(result.format());

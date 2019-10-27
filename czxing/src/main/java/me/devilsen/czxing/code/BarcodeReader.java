@@ -76,6 +76,11 @@ public class BarcodeReader {
     public CodeResult read(byte[] data, int cropLeft, int cropTop, int cropWidth, int cropHeight, int rowWidth, int rowHeight) {
         try {
             int strategyIndex  = counter.getAndIncrement();
+
+            if (data == null || data.length < 3){
+                return null;
+            }
+
             NativeSdk.getInstance().readBarcodeByte(_nativePtr, data, cropLeft, cropTop, cropWidth, cropHeight, rowWidth, rowHeight,strategyIndex);
             if (counter.get() >= 100000){
                 counter.set(0);

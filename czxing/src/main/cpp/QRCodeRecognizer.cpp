@@ -137,12 +137,3 @@ void QRCodeRecognizer::processData(const Mat &gray, Rect *resultRect) {
         }
     }
 }
-
-//cv::Mat QRCodeRecognizer::locateQRCode(
-//        const Mat &source,
-//        int cannyValue,
-//        int blurValue,
-//        bool isHisEqual) {
-//    QRCodeFinder finder;
-//    return finder.locateQRCode(source,cannyValue,blurValue,isHisEqual);
-//}
