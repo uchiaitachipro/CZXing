@@ -120,7 +120,7 @@ public class CameraSurface extends SurfaceView implements SensorController.Camer
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         mSurfaceCreated = false;
-        stopCameraPreview();
+//        stopCameraPreview();
     }
 
     @Override
