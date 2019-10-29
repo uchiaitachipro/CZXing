@@ -6,7 +6,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import me.devilsen.czxing.view.ScanActivityDelegate;
@@ -69,7 +68,7 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setCornerThickness(int width){
+    public ScannerManager setFrameCornerWidth(int width){
         scanOption.cornerThickness = width;
         return this;
     }
@@ -79,7 +78,7 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setBorderColor(int borderColor) {
+    public ScannerManager setFrameStrokeColor(int borderColor) {
         scanOption.borderColor = borderColor;
         return this;
     }
@@ -109,22 +108,56 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setcontinuousScanTime(long time) {
+    public ScannerManager setContinuousScanTime(long time) {
         scanOption.continuousScanTime = time;
         return this;
     }
 
     public ScannerManager setFrameCornerColor(int scanColor){
-        scanOption.borderColor = scanColor;
+        scanOption.cornerColor = scanColor;
         return this;
     }
 
     public ScannerManager setLaserLineColor(int color){
+
+        if (scanOption.laserBackgroundResId != -1 || scanOption.laserLineResId != -1){
+            throw new IllegalArgumentException("please choose laser line color or laser background or not");
+        }
+
         ArrayList<Integer> list = new ArrayList<>();
         list.add(color);
         list.add(color);
         list.add(color);
         scanOption.scanLineColors = list;
+        return this;
+    }
+
+    public ScannerManager setLaserLineHeight(int height) {
+        scanOption.laserLineHeight = height;
+        return this;
+    }
+
+
+    public ScannerManager setLaserLineMoveInterval(int duration){
+        scanOption.laserLineMoveInterval = duration;
+        return this;
+    }
+
+    public ScannerManager setLaserBackground(int resourceId){
+
+        if (scanOption.scanLineColors != null && scanOption.scanLineColors.size() > 0 || scanOption.laserLineResId != -1){
+            throw new IllegalArgumentException("please choose laser line color or laser background or not");
+        }
+
+        scanOption.laserBackgroundResId = resourceId;
+        return this;
+    }
+
+    public ScannerManager setLaserLineResource(int resourceId){
+        if (scanOption.scanLineColors != null && scanOption.scanLineColors.size() > 0 || scanOption.laserBackgroundResId != -1){
+            throw new IllegalArgumentException("please choose laser line color or laser background or not");
+        }
+        scanOption.laserLineResId = resourceId;
         return this;
     }
 
@@ -209,6 +242,11 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager setFrameCornerInside(boolean inside) {
+        scanOption.frameCornerInside = inside;
+        return this;
+    }
+
 
     public ScanOption build(){
         return scanOption;
@@ -252,6 +290,12 @@ public class ScannerManager {
         private int potentialAreaStrategies = FIND_POTENTIAL_AREA_ZOOM;
         private int coreThreadPoolSize = -1;
         private int maxThreadPoolSize = -1;
+        private int laserBackgroundResId = -1;
+        private int laserLineResId = -1;
+        private boolean frameCornerInside = false;
+        private int laserLineMoveInterval = -1;
+
+        private int laserLineHeight;
 
         public ScanOption(){}
 
@@ -280,9 +324,13 @@ public class ScannerManager {
             potentialAreaStrategies = in.readInt();
             coreThreadPoolSize = in.readInt();
             maxThreadPoolSize = in.readInt();
+            laserBackgroundResId = in.readInt();
+            laserLineResId = in.readInt();
+            frameCornerInside = in.readByte() != 0;
+            laserLineMoveInterval = in.readInt();
+            laserLineHeight = in.readInt();
             applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
-
         }
 
         @Override
@@ -310,6 +358,11 @@ public class ScannerManager {
             dest.writeInt(potentialAreaStrategies);
             dest.writeInt(coreThreadPoolSize);
             dest.writeInt(maxThreadPoolSize);
+            dest.writeInt(laserBackgroundResId);
+            dest.writeInt(laserLineResId);
+            dest.writeByte(frameCornerInside ? (byte) 1 : 0);
+            dest.writeInt(laserLineMoveInterval);
+            dest.writeInt(laserLineHeight);
             dest.writeSerializable(applyFrameStrategies);
             dest.writeSerializable(scanLineColors);
         }
@@ -434,6 +487,26 @@ public class ScannerManager {
 
         public int getMaxThreadPoolSize() {
             return maxThreadPoolSize;
+        }
+
+        public int getLaserBackgroundResource(){
+            return laserBackgroundResId;
+        }
+
+        public int getLaserLineResId() {
+            return laserLineResId;
+        }
+
+        public boolean isFrameCornerInside() {
+            return frameCornerInside;
+        }
+
+        public int getLaserLineMoveInterval() {
+            return laserLineMoveInterval;
+        }
+
+        public int getLaserLineHeight() {
+            return laserLineHeight;
         }
 
     }

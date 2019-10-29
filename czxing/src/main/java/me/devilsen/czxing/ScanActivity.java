@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.compat.ActivityCompat;
@@ -84,7 +85,17 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
         }
 
         mScanView.applyScanOption(option);
-
+        mScanView.setLightnessChangedListener(new ScanView.LightnessChangeListener() {
+            @Override
+            public void onLightChanged(final boolean isLight) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(ScanActivity.this,"isLight: " + isLight,Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
         // 标题栏
         String title = option.getTitle();
         if (title != null) {

@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -29,7 +30,6 @@ import java.util.List;
 import me.devilsen.czxing.ScanResult;
 import me.devilsen.czxing.Scanner;
 import me.devilsen.czxing.ScannerManager;
-import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.code.NativeSdk;
@@ -86,15 +86,18 @@ public class MainActivity extends AppCompatActivity {
         List<Integer> scanColors = Arrays.asList(resources.getColor(R.color.scan_side), resources.getColor(R.color.scan_partial), resources.getColor(R.color.scan_middle));
 
         Scanner.with(this)
-                .setBorderColor(resources.getColor(R.color.box_line))
-                .setCornerColor(resources.getColor(R.color.corner))
-                .setScanLineColors(scanColors)
+                .setFrameStrokeColor(Color.TRANSPARENT)
+                .setFrameCornerWidth(BarCodeUtil.dp2px(this,2))
+                .setFrameCornerColor(resources.getColor(R.color.color_more_blue))
+                .setLaserBackground(R.drawable.img_scanner_grid)
                 .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY,
                         NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY)
-                .setTipText("扫一扫撒黄金时代黄倒海翻代")
+                .setLaserLineMoveInterval(1500)
+                .setFrameCornerInside(true)
+                .setTipText("")
                 .setCoreThreadPoolSize(4)
                 .setMaxThreadPoolSize(4)
-//                .setcontinuousScanTime(0)
+//                .setContinuousScanTime(0)
 //                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
 //                .setFrameSize(BarCodeUtil.dp2px(this,325), BarCodeUtil.dp2px(this,250))
                 .setCaptureMode(ScanView.CAPTURE_MODE_TINY)

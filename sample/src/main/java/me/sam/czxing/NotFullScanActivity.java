@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import me.devilsen.czxing.ScanResult;
 import me.devilsen.czxing.Scanner;
 import me.devilsen.czxing.ScannerManager;
-import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.util.BarCodeUtil;
 import me.devilsen.czxing.view.ScanListener;
 import me.devilsen.czxing.view.ScanView;
@@ -36,7 +35,7 @@ public class NotFullScanActivity extends AppCompatActivity {
 //                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY)
                 .setFrameSize(BarCodeUtil.dp2px(this, 335), BarCodeUtil.dp2px(this, 250))
                 .setCaptureMode(CAPTURE_MODE_TINY)
-                .setcontinuousScanTime(100)
+                .setContinuousScanTime(100)
                 .setPotentialAreaStrategy(ScannerManager.FIND_POTENTIAL_AREA_FOCUS)
                 .setScanBoxOffset(0)
                 .setTipText("")

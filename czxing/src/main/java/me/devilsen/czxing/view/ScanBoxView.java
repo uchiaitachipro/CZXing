@@ -4,12 +4,14 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -36,6 +38,7 @@ public class ScanBoxView extends View {
 
     private Paint mPaint;
     private Paint mTxtPaint;
+    private Paint laserBackgroundPaint;
     private Paint mScanLinePaint;
     private Rect mFramingRect;
     private Rect mTextRect;
@@ -53,7 +56,7 @@ public class ScanBoxView extends View {
 
     private int mCornerColor;
     private int mCornerLength;
-    private int mCornerSize;
+    private int mCornerWidth;
     private float mHalfCornerSize;
     private int mBoxLeft;
     private int mBoxTop;
@@ -80,14 +83,21 @@ public class ScanBoxView extends View {
     private int mFlashLightTop;
     private int mFlashLightRight;
     private int mFlashLightBottom;
+    private int laserMoveInterval = 2500;
 
     private String mFlashLightOnText;
     private String mFlashLightOffText;
     private String mScanNoticeText;
     private ScannerManager.ScanOption option;
     private boolean useBoxSize = true;
+    private boolean frameCornerInside = false;
     private int scanBoxWidth;
     private int scanBoxHeight;
+    private int laserLineHeight;
+
+    private Bitmap laserBackground;
+    private Bitmap laserLineBitmap;
+
 
     public ScanBoxView(Context context) {
         this(context, null);
@@ -129,8 +139,8 @@ public class ScanBoxView extends View {
 
         mCornerColor = resources.getColor(R.color.czxing_line_corner);
         mCornerLength = BarCodeUtil.dp2px(context, 20);
-        mCornerSize = BarCodeUtil.dp2px(context, 3);
-        mHalfCornerSize = 1.0f * mCornerSize / 2;
+        mCornerWidth = BarCodeUtil.dp2px(context, 3);
+        mHalfCornerSize = 1.0f * mCornerWidth / 2;
 
         mTextSize = BarCodeUtil.sp2px(context, 14);
         mTextSizeBig = BarCodeUtil.sp2px(context, 17);
@@ -138,6 +148,8 @@ public class ScanBoxView extends View {
         mTxtPaint.setTextAlign(Paint.Align.CENTER);
         mTxtPaint.setColor(Color.GRAY);
         mTxtPaint.setStyle(Paint.Style.FILL);
+
+        laserBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         mFlashLightOnText = getResources().getText(R.string.czxing_click_open_flash_light).toString();
         mFlashLightOffText = getResources().getText(R.string.czxing_click_close_flash_light).toString();
@@ -159,14 +171,14 @@ public class ScanBoxView extends View {
         // 画遮罩层
         drawMask(canvas);
 
+        // 画扫描线
+        drawScanLine(canvas);
+
         // 画边框线
         drawBorderLine(canvas);
 
         // 画四个直角的线
         drawCornerLine(canvas);
-
-        // 画扫描线
-        drawScanLine(canvas);
 
         // 画提示文本
         drawTipText(canvas);
@@ -249,26 +261,42 @@ public class ScanBoxView extends View {
         if (mHalfCornerSize <= 0) {
             return;
         }
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(mCornerColor);
-        mPaint.setStrokeWidth(mCornerSize);
-        canvas.drawLine(mFramingRect.left - mHalfCornerSize, mFramingRect.top, mFramingRect.left - mHalfCornerSize + mCornerLength, mFramingRect.top,
-                mPaint);
-        canvas.drawLine(mFramingRect.left, mFramingRect.top - mHalfCornerSize, mFramingRect.left, mFramingRect.top - mHalfCornerSize + mCornerLength,
-                mPaint);
-        canvas.drawLine(mFramingRect.right + mHalfCornerSize, mFramingRect.top, mFramingRect.right + mHalfCornerSize - mCornerLength, mFramingRect.top,
-                mPaint);
-        canvas.drawLine(mFramingRect.right, mFramingRect.top - mHalfCornerSize, mFramingRect.right, mFramingRect.top - mHalfCornerSize + mCornerLength,
-                mPaint);
 
-        canvas.drawLine(mFramingRect.left - mHalfCornerSize, mFramingRect.bottom, mFramingRect.left - mHalfCornerSize + mCornerLength,
-                mFramingRect.bottom, mPaint);
-        canvas.drawLine(mFramingRect.left, mFramingRect.bottom + mHalfCornerSize, mFramingRect.left,
-                mFramingRect.bottom + mHalfCornerSize - mCornerLength, mPaint);
-        canvas.drawLine(mFramingRect.right + mHalfCornerSize, mFramingRect.bottom, mFramingRect.right + mHalfCornerSize - mCornerLength,
-                mFramingRect.bottom, mPaint);
-        canvas.drawLine(mFramingRect.right, mFramingRect.bottom + mHalfCornerSize, mFramingRect.right,
-                mFramingRect.bottom + mHalfCornerSize - mCornerLength, mPaint);
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setColor(mCornerColor);
+
+        if (frameCornerInside){
+            // 左上角，左
+            canvas.drawRect(mFramingRect.left, mFramingRect.top, mFramingRect.left + mCornerWidth, mFramingRect.top + mCornerLength, mPaint);
+            // 左上角，上
+            canvas.drawRect(mFramingRect.left, mFramingRect.top, mFramingRect.left + mCornerLength, mFramingRect.top + mCornerWidth, mPaint);
+            // 右上角，右
+            canvas.drawRect(mFramingRect.right - mCornerWidth, mFramingRect.top, mFramingRect.right, mFramingRect.top + mCornerLength, mPaint);
+            // 右上角，上
+            canvas.drawRect(mFramingRect.right - mCornerLength, mFramingRect.top, mFramingRect.right, mFramingRect.top + mCornerWidth, mPaint);
+            // 左下角，左
+            canvas.drawRect(mFramingRect.left, mFramingRect.bottom - mCornerLength, mFramingRect.left + mCornerWidth, mFramingRect.bottom, mPaint);
+            // 左下角，下
+            canvas.drawRect(mFramingRect.left, mFramingRect.bottom - mCornerWidth, mFramingRect.left + mCornerLength, mFramingRect.bottom, mPaint);
+            // 右下角，右
+            canvas.drawRect(mFramingRect.right - mCornerWidth, mFramingRect.bottom - mCornerLength, mFramingRect.right, mFramingRect.bottom, mPaint);
+            // 右下角，下
+            canvas.drawRect(mFramingRect.right - mCornerLength, mFramingRect.bottom - mCornerWidth, mFramingRect.right, mFramingRect.bottom, mPaint);
+
+        } else {
+            // 左上角
+            canvas.drawRect(mFramingRect.left - mCornerWidth, mFramingRect.top, mFramingRect.left, mFramingRect.top + mCornerLength, mPaint);
+            canvas.drawRect(mFramingRect.left - mCornerWidth, mFramingRect.top - mCornerWidth, mFramingRect.left + mCornerLength, mFramingRect.top, mPaint);
+            // 右上角
+            canvas.drawRect(mFramingRect.right, mFramingRect.top, mFramingRect.right + mCornerWidth, mFramingRect.top + mCornerLength, mPaint);
+            canvas.drawRect(mFramingRect.right - mCornerLength, mFramingRect.top - mCornerWidth, mFramingRect.right + mCornerWidth, mFramingRect.top, mPaint);
+            // 左下角
+            canvas.drawRect(mFramingRect.left - mCornerWidth, mFramingRect.bottom - mCornerLength, mFramingRect.left, mFramingRect.bottom, mPaint);
+            canvas.drawRect(mFramingRect.left - mCornerWidth, mFramingRect.bottom, mFramingRect.left + mCornerLength, mFramingRect.bottom + mCornerWidth, mPaint);
+            // 右下角
+            canvas.drawRect(mFramingRect.right, mFramingRect.bottom - mCornerLength, mFramingRect.right + mCornerWidth, mFramingRect.bottom, mPaint);
+            canvas.drawRect(mFramingRect.right - mCornerLength, mFramingRect.bottom, mFramingRect.right + mCornerWidth, mFramingRect.bottom + mCornerWidth, mPaint);
+        }
     }
 
     /**
@@ -276,20 +304,38 @@ public class ScanBoxView extends View {
      */
     private void drawScanLine(Canvas canvas) {
         int width = useBoxSize ? mBoxSize : scanBoxWidth;
-        if (mScanLineGradient == null) {
 
-            mScanLineGradient = new LinearGradient(mBoxLeft, mBoxTop, mBoxLeft + width, mBoxTop,
-                    new int[]{mScanLineColor1, mScanLineColor2, mScanLineColor3, mScanLineColor2, mScanLineColor1},
-                    null,
-                    Shader.TileMode.CLAMP);
-            mScanLinePaint.setShader(mScanLineGradient);
+        if (laserBackground != null){
+            int height = laserBackground.getHeight();//取原图高
+            RectF dstRectF = new RectF(mBoxLeft, mBoxTop,mBoxLeft + width,mBoxTop + mScanLinePosition);
+            Rect srcRect = new Rect(0, (int) (height - dstRectF.height())
+                    , laserBackground.getWidth(), height);
+            canvas.drawBitmap(laserBackground, srcRect, dstRectF, laserBackgroundPaint);
+
+        } else if (laserLineBitmap != null){
+            //如果没有设置线条高度，则用图片原始高度
+            if (laserLineHeight == SCAN_LINE_HEIGHT) {
+                laserLineHeight = laserLineBitmap.getHeight() / 2;
+            }
+            RectF laserRect = new RectF(mBoxLeft, mBoxTop + mScanLinePosition, mBoxLeft + width
+                    , mBoxTop + mScanLinePosition + laserLineHeight);
+            canvas.drawBitmap(laserLineBitmap, null, laserRect, laserBackgroundPaint);
+        } else {
+            if (mScanLineGradient == null) {
+
+                mScanLineGradient = new LinearGradient(mBoxLeft, mBoxTop, mBoxLeft + width, mBoxTop,
+                        new int[]{mScanLineColor1, mScanLineColor2, mScanLineColor3, mScanLineColor2, mScanLineColor1},
+                        null,
+                        Shader.TileMode.CLAMP);
+                mScanLinePaint.setShader(mScanLineGradient);
+            }
+
+            canvas.drawRect(mBoxLeft,
+                    mBoxTop + mScanLinePosition,
+                    mBoxLeft + width,
+                    mBoxTop + mScanLinePosition + SCAN_LINE_HEIGHT,
+                    mScanLinePaint);
         }
-
-        canvas.drawRect(mBoxLeft,
-                mBoxTop + mScanLinePosition,
-                mBoxLeft + width,
-                mBoxTop + mScanLinePosition + SCAN_LINE_HEIGHT,
-                mScanLinePaint);
     }
 
     private void drawTipText(Canvas canvas) {
@@ -390,7 +436,7 @@ public class ScanBoxView extends View {
                         ((int) (mBoxTop + mScanLinePosition + SCAN_LINE_HEIGHT + 10)));
             }
         });
-        mScanLineAnimator.setDuration(2500);
+        mScanLineAnimator.setDuration(laserMoveInterval);
         mScanLineAnimator.setInterpolator(new LinearInterpolator());
         mScanLineAnimator.setRepeatCount(ValueAnimator.INFINITE);
         mScanLineAnimator.start();
@@ -522,7 +568,7 @@ public class ScanBoxView extends View {
             this.mCornerLength = this.option.getCornerLength();
         }
         if (this.option.getCornerThickness() != -1) {
-            this.mCornerSize = this.option.getCornerThickness();
+            this.mCornerWidth = this.option.getCornerThickness();
         }
         mScanNoticeText = this.option.getScanBoxTips();
         if (this.option.getScanBoxTipsTextSize() != -1) {
@@ -540,6 +586,23 @@ public class ScanBoxView extends View {
         if (this.option.getScanBoxOffset() != -1){
             mBoxSizeOffset = this.option.getScanBoxOffset();
         }
+
+        if (this.option.getLaserBackgroundResource() != -1){
+            laserBackground = BitmapFactory.decodeResource(getResources(), this.option.getLaserBackgroundResource());
+        }
+
+        if (this.option.isFrameCornerInside()){
+            this.frameCornerInside = this.option.isFrameCornerInside();
+        }
+
+        if (this.option.getLaserLineMoveInterval() != -1){
+            laserMoveInterval = this.option.getLaserLineMoveInterval();
+        }
+
+        if (this.option.getLaserLineResId() != -1){
+            laserLineBitmap = BitmapFactory.decodeResource(getResources(),this.option.getLaserLineResId());
+        }
+
 //        calFramingRect();
     }
 

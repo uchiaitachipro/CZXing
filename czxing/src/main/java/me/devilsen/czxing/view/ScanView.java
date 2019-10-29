@@ -54,6 +54,8 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     private long startTime = -1;
     private long scanSuccessDuration = -1;
 
+    private LightnessChangeListener lightnessChangedCallback;
+
     public ScanView(Context context) {
         this(context, null);
     }
@@ -184,12 +186,22 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         if (this.isDark) {
             if (showCounter <= 2) {
                 this.isDark = false;
-                mScanBoxView.setDark(false);
+                if (lightnessChangedCallback != null){
+                    lightnessChangedCallback.onLightChanged(true);
+                }  else{
+                    mScanBoxView.setDark(false);
+                }
+
             }
         } else {
             if (showCounter >= DARK_LIST_SIZE) {
                 this.isDark = true;
-                mScanBoxView.setDark(true);
+                if (lightnessChangedCallback != null){
+                    lightnessChangedCallback.onLightChanged(false);
+                } else {
+                    mScanBoxView.setDark(true);
+                }
+
             }
         }
     }
@@ -281,6 +293,14 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
                         BarcodeFormat.EAN_13,
                         BarcodeFormat.UPC_A);
         }
+    }
+
+    public void setLightnessChangedListener(LightnessChangeListener lightnessChangedCallback) {
+        this.lightnessChangedCallback = lightnessChangedCallback;
+    }
+
+    public interface LightnessChangeListener {
+        void onLightChanged(boolean isLight);
     }
 
 }
