@@ -88,7 +88,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
             isFirstFrame = false;
         }
 
-        reader.read(data, left, top, width, height, rowWidth, rowHeight);
+        reader.readAsync(data, left, top, width, height, rowWidth, rowHeight);
 //        SaveImageUtil.saveData(data, left, top, width, height, rowWidth);
     }
 
