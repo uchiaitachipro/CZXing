@@ -43,10 +43,6 @@ public:
 	DetectorResult(DetectorResult&&) = default;
 	DetectorResult& operator=(DetectorResult&&) = default;
 
-	DetectorResult(std::vector<ResultPoint>&& points)
-			: _points(std::move(points))
-	{}
-
 	DetectorResult(BitMatrix&& bits, std::vector<ResultPoint>&& points)
 		: _bits(std::move(bits)), _points(std::move(points))
 	{}

@@ -34,7 +34,7 @@ namespace ZXing {
 MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 {
 	bool tryHarder = hints.shouldTryHarder();
-	if (hints.hasNoFormat()) {
+	if (!hints.hasNoFormat()) {
 		bool addOneDReader =
 			hints.hasFormat(BarcodeFormat::UPC_A) ||
 			hints.hasFormat(BarcodeFormat::UPC_E) ||
@@ -102,7 +102,7 @@ MultiFormatReader::read(const BinaryBitmap& image) const
 
 	for (const auto& reader : _readers) {
 		Result r = reader->decode(image);
-  		if (r.isValid() || r.isNeedScale())
+  		if (r.isValid())
 			return r;
 	}
 	return Result(DecodeStatus::NotFound);

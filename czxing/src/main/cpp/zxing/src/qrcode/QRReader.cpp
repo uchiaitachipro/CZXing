@@ -159,23 +159,11 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 	else {
 		DetectorResult detectorResult = Detector::Detect(*binImg, _tryHarder);
-		if (!detectorResult.isValid()){
-            if (detectorResult.points().size() > 2){
-                Result result(DecodeStatus::PositionFound);
-                points = detectorResult.points();
-                result.setResultPoints(std::move(points));
-                result.setFormat(BarcodeFormat::QR_CODE);
-                return result;
-            }
+		if (!detectorResult.isValid())
 			return Result(DecodeStatus::NotFound);
-		}
 
 		decoderResult = Decoder::Decode(detectorResult.bits(), _charset);
 		points = detectorResult.points();
-	}
-
-	if (points.size() > 2){
-		return Result(std::move(decoderResult), std::move(points), BarcodeFormat::QR_CODE);
 	}
 
 	// If the code was mirrored: swap the bottom-left and the top-right points.

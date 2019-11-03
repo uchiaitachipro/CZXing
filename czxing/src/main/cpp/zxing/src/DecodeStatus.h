@@ -23,7 +23,6 @@ enum class DecodeStatus
 	NotFound,
 	FormatError,
 	ChecksumError,
-	PositionFound,
 };
 
 inline bool StatusIsOK(DecodeStatus status)

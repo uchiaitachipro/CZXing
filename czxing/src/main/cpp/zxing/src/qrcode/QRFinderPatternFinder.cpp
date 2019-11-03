@@ -66,12 +66,12 @@ static bool FoundPatternDiagonal(const StateCount& stateCount) {
 	float moduleSize = totalModuleSize / 7.0f;
 	float maxVariance = moduleSize / 1.333f;
 	// Allow less than 75% variance from 1-1-3-1-1 proportions
-
-	bool centerRatio = std::abs(moduleSize - stateCount[1]) < maxVariance &&
-	                   std::abs(3.0f * moduleSize - stateCount[2]) < 3 * maxVariance &&
-	                   std::abs(moduleSize - stateCount[3]) < maxVariance;
-	return centerRatio && (std::abs(moduleSize - stateCount[0]) < maxVariance ||
-                           std::abs(moduleSize - stateCount[4]) < maxVariance);
+	return
+		std::abs(moduleSize - stateCount[0]) < maxVariance &&
+		std::abs(moduleSize - stateCount[1]) < maxVariance &&
+		std::abs(3.0f * moduleSize - stateCount[2]) < 3 * maxVariance &&
+		std::abs(moduleSize - stateCount[3]) < maxVariance &&
+		std::abs(moduleSize - stateCount[4]) < maxVariance;
 }
 
 /**
@@ -184,9 +184,9 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 		stateCount[0]++;
 		i--;
 	}
-//	if (stateCount[0] > maxCount) {
-//		return std::numeric_limits<float>::quiet_NaN();
-//	}
+	if (stateCount[0] > maxCount) {
+		return std::numeric_limits<float>::quiet_NaN();
+	}
 
 	// Now also count down from center
 	i = startI + 1;
@@ -208,7 +208,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 		stateCount[4]++;
 		i++;
 	}
-	if (stateCount[4] >= maxCount && stateCount[0] > maxCount) {
+	if (stateCount[4] >= maxCount) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
 
@@ -251,9 +251,9 @@ static float CrossCheckHorizontal(const BitMatrix& image, int startJ, int center
 		stateCount[0]++;
 		j--;
 	}
-//	if (stateCount[0] > maxCount) {
-//		return std::numeric_limits<float>::quiet_NaN();
-//	}
+	if (stateCount[0] > maxCount) {
+		return std::numeric_limits<float>::quiet_NaN();
+	}
 
 	j = startJ + 1;
 	while (j < maxJ && image.get(j, centerI)) {
@@ -274,7 +274,7 @@ static float CrossCheckHorizontal(const BitMatrix& image, int startJ, int center
 		stateCount[4]++;
 		j++;
 	}
-	if (stateCount[4] >= maxCount && stateCount[0] > maxCount) {
+	if (stateCount[4] >= maxCount) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
 
@@ -475,6 +475,7 @@ static void OrderBestPatterns(std::vector<FinderPattern>& patterns)
 	}
 }
 
+
 FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHarder)
 {
 	int maxI = image.height();
@@ -510,7 +511,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHard
 			else { // White pixel
 				if ((currentState & 1) == 0) { // Counting black pixels
 					if (currentState == 4) { // A winner?
-                        if (FoundPatternCross(stateCount)) { // Yes
+						if (FoundPatternCross(stateCount)) { // Yes
 							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, possibleCenters);
 							if (confirmed) {
 								// Start examining every other line. Checking each line turned out to be too
@@ -602,18 +603,12 @@ FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
 	float moduleSize = totalModuleSize / 7.0f;
 	float maxVariance = moduleSize / 2.0f;
 	// Allow less than 50% variance from 1-1-3-1-1 proportions
-	bool centerRatio = std::abs(moduleSize - stateCount[1]) < maxVariance &&
-                       std::abs(3.0f * moduleSize - stateCount[2]) < 3 * maxVariance &&
-                       std::abs(moduleSize - stateCount[3]) < maxVariance;
-
-    return centerRatio &&
-    (std::abs(moduleSize - stateCount[0]) < maxVariance || std::abs(moduleSize - stateCount[4]) < maxVariance);
-
-        //		std::abs(moduleSize - stateCount[0]) < maxVariance &&
-//		std::abs(moduleSize - stateCount[1]) < maxVariance &&
-//		std::abs(3.0f * moduleSize - stateCount[2]) < 3 * maxVariance &&
-//		std::abs(moduleSize - stateCount[3]) < maxVariance;
-//		std::abs(moduleSize - stateCount[4]) < maxVariance;
+	return
+		std::abs(moduleSize - stateCount[0]) < maxVariance &&
+		std::abs(moduleSize - stateCount[1]) < maxVariance &&
+		std::abs(3.0f * moduleSize - stateCount[2]) < 3 * maxVariance &&
+		std::abs(moduleSize - stateCount[3]) < maxVariance &&
+		std::abs(moduleSize - stateCount[4]) < maxVariance;
 }
 
 /**
