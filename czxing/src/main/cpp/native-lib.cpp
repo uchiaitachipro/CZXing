@@ -140,19 +140,6 @@ Java_me_devilsen_czxing_code_NativeSdk_readBarcode(JNIEnv *env, jobject instance
 }
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_me_devilsen_czxing_code_NativeSdk_drawQRCodeArea(JNIEnv *env, jobject instance,
-                                                      jobject srcBitmap, jobject destBitmap) {
-//    Mat srcBitmapMat;
-//    bitmap_to_mat(env, srcBitmap, srcBitmapMat);
-//    Mat bgrData(srcBitmapMat.rows, srcBitmapMat.cols, CV_8UC3);
-//    cvtColor(srcBitmapMat, bgrData, CV_RGBA2BGR);
-//    QRCodeRecognizer recognizer;
-//    Mat resultMat = recognizer.locateQRCode(bgrData,200,5,false);
-//    mat_to_bitmap(env, resultMat, destBitmap);
-}
-
-extern "C"
 JNIEXPORT jint JNICALL
 Java_me_devilsen_czxing_code_NativeSdk_writeCode(JNIEnv *env, jobject instance, jstring content_,
                                                  jint width, jint height, jint color,
@@ -222,6 +209,19 @@ Java_me_devilsen_czxing_code_NativeSdk_setDecodeStrategies(JNIEnv *env, jobject 
     } catch (...) {
         ThrowJavaException(env, "Unknown exception");
     }
+}
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_me_devilsen_czxing_code_NativeSdk_applyAllDecodeStrategies(JNIEnv *env, jobject instance,
+                                                                   jlong objPtr, jboolean flag) {
+    try {
+        auto imageScheduler = reinterpret_cast<ImageScheduler *>(objPtr);
+        imageScheduler->applyAllStrategies(flag);
+    } catch (const std::exception &e) {
+        ThrowJavaException(env, e.what());
+    } catch (...) {
+        ThrowJavaException(env, "Unknown exception");
+    }
 
 }

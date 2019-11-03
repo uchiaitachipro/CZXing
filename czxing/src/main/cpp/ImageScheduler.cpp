@@ -149,7 +149,7 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
     int startIndex = isApplyAllStrategies ? 0 : currentStrategyIndex;
     startIndex = startIndex <= 0 ? 0 : startIndex % _strategies.size();
     bool result = false;
-
+    LOGE("-----------start-------------");
     for (int i = startIndex; i < _strategies.size(); ++i) {
 
         switch (_strategies[i]) {
@@ -206,10 +206,12 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
             default:
                 break;
         }
+        LOGE("apply strategy: %d ", _strategies[i]);
         if (result || !isApplyAllStrategies) {
             break;
         }
     }
+    LOGE("-----------end-------------");
     if (!result) {
         recognizerQrCode(mat);
     }

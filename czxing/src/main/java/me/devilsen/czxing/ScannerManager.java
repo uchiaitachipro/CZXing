@@ -247,6 +247,11 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager applyAllDecodeStrategiesInFrame(){
+        scanOption.applyAllDecodeStrategiesInFrame = true;
+        return this;
+    }
+
 
     public ScanOption build(){
         return scanOption;
@@ -294,6 +299,7 @@ public class ScannerManager {
         private int laserLineResId = -1;
         private boolean frameCornerInside = false;
         private int laserLineMoveInterval = -1;
+        private boolean applyAllDecodeStrategiesInFrame;
 
         private int laserLineHeight;
 
@@ -329,6 +335,7 @@ public class ScannerManager {
             frameCornerInside = in.readByte() != 0;
             laserLineMoveInterval = in.readInt();
             laserLineHeight = in.readInt();
+            applyAllDecodeStrategiesInFrame =  in.readByte() != 0;
             applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
         }
@@ -363,6 +370,7 @@ public class ScannerManager {
             dest.writeByte(frameCornerInside ? (byte) 1 : 0);
             dest.writeInt(laserLineMoveInterval);
             dest.writeInt(laserLineHeight);
+            dest.writeByte(applyAllDecodeStrategiesInFrame ? (byte) 1 : 0);
             dest.writeSerializable(applyFrameStrategies);
             dest.writeSerializable(scanLineColors);
         }
@@ -507,6 +515,10 @@ public class ScannerManager {
 
         public int getLaserLineHeight() {
             return laserLineHeight;
+        }
+
+        public boolean isApplyAllDecodeStrategiesInFrame(){
+            return applyAllDecodeStrategiesInFrame;
         }
 
     }

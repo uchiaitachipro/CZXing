@@ -10,6 +10,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -44,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_CHOOSE = 0x2019;
     private TextView resultTxt;
     private BarcodeReader reader;
+    private HandlerThread thread = new HandlerThread("decode-");
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
         resultTxt = findViewById(R.id.text_view_result);
         reader = BarcodeReader.getInstance();
         requestPermission();
+        thread.start();
+        handler = new Handler(thread.getLooper());
     }
 
     public void scan(View view) {
@@ -90,7 +96,9 @@ public class MainActivity extends AppCompatActivity {
                 .setFrameCornerWidth(BarCodeUtil.dp2px(this,2))
                 .setFrameCornerColor(resources.getColor(R.color.color_more_blue))
                 .setLaserBackground(R.drawable.img_scanner_grid)
-                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY)
+                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY,
+                        NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY)
+//                .applyAllDecodeStrategiesInFrame()
                 .setLaserLineMoveInterval(1500)
                 .setFrameCornerInside(true)
                 .setTipText("")
@@ -213,19 +221,30 @@ public class MainActivity extends AppCompatActivity {
         String picturePath = cursor.getString(columnIndex);
         cursor.close();
 
-        Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+        final Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
         if (bitmap == null) {
             return;
         }
 
-        CodeResult result = reader.read(bitmap);
-        if (result == null) {
-            Log.e("Scan >>> ", "no code");
-            return;
-        } else {
-            Log.e("Scan >>> ", result.getText());
-        }
-        resultTxt.setText(result.getText());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+               final CodeResult result = reader.read(bitmap);
+                if (result == null) {
+                    Log.e("Scan >>> ", "no code");
+                    return;
+                } else {
+                    Log.e("Scan >>> ", result.getText());
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        resultTxt.setText(result.getText());
+                    }
+                });
+            }
+        });
+
     }
 
     @Override

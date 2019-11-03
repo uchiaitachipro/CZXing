@@ -18,8 +18,8 @@ public class FindQRCodeTransformer extends BitmapTransformation {
 
     @Override
     public Bitmap transform(BitmapPool pool, Bitmap toTransform, int outWidth, int outHeight) {
-        Bitmap result = NativeSdk.getInstance().getQRCodeArea(toTransform);
-        return result;
+//        Bitmap result = NativeSdk.getInstance().getQRCodeArea(toTransform);
+        return toTransform;
     }
 
     @Override

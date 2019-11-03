@@ -21,6 +21,8 @@ public class BarcodeReader {
     private Dispatcher dispatcher;
     private AtomicInteger counter = new AtomicInteger(0);
 
+    private boolean applyAllDecodeStrategies = false;
+
     public static BarcodeReader getInstance() {
         if (instance == null) {
             synchronized (BarcodeReader.class) {
@@ -44,6 +46,7 @@ public class BarcodeReader {
         }
         _nativePtr = NativeSdk.getInstance().createInstance(nativeFormats);
         setDecodeStrategies(decodeStrategies);
+        setApplyAllDecodeStrategies(applyAllDecodeStrategies);
     }
 
     public void setDecodeStrategies(int[] strategies) {
@@ -52,6 +55,14 @@ public class BarcodeReader {
         }
         this.decodeStrategies = strategies;
         NativeSdk.getInstance().setDecodeStrategies(_nativePtr, this.decodeStrategies);
+    }
+
+    public void setApplyAllDecodeStrategies(boolean applyAllDecodeStrategies) {
+        if (_nativePtr <= 0){
+            return;
+        }
+        this.applyAllDecodeStrategies = applyAllDecodeStrategies;
+        NativeSdk.getInstance().applyAllDecodeStrategies(_nativePtr,applyAllDecodeStrategies);
     }
 
     public CodeResult read(Bitmap bitmap) {

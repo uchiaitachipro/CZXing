@@ -67,6 +67,10 @@ public:
         isApplyAllStrategies = r;
     }
 
+    void applyAllStrategies(bool result){
+        isApplyAllStrategies  = result;
+    }
+
 private:
     JNIEnv *env;
     MultiFormatReader *reader;

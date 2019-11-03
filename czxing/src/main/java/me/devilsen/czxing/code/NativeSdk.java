@@ -46,13 +46,6 @@ public class NativeSdk {
         }
     }
 
-    public Bitmap getQRCodeArea(Bitmap sourceBitmap){
-        Bitmap result = Bitmap.createBitmap(sourceBitmap.getWidth(),
-                sourceBitmap.getHeight(),
-                Bitmap.Config.ARGB_8888);
-        drawQRCodeArea(sourceBitmap,result);
-        return result;
-    }
 
     /**
      * Native callback for brightness
@@ -78,10 +71,10 @@ public class NativeSdk {
 
     native void stopRead(long objPtr);
 
+    native void applyAllDecodeStrategies(long objPtr,boolean all);
+
     // write
     native int writeCode(String content, int width, int height, int color, String format, Object[] result);
-
-    native void drawQRCodeArea(Bitmap src,Bitmap dest);
 
     native void setDecodeStrategies(long objPtr,int[] strategyArray);
 
