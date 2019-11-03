@@ -9,6 +9,8 @@
 #include "JNIUtils.h"
 #include "opencv2/highgui.hpp"
 #include "android_utils.h"
+#include "ThresholdTool.h"
+#include <math.h>
 
 #define DEFAULT_MIN_LIGHT 70;
 
@@ -22,7 +24,6 @@ ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
     stopProcessing.store(false);
     isProcessing.store(false);
     abortTask.store(false);
-//    initThreadPool();
 }
 
 ImageScheduler::~ImageScheduler() {
@@ -30,35 +31,13 @@ ImageScheduler::~ImageScheduler() {
     DELETE(reader);
     DELETE(javaCallHelper);
     DELETE(qrCodeRecognizer);
-    DELETE(pool);
-    frameQueue.clear();
-    queue.clear();
+
     delete &isProcessing;
     delete &stopProcessing;
     delete &cameraLight;
     delete &prepareThread;
 }
 
-
-void ImageScheduler::initThreadPool() {
-    if (pool == NULL) {
-        pool = new ThreadPool(threadPoolCount);
-    }
-    for (int i = 0; i < threadPoolCount; i++) {
-        pool->enqueue([&] {
-            while (true) {
-                if (abortTask.load()) {
-                    break;
-                }
-                FrameData frameData;
-                int ret = frameQueue.deQueue(frameData);
-                if (ret){
-                    preTreatMat(frameData);
-                }
-            }
-        });
-    }
-}
 
 void *prepareMethod(void *arg) {
 //    auto scheduler = static_cast<ImageScheduler *>(arg);
@@ -69,23 +48,6 @@ void *prepareMethod(void *arg) {
 void ImageScheduler::prepare() {
 //    pthread_create(&prepareThread, nullptr, prepareMethod, this);
 }
-//
-//void ImageScheduler::prepare() {
-////    if (pool == NULL){
-////        pool = new ThreadPool(threadPoolCount);
-////    }
-////    for (int i = 0; i < threadPoolCount; i++){
-////        pool->enqueue([&]{
-////            while(true){
-////                if(abortTask.load()){
-////                    break;
-////                }
-////                FrameData frameData = queue.take();
-////                preTreatMat(frameData);
-////            }
-////        });
-////    }
-//}
 
 void ImageScheduler::start() {
 //    stopProcessing.store(false);
@@ -120,7 +82,7 @@ void ImageScheduler::stop() {
 
 void
 ImageScheduler::process(jbyte *bytes, int left, int top,
-                        int cropWidth, int cropHeight,int rowWidth,
+                        int cropWidth, int cropHeight, int rowWidth,
                         int rowHeight, int strategyIndex) {
     if (isProcessing.load()) {
         return;
@@ -191,17 +153,53 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
     for (int i = startIndex; i < _strategies.size(); ++i) {
 
         switch (_strategies[i]) {
-            case DecodeStrategy::STRATEGY_RAW_PICTURE:
-                result = decodeGrayPixels(mat);
+            case DecodeStrategy::STRATEGY_RAW_PICTURE: {
+                Result grayResult = decodeGrayPixels(mat);
+                result = grayResult.isValid();
+                if (grayResult.isValid()) {
+                    //        writeImage(gray,"gray-");
+                    //        qrCodeFinder.locateQRCode(mat, 200, 5, false);
+                    javaCallHelper->onResult(grayResult, cameraLight);
+                }
+            }
+
                 break;
-            case DecodeStrategy::STRATEGY_THRESHOLD:
-                result = decodeThresholdPixels(mat);
+            case DecodeStrategy::STRATEGY_THRESHOLD: {
+                Result thresholdResult = decodeThresholdPixels(mat);
+                result = thresholdResult.isValid();
+                if (result) {
+                    javaCallHelper->onResult(thresholdResult, cameraLight);
+                    //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
+                    //        writeImage(mat, std::string("threshold-"));
+                }
+                //            writeImage(mat, std::string("threshold-"));
                 break;
-            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY:
-                result = decodeAdaptivePixels(mat,ADAPTIVE_THRESH_MEAN_C,55,3);
+            }
+
+            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY: {
+                Result closeAdaptiveResult = decodeAdaptivePixels(mat, ADAPTIVE_THRESH_MEAN_C, 55,
+                                                                  3);
+                result = closeAdaptiveResult.isValid();
+                if (result) {
+                    javaCallHelper->onResult(closeAdaptiveResult, cameraLight);
+                    //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
+                    //        writeImage(mat, std::string("adaptive-threshold-ROI-"));
+                }
+                //    writeImage(lightMat, std::string("adaptive-close-threshold-"));
                 break;
-            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY:
-                result = decodeAdaptivePixels(mat,ADAPTIVE_THRESH_GAUSSIAN_C,25,5);
+            }
+
+            case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY: {
+                Result remoteAdaptiveResult = decodeAdaptivePixels(mat, ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                                   25, 5);
+                result = remoteAdaptiveResult.isValid();
+                if (result) {
+                    javaCallHelper->onResult(remoteAdaptiveResult, cameraLight);
+                    //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
+                    //        writeImage(mat, std::string("adaptive-remote-threshold-ROI-"));
+                }
+                //    writeImage(lightMat, std::string("adaptive-threshold-"));
+            }
                 break;
             case DecodeStrategy::STRATEGY_COLOR_EXTRACT:
                 break;
@@ -261,21 +259,17 @@ void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
     writeImage(th, "color");
 }
 
-bool ImageScheduler::decodeGrayPixels(const Mat &gray) {
+Result ImageScheduler::decodeGrayPixels(const Mat &gray) {
     LOGE("start GrayPixels...");
 
     Mat mat;
     rotate(gray, mat, ROTATE_90_CLOCKWISE);
-    Result result = decodePixels(gray);
-    if (result.isValid()) {
-//        writeImage(gray,"gray-");
-//        qrCodeFinder.locateQRCode(mat, 200, 5, false);
-        javaCallHelper->onResult(result,cameraLight);
-    }
-    return result.isValid();
+//    int threshold = GetHuangFuzzyThreshold(gray);
+    Result result = decodePixels(gray, -1);
+    return result;
 }
 
-bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
+Result ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     LOGE("start ThresholdPixels...");
 
     Mat mat;
@@ -288,18 +282,12 @@ bool ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     }
 
     threshold(mat, mat, 50, 255, CV_THRESH_OTSU);
-
     Result result = decodePixels(mat);
-    if (result.isValid()) {
-        javaCallHelper->onResult(result,cameraLight);
-//        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
-//        writeImage(mat, std::string("threshold-"));
-    }
-//            writeImage(mat, std::string("threshold-"));
-    return result.isValid();
+    return result;
 }
 
-bool ImageScheduler::decodeAdaptivePixels(const Mat &gray,int adaptiveMethod,int blockSize,int delta) {
+Result ImageScheduler::decodeAdaptivePixels(const Mat &gray, int adaptiveMethod, int blockSize,
+                                            int delta) {
     LOGE("start AdaptivePixels...");
 
     Mat mat;
@@ -312,13 +300,7 @@ bool ImageScheduler::decodeAdaptivePixels(const Mat &gray,int adaptiveMethod,int
     adaptiveThreshold(lightMat, lightMat, 255, adaptiveMethod,
                       THRESH_BINARY, blockSize, delta);
     Result result = decodePixels(lightMat);
-    if (result.isValid()) {
-        javaCallHelper->onResult(result,cameraLight);
-//        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
-//        writeImage(mat, std::string("adaptive-threshold-ROI-"));
-    }
-//    writeImage(lightMat, std::string("adaptive-threshold-"));
-    return result.isValid();
+    return result;
 }
 
 void ImageScheduler::recognizerQrCode(const Mat &mat) {
@@ -347,13 +329,13 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
     Result result(DecodeStatus::NotFound);
     result.setResultPoints(std::move(points));
 
-    javaCallHelper->onResult(result,cameraLight);
+    javaCallHelper->onResult(result, cameraLight);
 
     LOGE("end recognizerQrCode...");
 
 }
 
-Result ImageScheduler::decodePixels(const Mat &mat) {
+Result ImageScheduler::decodePixels(const Mat &mat, int threshold) {
 
     try {
         int width = mat.cols;
@@ -364,7 +346,16 @@ Result ImageScheduler::decodePixels(const Mat &mat) {
         int index = 0;
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
-                pixels[index++] = mat.at<unsigned char>(i, j);
+                if (threshold == -1) {
+                    pixels[index++] = mat.at<unsigned char>(i, j);
+                } else {
+                    auto pValue = mat.at<unsigned char>(i, j);
+                    if (pValue > threshold) {
+                        pixels[index++] = 255;
+                    } else {
+                        pixels[index++] = 0;
+                    }
+                }
             }
         }
 
@@ -398,12 +389,52 @@ bool ImageScheduler::analysisBrightness(const Mat &gray) {
     return isDark;
 }
 
-Result ImageScheduler::readBitmap(jobject bitmap, int left, int top, int width, int height) {
-    auto binImage = BinaryBitmapFromJavaBitmap(env, bitmap, left, top, width, height);
-    if (!binImage) {
-        LOGE("create binary bitmap fail");
-        return Result(DecodeStatus::NotFound);
+Result ImageScheduler::readBitmap(const cv::Mat &mat, int left, int top, int width, int height) {
+    cv::Mat cropMat = mat(Rect(left, top, width, height));
+    Mat gray;
+    cvtColor(cropMat, gray, COLOR_RGB2GRAY);
+//    writeImage(gray, "convert-gray-");
+    bool result = false;
+
+//    Mat closelyMat;
+//    adaptiveThreshold(gray, closelyMat, 255, ADAPTIVE_THRESH_MEAN_C,
+//                      THRESH_BINARY, 55, 3);
+//    writeImage(closelyMat,"closelyMat-");
+//    Result closelyAdaptiveResult = decodePixels(closelyMat,-1);
+//    result = closelyAdaptiveResult.isValid();
+//    if (result) {
+//        return closelyAdaptiveResult;
+//    }
+//
+//
+//    Mat thresholdMat;
+//    threshold(gray, thresholdMat, 50, 255, CV_THRESH_OTSU);
+//    writeImage(thresholdMat,"thresholdMat-");
+//    Result thresholdResult = decodePixels(thresholdMat);
+//    result = thresholdResult.isValid();
+//    if (result) {
+//        return thresholdResult;
+//    }
+
+    Mat huangMat;
+    gray.copyTo(huangMat);
+    int thresholdValue = GetHuangFuzzyThreshold(huangMat);
+    thresholdImage(huangMat,thresholdValue);
+    Result huangResult = decodePixels(huangMat, -1);
+    writeImage(huangMat,"huangMat-");
+    result = huangResult.isValid();
+    if (result) {
+        return huangResult;
     }
-    return reader->read(*binImage);
+
+//    Result grayResult = decodePixels(gray, -1);
+//    writeImage(gray,"gray-");
+//    result = grayResult.isValid();
+//    if (result) {
+//        return grayResult;
+//    }
+
+    return Result(DecodeStatus::NotFound);
+
 }
 

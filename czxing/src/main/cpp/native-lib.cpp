@@ -121,7 +121,9 @@ Java_me_devilsen_czxing_code_NativeSdk_readBarcode(JNIEnv *env, jobject instance
 
     try {
         auto imageScheduler = reinterpret_cast<ImageScheduler *>(objPtr);
-        auto readResult = imageScheduler->readBitmap(bitmap, left, top, width, height);
+        cv::Mat source;
+        bitmap_to_mat(env,bitmap,source);
+        auto readResult = imageScheduler->readBitmap(source, left, top, width, height);
         if (readResult.isValid()) {
             env->SetObjectArrayElement(result, 0, ToJavaString(env, readResult.text()));
             if (!readResult.resultPoints().empty()) {

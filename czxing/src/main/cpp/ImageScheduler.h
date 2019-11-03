@@ -57,7 +57,7 @@ public:
     void
     process(jbyte *bytes, int left, int top, int width, int height, int rowWidth, int rowHeight,int strategyIndex);
 
-    Result readBitmap(jobject bitmap, int left, int top, int width, int height);
+    Result readBitmap(const cv::Mat &mat, int left, int top, int width, int height);
 
     void setStrategies(vector<int> &strategies) {
         _strategies.assign(strategies.begin(), strategies.end());
@@ -82,10 +82,6 @@ private:
     double cameraLight{};
     bool isApplyAllStrategies = false;
     int currentStrategyIndex = 0;
-    int threadPoolCount = 1;
-    BlockingQueue<FrameData> queue;
-    ThreadPool* pool = NULL;
-    std::mutex counterMutex;
 
 
     void initThreadPool();
@@ -94,13 +90,13 @@ private:
 
     void applyStrategy(const Mat &mat);
 
-    Result decodePixels(const Mat &mat);
+    Result decodePixels(const Mat &mat,int threshold = -1);
 
-    bool decodeGrayPixels(const Mat &gray);
+    Result decodeGrayPixels(const Mat &gray);
 
-    bool decodeThresholdPixels(const Mat &gray);
+    Result decodeThresholdPixels(const Mat &gray);
 
-    bool decodeAdaptivePixels(const Mat &gray,int adaptiveMethod,int blockSize,int delta);
+    Result decodeAdaptivePixels(const Mat &gray,int adaptiveMethod,int blockSize,int delta);
 
     void recognizerQrCode(const Mat &mat);
 
