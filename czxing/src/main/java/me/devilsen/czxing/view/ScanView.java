@@ -87,7 +87,6 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
             startTime = System.currentTimeMillis();
             isFirstFrame = false;
         }
-
         reader.readAsync(data, left, top, width, height, rowWidth, rowHeight);
 //        SaveImageUtil.saveData(data, left, top, width, height, rowWidth);
     }
@@ -186,9 +185,9 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         if (this.isDark) {
             if (showCounter <= 2) {
                 this.isDark = false;
-                if (lightnessChangedCallback != null){
+                if (lightnessChangedCallback != null) {
                     lightnessChangedCallback.onLightChanged(true);
-                }  else{
+                } else {
                     mScanBoxView.setDark(false);
                 }
 
@@ -196,7 +195,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         } else {
             if (showCounter >= DARK_LIST_SIZE) {
                 this.isDark = true;
-                if (lightnessChangedCallback != null){
+                if (lightnessChangedCallback != null) {
                     lightnessChangedCallback.onLightChanged(false);
                 } else {
                     mScanBoxView.setDark(true);
@@ -245,15 +244,15 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
             reader.setDecodeStrategies(ret);
         }
 
-        if (option.isApplyAllDecodeStrategiesInFrame()){
+        if (option.isApplyAllDecodeStrategiesInFrame()) {
             reader.setApplyAllDecodeStrategies(true);
         }
 
-        if (option.getCoreThreadPoolSize() != -1){
+        if (option.getCoreThreadPoolSize() != -1) {
             reader.getDispatcher().setCorePoolSize(option.getCoreThreadPoolSize());
         }
 
-        if (option.getMaxThreadPoolSize() != -1){
+        if (option.getMaxThreadPoolSize() != -1) {
             reader.getDispatcher().setMaximumPoolSize(option.getMaxThreadPoolSize());
         }
     }
@@ -296,6 +295,18 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
                         BarcodeFormat.CODE_128,
                         BarcodeFormat.EAN_13,
                         BarcodeFormat.UPC_A);
+        }
+    }
+
+    public void openLight(boolean result) {
+        if (mCameraSurface == null) {
+            return;
+        }
+
+        if (result) {
+            mCameraSurface.openFlashlight();
+        } else {
+            mCameraSurface.closeFlashlight();
         }
     }
 

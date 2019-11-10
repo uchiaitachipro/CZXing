@@ -15,12 +15,12 @@
 #include "QRCodeRecognizer.h"
 #include "safe_queue.h"
 #include "QRCodeFinder.h"
-#include "BlockingQueue.h"
-#include "ThreadPool.h"
 #include <mutex>
+#include "zbar/zbar.h"
 
 using namespace cv;
 using namespace ZXing;
+using namespace zbar;
 
 typedef struct FrameData {
     jbyte *bytes;
@@ -86,7 +86,7 @@ private:
     double cameraLight{};
     bool isApplyAllStrategies = false;
     int currentStrategyIndex = 0;
-
+    ImageScanner *zbarScanner;
 
     void initThreadPool();
 
@@ -95,6 +95,8 @@ private:
     void applyStrategy(const Mat &mat);
 
     Result decodePixels(const Mat &mat,int threshold = -1);
+
+    Result decodeZBar(const Mat &gray);
 
     Result decodeGrayPixels(const Mat &gray);
 

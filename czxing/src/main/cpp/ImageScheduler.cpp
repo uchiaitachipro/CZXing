@@ -21,6 +21,7 @@ ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
     this->reader = _reader;
     this->javaCallHelper = javaCallHelper;
     qrCodeRecognizer = new QRCodeRecognizer();
+//    zbarScanner->set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
     stopProcessing.store(false);
     isProcessing.store(false);
     abortTask.store(false);
@@ -30,6 +31,7 @@ ImageScheduler::~ImageScheduler() {
     DELETE(env);
     DELETE(reader);
     DELETE(javaCallHelper);
+//    DELETE(zbarScanner);
     DELETE(qrCodeRecognizer);
 
     delete &isProcessing;
@@ -149,7 +151,6 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
     int startIndex = isApplyAllStrategies ? 0 : currentStrategyIndex;
     startIndex = startIndex <= 0 ? 0 : startIndex % _strategies.size();
     bool result = false;
-    LOGE("-----------start-------------");
     for (int i = startIndex; i < _strategies.size(); ++i) {
 
         switch (_strategies[i]) {
@@ -206,12 +207,11 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
             default:
                 break;
         }
-        LOGE("apply strategy: %d ", _strategies[i]);
         if (result || !isApplyAllStrategies) {
             break;
         }
     }
-    LOGE("-----------end-------------");
+
     if (!result) {
         recognizerQrCode(mat);
     }
@@ -366,7 +366,13 @@ Result ImageScheduler::decodePixels(const Mat &mat, int threshold) {
 
         delete[]pixels;
 
-        return result;
+        if (result.isValid()) {
+            return result;
+        }
+////        if (result.isBlurry()){
+        return decodeZBar(mat);
+////        }
+
     } catch (const std::exception &e) {
         ThrowJavaException(env, e.what());
     }
@@ -398,45 +404,70 @@ Result ImageScheduler::readBitmap(const cv::Mat &mat, int left, int top, int wid
 //    writeImage(gray, "convert-gray-");
     bool result = false;
 
-//    Mat closelyMat;
-//    adaptiveThreshold(gray, closelyMat, 255, ADAPTIVE_THRESH_MEAN_C,
-//                      THRESH_BINARY, 55, 3);
+    Mat closelyMat;
+    adaptiveThreshold(gray, closelyMat, 255, ADAPTIVE_THRESH_MEAN_C,
+                      THRESH_BINARY, 55, 3);
 //    writeImage(closelyMat,"closelyMat-");
-//    Result closelyAdaptiveResult = decodePixels(closelyMat,-1);
-//    result = closelyAdaptiveResult.isValid();
-//    if (result) {
-//        return closelyAdaptiveResult;
-//    }
-//
-//
-//    Mat thresholdMat;
-//    threshold(gray, thresholdMat, 50, 255, CV_THRESH_OTSU);
+    Result closelyAdaptiveResult = decodePixels(closelyMat, -1);
+    result = closelyAdaptiveResult.isValid();
+    if (result) {
+        return closelyAdaptiveResult;
+    }
+
+
+    Mat thresholdMat;
+    threshold(gray, thresholdMat, 50, 255, CV_THRESH_OTSU);
 //    writeImage(thresholdMat,"thresholdMat-");
-//    Result thresholdResult = decodePixels(thresholdMat);
-//    result = thresholdResult.isValid();
-//    if (result) {
-//        return thresholdResult;
-//    }
+    Result thresholdResult = decodePixels(thresholdMat);
+    result = thresholdResult.isValid();
+    if (result) {
+        return thresholdResult;
+    }
 
     Mat huangMat;
     gray.copyTo(huangMat);
     int thresholdValue = GetHuangFuzzyThreshold(huangMat);
-    thresholdImage(huangMat,thresholdValue);
+    thresholdImage(huangMat, thresholdValue);
     Result huangResult = decodePixels(huangMat, -1);
-    writeImage(huangMat,"huangMat-");
+//    writeImage(huangMat,"huangMat-");
     result = huangResult.isValid();
     if (result) {
         return huangResult;
     }
 
-//    Result grayResult = decodePixels(gray, -1);
+    Result grayResult = decodePixels(gray, -1);
 //    writeImage(gray,"gray-");
-//    result = grayResult.isValid();
-//    if (result) {
-//        return grayResult;
-//    }
+    result = grayResult.isValid();
+    if (result) {
+        return grayResult;
+    }
 
     return Result(DecodeStatus::NotFound);
 
+}
+
+Result ImageScheduler::decodeZBar(const Mat &gray) {
+    auto width = static_cast<unsigned int>(gray.cols);
+    auto height = static_cast<unsigned int>(gray.rows);
+    ImageScanner scanner;
+    scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
+    const void *raw = gray.data;
+    Image image(width, height, "Y800", raw, width * height);
+    int n = scanner.scan(image);
+    // 检测到二维码
+    if (n > 0) {
+        Image::SymbolIterator symbol = image.symbol_begin();
+        image.set_data(nullptr, 0);
+        if (symbol->get_type() == zbar_symbol_type_e::ZBAR_QRCODE) {
+            Result result(DecodeStatus::NoError);
+            result.setFormat(BarcodeFormat::QR_CODE);
+            result.setText(ANSIToUnicode(symbol->get_data()));
+            return result;
+        }
+    } else {
+        image.set_data(nullptr, 0);
+        return Result(DecodeStatus::NotFound);
+    }
+    return Result(DecodeStatus::NotFound);
 }
 
