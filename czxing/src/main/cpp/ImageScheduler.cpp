@@ -339,48 +339,22 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
 
 Result ImageScheduler::decodePixels(const Mat &mat, int threshold) {
 
-    try {
-        int width = mat.cols;
-        int height = mat.rows;
-
-        auto *pixels = new unsigned char[height * width];
-
-        int index = 0;
-        for (int i = 0; i < height; ++i) {
-            for (int j = 0; j < width; ++j) {
-                if (threshold == -1) {
-                    pixels[index++] = mat.at<unsigned char>(i, j);
-                } else {
-                    auto pValue = mat.at<unsigned char>(i, j);
-                    if (pValue > threshold) {
-                        pixels[index++] = 255;
-                    } else {
-                        pixels[index++] = 0;
-                    }
-                }
+    switch (detectType) {
+        case DetectorType::ZBAR : {
+            return decodeZBar(mat, threshold);
+        }
+        case DetectorType::ALL: {
+            Result r = decodeZXing(mat, threshold);
+            if (r.isValid()) {
+                return r;
             }
+            return decodeZBar(mat, threshold);
         }
-
-        auto binImage = BinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
-        Result result = reader->read(*binImage);
-
-        delete[]pixels;
-
-        if (result.isValid()) {
-            return result;
+        case DetectorType::ZXING :
+        default: {
+            return decodeZXing(mat, threshold);
         }
-////        if (result.isBlurry()){
-        return decodeZBar(mat);
-////        }
-
-    } catch (const std::exception &e) {
-        ThrowJavaException(env, e.what());
     }
-    catch (...) {
-        ThrowJavaException(env, "Unknown exception");
-    }
-
-    return Result(DecodeStatus::NotFound);
 }
 
 bool ImageScheduler::analysisBrightness(const Mat &gray) {
@@ -446,7 +420,50 @@ Result ImageScheduler::readBitmap(const cv::Mat &mat, int left, int top, int wid
 
 }
 
-Result ImageScheduler::decodeZBar(const Mat &gray) {
+Result ImageScheduler::decodeZXing(const Mat &mat, int threshold) {
+    LOGE("detect by zxing");
+    try {
+        int width = mat.cols;
+        int height = mat.rows;
+
+        auto *pixels = new unsigned char[height * width];
+
+        int index = 0;
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                if (threshold == -1) {
+                    pixels[index++] = mat.at<unsigned char>(i, j);
+                } else {
+                    auto pValue = mat.at<unsigned char>(i, j);
+                    if (pValue > threshold) {
+                        pixels[index++] = 255;
+                    } else {
+                        pixels[index++] = 0;
+                    }
+                }
+            }
+        }
+
+        auto binImage = BinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
+        Result result = reader->read(*binImage);
+
+        delete[]pixels;
+
+        if (result.isValid()) {
+            return result;
+        }
+    } catch (const std::exception &e) {
+        ThrowJavaException(env, e.what());
+    }
+    catch (...) {
+        ThrowJavaException(env, "Unknown exception");
+    }
+
+    return Result(DecodeStatus::NotFound);
+}
+
+Result ImageScheduler::decodeZBar(const Mat &gray, int threshold) {
+    LOGE("detect by zbar");
     auto width = static_cast<unsigned int>(gray.cols);
     auto height = static_cast<unsigned int>(gray.rows);
     ImageScanner scanner;

@@ -22,6 +22,7 @@ public class BarcodeReader {
     private AtomicInteger counter = new AtomicInteger(0);
 
     private boolean applyAllDecodeStrategies = false;
+    private int detectorType = NativeSdk.DETECTOR_ZXING;
 
     public static BarcodeReader getInstance() {
         if (instance == null) {
@@ -45,6 +46,7 @@ public class BarcodeReader {
             nativeFormats[i] = formats[i].ordinal();
         }
         _nativePtr = NativeSdk.getInstance().createInstance(nativeFormats);
+        setDetectorType(detectorType);
         setDecodeStrategies(decodeStrategies);
         setApplyAllDecodeStrategies(applyAllDecodeStrategies);
     }
@@ -63,6 +65,14 @@ public class BarcodeReader {
         }
         this.applyAllDecodeStrategies = applyAllDecodeStrategies;
         NativeSdk.getInstance().applyAllDecodeStrategies(_nativePtr,applyAllDecodeStrategies);
+    }
+
+    public void setDetectorType(int type){
+        if (_nativePtr <= 0){
+            return;
+        }
+        this.detectorType = type;
+        NativeSdk.getInstance().setDetectorType(_nativePtr,this.detectorType);
     }
 
     public CodeResult read(Bitmap bitmap) {

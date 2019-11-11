@@ -225,3 +225,16 @@ Java_me_devilsen_czxing_code_NativeSdk_applyAllDecodeStrategies(JNIEnv *env, job
     }
 
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_me_devilsen_czxing_code_NativeSdk_setDetectorType(JNIEnv *env, jobject instance, jlong objPtr,jint type){
+    try {
+        auto imageScheduler = reinterpret_cast<ImageScheduler *>(objPtr);
+        imageScheduler->setDecoderType(type);
+    } catch (const std::exception &e) {
+        ThrowJavaException(env, e.what());
+    } catch (...) {
+        ThrowJavaException(env, "Unknown exception");
+    }
+}

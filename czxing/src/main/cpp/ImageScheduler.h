@@ -44,6 +44,12 @@ public:
         STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY= 32
     };
 
+    enum DetectorType{
+        ZXING = 0,
+        ZBAR = 1,
+        ALL = 2
+    };
+
     ImageScheduler(JNIEnv *env, MultiFormatReader *_reader, JavaCallHelper *javaCallHelper);
 
     ~ImageScheduler();
@@ -71,6 +77,10 @@ public:
         isApplyAllStrategies  = result;
     }
 
+    void setDecoderType(int type){
+        detectType = type;
+    }
+
 private:
     JNIEnv *env;
     MultiFormatReader *reader;
@@ -85,6 +95,7 @@ private:
     pthread_t prepareThread{};
     double cameraLight{};
     bool isApplyAllStrategies = false;
+    int detectType = DetectorType::ZXING;
     int currentStrategyIndex = 0;
     ImageScanner *zbarScanner;
 
@@ -96,7 +107,9 @@ private:
 
     Result decodePixels(const Mat &mat,int threshold = -1);
 
-    Result decodeZBar(const Mat &gray);
+    Result decodeZBar(const Mat &gray, int threshold);
+
+    Result decodeZXing(const Mat &mat, int threshold);
 
     Result decodeGrayPixels(const Mat &gray);
 

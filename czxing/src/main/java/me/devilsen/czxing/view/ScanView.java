@@ -248,6 +248,8 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
             reader.setApplyAllDecodeStrategies(true);
         }
 
+        reader.setDetectorType(option.getDetectorType());
+
         if (option.getCoreThreadPoolSize() != -1) {
             reader.getDispatcher().setCorePoolSize(option.getCoreThreadPoolSize());
         }

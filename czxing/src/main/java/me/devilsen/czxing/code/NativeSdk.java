@@ -16,6 +16,10 @@ public class NativeSdk {
     public static final int STRATEGY_COLOR_EXTRACT = 8;
     public static final int STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY = 32;
 
+    public static final int DETECTOR_ZXING = 0;
+    public static final int DETECTOR_ZBAR = 1;
+    public static final int DETECTOR_ALL = 2;
+
     private NativeSdk() {
     }
 
@@ -72,6 +76,8 @@ public class NativeSdk {
     native void stopRead(long objPtr);
 
     native void applyAllDecodeStrategies(long objPtr,boolean all);
+
+    native void setDetectorType(long objPtr,int type);
 
     // write
     native int writeCode(String content, int width, int height, int color, String format, Object[] result);

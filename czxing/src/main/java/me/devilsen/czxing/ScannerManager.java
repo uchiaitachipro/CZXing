@@ -8,6 +8,7 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devilsen.czxing.code.NativeSdk;
 import me.devilsen.czxing.view.ScanActivityDelegate;
 
 /**
@@ -68,12 +69,12 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setFrameCornerWidth(int width){
+    public ScannerManager setFrameCornerWidth(int width) {
         scanOption.cornerThickness = width;
         return this;
     }
 
-    public ScannerManager setCornerLength(int length){
+    public ScannerManager setCornerLength(int length) {
         scanOption.cornerLength = length;
         return this;
     }
@@ -83,7 +84,7 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setBorderSize(int borderWidth){
+    public ScannerManager setBorderSize(int borderWidth) {
         this.scanOption.borderSize = borderWidth;
         return this;
     }
@@ -93,7 +94,7 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setScanMode(int scanMode){
+    public ScannerManager setScanMode(int scanMode) {
         scanOption.scanMode = scanMode;
         return this;
     }
@@ -113,14 +114,14 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setFrameCornerColor(int scanColor){
+    public ScannerManager setFrameCornerColor(int scanColor) {
         scanOption.cornerColor = scanColor;
         return this;
     }
 
-    public ScannerManager setLaserLineColor(int color){
+    public ScannerManager setLaserLineColor(int color) {
 
-        if (scanOption.laserBackgroundResId != -1 || scanOption.laserLineResId != -1){
+        if (scanOption.laserBackgroundResId != -1 || scanOption.laserLineResId != -1) {
             throw new IllegalArgumentException("please choose laser line color or laser background or not");
         }
 
@@ -138,14 +139,14 @@ public class ScannerManager {
     }
 
 
-    public ScannerManager setLaserLineMoveInterval(int duration){
+    public ScannerManager setLaserLineMoveInterval(int duration) {
         scanOption.laserLineMoveInterval = duration;
         return this;
     }
 
-    public ScannerManager setLaserBackground(int resourceId){
+    public ScannerManager setLaserBackground(int resourceId) {
 
-        if (scanOption.scanLineColors != null && scanOption.scanLineColors.size() > 0 || scanOption.laserLineResId != -1){
+        if (scanOption.scanLineColors != null && scanOption.scanLineColors.size() > 0 || scanOption.laserLineResId != -1) {
             throw new IllegalArgumentException("please choose laser line color or laser background or not");
         }
 
@@ -153,8 +154,8 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setLaserLineResource(int resourceId){
-        if (scanOption.scanLineColors != null && scanOption.scanLineColors.size() > 0 || scanOption.laserBackgroundResId != -1){
+    public ScannerManager setLaserLineResource(int resourceId) {
+        if (scanOption.scanLineColors != null && scanOption.scanLineColors.size() > 0 || scanOption.laserBackgroundResId != -1) {
             throw new IllegalArgumentException("please choose laser line color or laser background or not");
         }
         scanOption.laserLineResId = resourceId;
@@ -171,71 +172,71 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager setFrameSize(int width,int height){
+    public ScannerManager setFrameSize(int width, int height) {
         scanOption.scanBoxWidth = width;
         scanOption.scanBoxHeight = height;
         return this;
     }
 
-    public ScannerManager setTipText(String tips){
+    public ScannerManager setTipText(String tips) {
         scanOption.scanBoxTips = tips;
         return this;
     }
 
-    public ScannerManager setFrameTopMargin(int topMargin){
-        scanOption.scanBoxFrameTopMargin  =topMargin;
+    public ScannerManager setFrameTopMargin(int topMargin) {
+        scanOption.scanBoxFrameTopMargin = topMargin;
         return this;
     }
 
-    public ScannerManager setFrameLeftMargin(int leftMargin){
+    public ScannerManager setFrameLeftMargin(int leftMargin) {
         scanOption.scanBoxFrameLeftMargin = leftMargin;
         return this;
     }
 
-    public ScannerManager setLightOffResourceId(int id){
+    public ScannerManager setLightOffResourceId(int id) {
         scanOption.lightOffResource = id;
         return this;
     }
 
-    public ScannerManager setLightOnResourceId(int id){
+    public ScannerManager setLightOnResourceId(int id) {
         scanOption.lightOnResource = id;
         return this;
     }
 
-    public ScannerManager setFrameStrategies(Integer... s){
+    public ScannerManager setFrameStrategies(Integer... s) {
 
-        if (s == null || s.length < 0){
+        if (s == null || s.length < 0) {
             return this;
         }
 
         ArrayList<Integer> list = new ArrayList<>(s.length);
-        for (Integer i : s){
+        for (Integer i : s) {
             list.add(i);
         }
         scanOption.applyFrameStrategies = list;
         return this;
     }
 
-    public ScannerManager setScanBoxOffset(int offset){
+    public ScannerManager setScanBoxOffset(int offset) {
         scanOption.scanBoxOffset = offset;
         return this;
     }
 
-    public ScannerManager setPotentialAreaStrategy(int strategy){
+    public ScannerManager setPotentialAreaStrategy(int strategy) {
         scanOption.potentialAreaStrategies = strategy;
         return this;
     }
 
-    public ScannerManager setCoreThreadPoolSize(int size){
-        if (size <= 0){
+    public ScannerManager setCoreThreadPoolSize(int size) {
+        if (size <= 0) {
             return this;
         }
         scanOption.coreThreadPoolSize = size;
         return this;
     }
 
-    public ScannerManager setMaxThreadPoolSize(int size){
-        if (size <= 0){
+    public ScannerManager setMaxThreadPoolSize(int size) {
+        if (size <= 0) {
             return this;
         }
         scanOption.maxThreadPoolSize = size;
@@ -247,13 +248,17 @@ public class ScannerManager {
         return this;
     }
 
-    public ScannerManager applyAllDecodeStrategiesInFrame(){
+    public ScannerManager applyAllDecodeStrategiesInFrame() {
         scanOption.applyAllDecodeStrategiesInFrame = true;
         return this;
     }
 
+    public ScannerManager setDetectorType(int type){
+        scanOption.detectorType = type;
+        return this;
+    }
 
-    public ScanOption build(){
+    public ScanOption build() {
         return scanOption;
     }
 
@@ -300,10 +305,12 @@ public class ScannerManager {
         private boolean frameCornerInside = false;
         private int laserLineMoveInterval = -1;
         private boolean applyAllDecodeStrategiesInFrame;
-
         private int laserLineHeight;
 
-        public ScanOption(){}
+        private int detectorType = NativeSdk.DETECTOR_ZXING;
+
+        public ScanOption() {
+        }
 
 
         protected ScanOption(Parcel in) {
@@ -335,7 +342,8 @@ public class ScannerManager {
             frameCornerInside = in.readByte() != 0;
             laserLineMoveInterval = in.readInt();
             laserLineHeight = in.readInt();
-            applyAllDecodeStrategiesInFrame =  in.readByte() != 0;
+            applyAllDecodeStrategiesInFrame = in.readByte() != 0;
+            detectorType = in.readInt();
             applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
         }
@@ -371,6 +379,7 @@ public class ScannerManager {
             dest.writeInt(laserLineMoveInterval);
             dest.writeInt(laserLineHeight);
             dest.writeByte(applyAllDecodeStrategiesInFrame ? (byte) 1 : 0);
+            dest.writeInt(detectorType);
             dest.writeSerializable(applyFrameStrategies);
             dest.writeSerializable(scanLineColors);
         }
@@ -429,7 +438,7 @@ public class ScannerManager {
             return continuousScanTime;
         }
 
-        public void setContinuousScanTime(long time){
+        public void setContinuousScanTime(long time) {
             continuousScanTime = time;
         }
 
@@ -497,7 +506,7 @@ public class ScannerManager {
             return maxThreadPoolSize;
         }
 
-        public int getLaserBackgroundResource(){
+        public int getLaserBackgroundResource() {
             return laserBackgroundResId;
         }
 
@@ -517,9 +526,12 @@ public class ScannerManager {
             return laserLineHeight;
         }
 
-        public boolean isApplyAllDecodeStrategiesInFrame(){
+        public boolean isApplyAllDecodeStrategiesInFrame() {
             return applyAllDecodeStrategiesInFrame;
         }
 
+        public int getDetectorType() {
+            return detectorType;
+        }
     }
 }
