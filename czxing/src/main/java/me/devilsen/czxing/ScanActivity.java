@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -15,7 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.compat.ActivityCompat;
 import me.devilsen.czxing.compat.ContextCompat;
 import me.devilsen.czxing.util.BarCodeUtil;
@@ -85,7 +85,7 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
         }
 
         mScanView.applyScanOption(option);
-        mScanView.setLightnessChangedListener(new ScanView.LightnessChangeListener() {
+        mScanView.setScanBoxParamsChangedListener(new ScanView.ScanBoxParamsChangedListener() {
             @Override
             public void onLightChanged(final boolean isLight) {
                 runOnUiThread(new Runnable() {
@@ -94,6 +94,11 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
                         Toast.makeText(ScanActivity.this,"isLight: " + isLight,Toast.LENGTH_LONG).show();
                     }
                 });
+            }
+
+            @Override
+            public void onScanRectSizeChanged(Rect area) {
+//                Toast.makeText(ScanActivity.this,"Rect: " + area,Toast.LENGTH_SHORT).show();
             }
         });
         // 标题栏

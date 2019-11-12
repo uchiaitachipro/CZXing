@@ -96,7 +96,8 @@ public class MainActivity extends AppCompatActivity {
                 .setFrameCornerWidth(BarCodeUtil.dp2px(this,2))
                 .setFrameCornerColor(resources.getColor(R.color.color_more_blue))
                 .setLaserBackground(R.drawable.img_scanner_grid)
-                .setFrameStrategies(NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY,
+                .setFrameStrategies(
+                        NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY,
                         NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY)
 //                .applyAllDecodeStrategiesInFrame()
                 .setDetectorType(NativeSdk.DETECTOR_ALL)

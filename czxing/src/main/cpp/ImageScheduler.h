@@ -40,7 +40,7 @@ public:
         STRATEGY_THRESHOLD = 2,
         STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY = 4,
         STRATEGY_COLOR_EXTRACT = 8,
-        STRATEGY_LOCATE_QR_CODE = 16,
+        STRATEGY_HUANG_FUZZY = 16,
         STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY= 32
     };
 
@@ -103,19 +103,19 @@ private:
 
     void preTreatMat(const FrameData &frameData);
 
-    void applyStrategy(const Mat &mat);
+    void applyStrategy(Mat &mat);
 
-    Result decodePixels(const Mat &mat,int threshold = -1);
+    Result decodePixels(Mat &mat,int threshold = -1);
 
-    Result decodeZBar(const Mat &gray, int threshold);
+    Result decodeZBar(Mat &gray, int threshold);
 
     Result decodeZXing(const Mat &mat, int threshold);
 
-    Result decodeGrayPixels(const Mat &gray);
+    Result decodeGrayPixels(Mat &gray);
 
-    Result decodeThresholdPixels(const Mat &gray);
+    Result decodeThresholdPixels(Mat &gray);
 
-    Result decodeAdaptivePixels(const Mat &gray,int adaptiveMethod,int blockSize,int delta);
+    Result decodeAdaptivePixels(Mat &gray,int adaptiveMethod,int blockSize,int delta);
 
     void recognizerQrCode(const Mat &mat);
 

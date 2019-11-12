@@ -146,7 +146,7 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
     }
 }
 
-void ImageScheduler::applyStrategy(const Mat &mat) {
+void ImageScheduler::applyStrategy(Mat &mat) {
 
     int startIndex = isApplyAllStrategies ? 0 : currentStrategyIndex;
     startIndex = startIndex <= 0 ? 0 : startIndex % _strategies.size();
@@ -189,7 +189,13 @@ void ImageScheduler::applyStrategy(const Mat &mat) {
                 //    writeImage(lightMat, std::string("adaptive-close-threshold-"));
                 break;
             }
-
+            case DecodeStrategy::STRATEGY_HUANG_FUZZY :{
+                Mat huang;
+                rotate(mat, huang, ROTATE_90_COUNTERCLOCKWISE);
+                int thresholdValue = GetHuangFuzzyThreshold(huang);
+                Result huangFuzzyResult = decodePixels(huang,thresholdValue);
+                break;
+            }
             case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY: {
                 Result remoteAdaptiveResult = decodeAdaptivePixels(mat, ADAPTIVE_THRESH_GAUSSIAN_C,
                                                                    25, 5);
@@ -261,7 +267,7 @@ void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
     writeImage(th, "color");
 }
 
-Result ImageScheduler::decodeGrayPixels(const Mat &gray) {
+Result ImageScheduler::decodeGrayPixels(Mat &gray) {
     LOGE("start GrayPixels...");
 
     Mat mat;
@@ -271,7 +277,7 @@ Result ImageScheduler::decodeGrayPixels(const Mat &gray) {
     return result;
 }
 
-Result ImageScheduler::decodeThresholdPixels(const Mat &gray) {
+Result ImageScheduler::decodeThresholdPixels(Mat &gray) {
     LOGE("start ThresholdPixels...");
 
     Mat mat;
@@ -288,7 +294,7 @@ Result ImageScheduler::decodeThresholdPixels(const Mat &gray) {
     return result;
 }
 
-Result ImageScheduler::decodeAdaptivePixels(const Mat &gray, int adaptiveMethod, int blockSize,
+Result ImageScheduler::decodeAdaptivePixels(Mat &gray, int adaptiveMethod, int blockSize,
                                             int delta) {
     LOGE("start AdaptivePixels...");
 
@@ -337,7 +343,7 @@ void ImageScheduler::recognizerQrCode(const Mat &mat) {
 
 }
 
-Result ImageScheduler::decodePixels(const Mat &mat, int threshold) {
+Result ImageScheduler::decodePixels(Mat &mat, int threshold) {
 
     switch (detectType) {
         case DetectorType::ZBAR : {
@@ -462,10 +468,13 @@ Result ImageScheduler::decodeZXing(const Mat &mat, int threshold) {
     return Result(DecodeStatus::NotFound);
 }
 
-Result ImageScheduler::decodeZBar(const Mat &gray, int threshold) {
+Result ImageScheduler::decodeZBar(Mat &gray, int threshold) {
     LOGE("detect by zbar");
-    auto width = static_cast<unsigned int>(gray.cols);
-    auto height = static_cast<unsigned int>(gray.rows);
+
+    int width = gray.cols;
+    int height = gray.rows;
+
+    thresholdImage(gray,threshold);
     ImageScanner scanner;
     scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
     const void *raw = gray.data;

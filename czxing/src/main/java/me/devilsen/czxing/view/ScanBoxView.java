@@ -67,7 +67,7 @@ public class ScanBoxView extends View {
     private int mTextSize;
     private int mTextSizeBig;
 
-    private ScanBoxClickListener mFlashLightListener;
+    private ScanBoxListener mBoxListener;
     // 是否处于黑暗环境
     private boolean isDark;
     private boolean mDrawCardText;
@@ -197,8 +197,8 @@ public class ScanBoxView extends View {
             if (x > mFlashLightLeft && x < mFlashLightRight &&
                     y > mFlashLightTop && y < mFlashLightBottom) {
                 // 在亮度不够的情况下，或者在打开闪光灯的情况下才可以点击
-                if (mFlashLightListener != null && (isDark || isLightOn)) {
-                    mFlashLightListener.onFlashLightClick();
+                if (mBoxListener != null && (isDark || isLightOn)) {
+                    mBoxListener.onFlashLightClick();
                     isLightOn = !isLightOn;
                     invalidate();
                 }
@@ -208,8 +208,8 @@ public class ScanBoxView extends View {
         return super.onTouchEvent(event);
     }
 
-    public void setScanBoxClickListener(ScanBoxClickListener lightListener) {
-        mFlashLightListener = lightListener;
+    public void setScanBoxClickListener(ScanBoxListener lightListener) {
+        mBoxListener = lightListener;
     }
 
     private void calFramingRect() {
@@ -230,6 +230,10 @@ public class ScanBoxView extends View {
             mBoxLeft = (viewWidth - scanBoxWidth) / 2;
             mBoxTop = (viewHeight - scanBoxHeight) / 2;
             mFramingRect = new Rect(mBoxLeft, mBoxTop, mBoxLeft + scanBoxWidth, mBoxTop + scanBoxHeight);
+        }
+
+        if (mBoxListener != null){
+            mBoxListener.onFrameRectChanged();
         }
     }
 
@@ -606,7 +610,8 @@ public class ScanBoxView extends View {
 //        calFramingRect();
     }
 
-    public interface ScanBoxClickListener {
+    public interface ScanBoxListener {
         void onFlashLightClick();
+        void onFrameRectChanged();
     }
 }

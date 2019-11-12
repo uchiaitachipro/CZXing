@@ -34,10 +34,15 @@ public class ScanBoxTestActivity extends Activity {
         scanBoxView.hideCardText();
         scanBoxView.setDark(true);
 
-        scanBoxView.setScanBoxClickListener(new ScanBoxView.ScanBoxClickListener() {
+        scanBoxView.setScanBoxClickListener(new ScanBoxView.ScanBoxListener() {
             @Override
             public void onFlashLightClick() {
                 Log.e("ScanBox", "onFlashLightClick");
+            }
+
+            @Override
+            public void onFrameRectChanged() {
+
             }
         });
     }

@@ -2,6 +2,7 @@ package me.devilsen.czxing.view;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
@@ -23,7 +24,7 @@ import static me.devilsen.czxing.ScannerManager.FIND_POTENTIAL_AREA_ZOOM;
  * date : 2019-06-29 16:18
  * desc : 二维码界面使用类
  */
-public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickListener,
+public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListener,
         BarcodeReader.ReadCodeListener {
 
     /**
@@ -54,7 +55,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     private long startTime = -1;
     private long scanSuccessDuration = -1;
 
-    private LightnessChangeListener lightnessChangedCallback;
+    private ScanBoxParamsChangedListener paramsChangedCallback;
 
     public ScanView(Context context) {
         this(context, null);
@@ -185,8 +186,8 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         if (this.isDark) {
             if (showCounter <= 2) {
                 this.isDark = false;
-                if (lightnessChangedCallback != null) {
-                    lightnessChangedCallback.onLightChanged(true);
+                if (paramsChangedCallback != null) {
+                    paramsChangedCallback.onLightChanged(true);
                 } else {
                     mScanBoxView.setDark(false);
                 }
@@ -195,8 +196,8 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         } else {
             if (showCounter >= DARK_LIST_SIZE) {
                 this.isDark = true;
-                if (lightnessChangedCallback != null) {
-                    lightnessChangedCallback.onLightChanged(false);
+                if (paramsChangedCallback != null) {
+                    paramsChangedCallback.onLightChanged(false);
                 } else {
                     mScanBoxView.setDark(true);
                 }
@@ -222,6 +223,13 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
     @Override
     public void onFlashLightClick() {
         mCameraSurface.toggleFlashLight(isDark);
+    }
+
+    @Override
+    public void onFrameRectChanged() {
+        if (paramsChangedCallback != null){
+            paramsChangedCallback.onScanRectSizeChanged(mScanBoxView.getScanBoxRect());
+        }
     }
 
     public void applyScanOption(ScannerManager.ScanOption scanOption) {
@@ -312,12 +320,13 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxClickLi
         }
     }
 
-    public void setLightnessChangedListener(LightnessChangeListener lightnessChangedCallback) {
-        this.lightnessChangedCallback = lightnessChangedCallback;
+    public void setScanBoxParamsChangedListener(ScanBoxParamsChangedListener lightnessChangedCallback) {
+        this.paramsChangedCallback = lightnessChangedCallback;
     }
 
-    public interface LightnessChangeListener {
+    public interface ScanBoxParamsChangedListener {
         void onLightChanged(boolean isLight);
+        void onScanRectSizeChanged(Rect area);
     }
 
 }

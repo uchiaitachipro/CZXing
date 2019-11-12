@@ -14,6 +14,7 @@ public class NativeSdk {
     public static final int STRATEGY_THRESHOLD = 2;
     public static final int STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY = 4;
     public static final int STRATEGY_COLOR_EXTRACT = 8;
+    public static final int STRATEGY_HUANG_FUZZY = 16;
     public static final int STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY = 32;
 
     public static final int DETECTOR_ZXING = 0;
