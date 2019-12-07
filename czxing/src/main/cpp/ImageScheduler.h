@@ -16,7 +16,7 @@
 #include "safe_queue.h"
 #include "QRCodeFinder.h"
 #include <mutex>
-#include "zbar/zbar.h"
+#include "zbar/include/zbar.h"
 
 using namespace cv;
 using namespace ZXing;

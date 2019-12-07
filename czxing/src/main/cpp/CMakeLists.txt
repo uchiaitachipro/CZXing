@@ -8,15 +8,23 @@ add_library(
         SHARED
         ${SOURCE})
 
-add_subdirectory(zxing)
-include_directories(zxing)
+set(ICONV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/iconv")
 
+add_subdirectory(iconv)
+add_subdirectory(zbar)
+add_subdirectory(zxing)
+
+include_directories(${iconv_SOURCE_DIR}/include)
+include_directories(${zbar_SOURCE_DIR}/include)
+
+include_directories(zxing)
 include_directories(include)
+
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}")
 
-#add_compile_options(czxing
-#        "-O1"
-#        "-fPIC")
+add_compile_options(czxing
+        "-O1"
+        "-fPIC")
 
 # 静态方式导入库
 add_library(opencv_core STATIC IMPORTED)
@@ -58,9 +66,9 @@ set_target_properties(libwebp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/.
 
 # 导入zbar
 #add_library(iconv SHARED IMPORTED)
-add_library(zbar_core SHARED IMPORTED)
+#add_library(zbar_core SHARED IMPORTED)
 #set_target_properties(iconv PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}/libiconv.so)
-set_target_properties(zbar_core PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}/libzbarjni.so)
+#set_target_properties(zbar_core PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}/libzbarjni.so)
 
 find_library(
         log-lib
@@ -69,7 +77,9 @@ find_library(
 target_link_libraries(
         czxing
         ZXingCore
-        zbar_core
+        zbarjni
+        iconv
+#        zbar_core
 
         opencv_highgui
         opencv_imgcodecs
