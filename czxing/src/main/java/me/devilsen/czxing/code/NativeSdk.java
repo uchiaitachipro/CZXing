@@ -20,6 +20,7 @@ public class NativeSdk {
     public static final int DETECTOR_ZXING = 0;
     public static final int DETECTOR_ZBAR = 1;
     public static final int DETECTOR_ALL = 2;
+    public static final int PURE_ZXING = 4;
 
     private NativeSdk() {
     }

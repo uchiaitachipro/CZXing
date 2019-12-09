@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+#include "HookBase.h"
+
 namespace ZXing {
 
 class BinaryBitmap;
@@ -35,7 +37,7 @@ class Result;
 * @author Sean Owen
 * @author dswitkin@google.com (Daniel Switkin)
 */
-class Reader
+class Reader : public HookBase
 {
 public:
 	virtual ~Reader() {}

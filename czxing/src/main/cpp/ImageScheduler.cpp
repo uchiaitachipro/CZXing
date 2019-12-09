@@ -11,6 +11,9 @@
 #include "android_utils.h"
 #include "ThresholdTool.h"
 #include <math.h>
+#include <src/qrcode/QRReader.h>
+#include <src/DecodeHints.h>
+#include "ZXingHooker.h"
 
 #define DEFAULT_MIN_LIGHT 70;
 
@@ -21,7 +24,6 @@ ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
     this->reader = _reader;
     this->javaCallHelper = javaCallHelper;
     qrCodeRecognizer = new QRCodeRecognizer();
-//    zbarScanner->set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
     stopProcessing.store(false);
     isProcessing.store(false);
     abortTask.store(false);
@@ -31,7 +33,6 @@ ImageScheduler::~ImageScheduler() {
     DELETE(env);
     DELETE(reader);
     DELETE(javaCallHelper);
-//    DELETE(zbarScanner);
     DELETE(qrCodeRecognizer);
 
     delete &isProcessing;
@@ -42,44 +43,15 @@ ImageScheduler::~ImageScheduler() {
 
 
 void *prepareMethod(void *arg) {
-//    auto scheduler = static_cast<ImageScheduler *>(arg);
-//    scheduler->start();
-//    return nullptr;
 }
 
 void ImageScheduler::prepare() {
-//    pthread_create(&prepareThread, nullptr, prepareMethod, this);
 }
 
 void ImageScheduler::start() {
-//    stopProcessing.store(false);
-//    isProcessing.store(false);
-//    frameQueue.setWork(1);
-//    while (true) {
-//        if (stopProcessing.load()) {
-//            break;
-//        }
-//
-//        if (isProcessing.load()) {
-//            continue;
-//        }
-//
-//        FrameData frameData;
-//        int ret = frameQueue.deQueue(frameData);
-//        if (ret) {
-//            isProcessing.store(true);
-//            preTreatMat(frameData);
-//            isProcessing.store(false);
-//        }
-//    }
 }
 
 void ImageScheduler::stop() {
-//    isProcessing.store(false);
-//    stopProcessing.store(true);
-//    abortTask.store(true);
-//    frameQueue.setWork(0);
-//    frameQueue.clear();
 }
 
 void
@@ -223,49 +195,6 @@ void ImageScheduler::applyStrategy(Mat &mat) {
     }
 }
 
-void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
-    Mat rgbMat;
-//    cvtColor(src, rgbMat, COLOR_YUV2BGR_NV21);
-    Mat hsv;
-    cvtColor(rgbMat, hsv, CV_BGR2HSV);
-
-    for (int w = 0; w < rgbMat.rows; w++) {
-        for (int h = 0; h < rgbMat.cols; h++) {
-            auto pixel = rgbMat.at<Vec3b>(w, h);
-
-            auto b = pixel[0];
-            auto g = pixel[1];
-
-            if (b < 100 || g < 100) {
-                continue;
-            }
-
-            rgbMat.at<Vec3b>(w, h)[0] = 255;
-            rgbMat.at<Vec3b>(w, h)[1] = 255;
-            rgbMat.at<Vec3b>(w, h)[2] = 255;
-
-//           if (pixel[1] >= 140 && pixel[2] >= 130 && pixel[0] >= 87 && pixel[0] <= 124){
-//               H += pixel[0];
-//               s += pixel[1];
-//               v += pixel[2];
-//               ++count;
-//               hsv.at<Vec3b>(w,h)[0] = 180;
-//               hsv.at<Vec3b>(w,h)[1] = 30;
-//               hsv.at<Vec3b>(w,h)[2] = 255;
-//           }
-
-        }
-    }
-
-//    LOGE("h channel average: %lf", (H / count));
-//    LOGE("s channel average: %lf", (s / count));
-//    LOGE("v channel average: %lf", (v / count));
-//    cvtColor(hsv,rgbMat,CV_HSV2BGR);
-    Mat th;
-    cvtColor(rgbMat, th, COLOR_BGR2GRAY);
-    threshold(th, th, 50, 255, CV_THRESH_OTSU);
-    writeImage(th, "color");
-}
 
 Result ImageScheduler::decodeGrayPixels(Mat &gray) {
     LOGE("start GrayPixels...");
@@ -356,6 +285,9 @@ Result ImageScheduler::decodePixels(Mat &mat, int threshold) {
             }
             return decodeZBar(mat, threshold);
         }
+        case DetectorType::PURE_ZXING:{
+            return hookZXing(mat,threshold);
+        }
         case DetectorType::ZXING :
         default: {
             return decodeZXing(mat, threshold);
@@ -424,6 +356,54 @@ Result ImageScheduler::readBitmap(const cv::Mat &mat, int left, int top, int wid
 
     return Result(DecodeStatus::NotFound);
 
+}
+
+void hookZXingPhrases(int phrase,long p1,long p2){
+    ZXingHooker hooker;
+    hooker.hookHandler(phrase,p1,p2);
+}
+Result ImageScheduler::hookZXing(const Mat &mat, int threshold){
+    LOGE("detect by zxing");
+    try {
+        int width = mat.cols;
+        int height = mat.rows;
+
+        auto *pixels = new unsigned char[height * width];
+
+        int index = 0;
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                if (threshold == -1) {
+                    pixels[index++] = mat.at<unsigned char>(i, j);
+                } else {
+                    auto pValue = mat.at<unsigned char>(i, j);
+                    if (pValue > threshold) {
+                        pixels[index++] = 255;
+                    } else {
+                        pixels[index++] = 0;
+                    }
+                }
+            }
+        }
+
+        auto binImage = BinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
+        ZXing::DecodeHints hints;
+        auto reader = QRCode::Reader(hints);
+        reader.setHookFunction(hookZXingPhrases);
+        Result result = reader.decode(*binImage);
+        delete[]pixels;
+
+        if (result.isValid()) {
+            return result;
+        }
+    } catch (const std::exception &e) {
+        ThrowJavaException(env, e.what());
+    }
+    catch (...) {
+        ThrowJavaException(env, "Unknown exception");
+    }
+
+    return Result(DecodeStatus::NotFound);
 }
 
 Result ImageScheduler::decodeZXing(const Mat &mat, int threshold) {

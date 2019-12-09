@@ -32,6 +32,8 @@ namespace QRCode {
 class Detector
 {
 public:
+	typedef void (*HookFunction)(int, long, long);
+
 	/**
 	* <p>Detects a QR Code in an image.</p>
 	*
@@ -40,7 +42,8 @@ public:
 	* @throws NotFoundException if QR Code cannot be found
 	* @throws FormatException if a QR Code cannot be decoded
 	*/
-	static DetectorResult Detect(const BitMatrix& image, bool tryHarder);
+	static DetectorResult Detect(const BitMatrix& image, bool tryHarder,HookFunction f = 0L);
+
 };
 
 } // QRCode

@@ -47,7 +47,8 @@ public:
     enum DetectorType{
         ZXING = 0,
         ZBAR = 1,
-        ALL = 2
+        ALL = 2,
+        PURE_ZXING = 4,
     };
 
     ImageScheduler(JNIEnv *env, MultiFormatReader *_reader, JavaCallHelper *javaCallHelper);
@@ -111,6 +112,8 @@ private:
 
     Result decodeZXing(const Mat &mat, int threshold);
 
+    Result hookZXing(const Mat &mat, int threshold);
+
     Result decodeGrayPixels(Mat &gray);
 
     Result decodeThresholdPixels(Mat &gray);
@@ -118,8 +121,6 @@ private:
     Result decodeAdaptivePixels(Mat &gray,int adaptiveMethod,int blockSize,int delta);
 
     void recognizerQrCode(const Mat &mat);
-
-    void filterColorInImage(const Mat &raw, Mat &outImage);
 
     bool analysisBrightness(const Mat &gray);
 

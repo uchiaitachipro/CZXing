@@ -17,7 +17,7 @@
 */
 
 #include <memory>
-
+#include "HookBase.h"
 namespace ZXing {
 
 class BitMatrix;
@@ -36,9 +36,14 @@ class PerspectiveTransform;
 *
 * @author Sean Owen
 */
-class GridSampler
+class GridSampler : public HookBase
 {
+
+
 public:
+
+	typedef void HookFunction(int phrase,long beforeSamplingImagePtr,long afterSamplingImagePtr);
+
 	virtual ~GridSampler() {}
 
 	/**
@@ -78,6 +83,7 @@ public:
 
 	static std::shared_ptr<GridSampler> Instance();
 	static void SetInstance(const std::shared_ptr<GridSampler>& inst);
+
 };
 
 } // ZXing

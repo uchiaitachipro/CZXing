@@ -96,7 +96,11 @@ std::string getTimes() {
 
 long flag = 0;
 void writeImage(const Mat& mat,std::string prefix){
+    std::string path = "/storage/emulated/0/scan/";
+    writeImage(mat,path,prefix);
+}
 
+void writeImage(const Mat& mat,std::string path,std::string prefix){
     if (flag >= 10000){
         flag = 0;
     }
@@ -104,7 +108,7 @@ void writeImage(const Mat& mat,std::string prefix){
     Mat result;
     mat.copyTo(result);
     std::string str;
-    str.append("/storage/emulated/0/scan/");
+    str.append(path);
     str.append(prefix);
     str.append(getTimes());
     str.append(std::to_string(flag++));

@@ -121,6 +121,8 @@ public:
 		if (dimensionX <= 0 || dimensionY <= 0)
 			return {};
 
+		notifyHook(2, reinterpret_cast<long>(&image),0);
+
 		BitMatrix result(dimensionX, dimensionY);
 		int max = 2 * dimensionX;
 		std::vector<float> points(max);
@@ -154,6 +156,7 @@ public:
 				return {};
 			}
 		}
+		notifyHook(3, reinterpret_cast<long>(&result),0);
 		return result;
 	}
 };
