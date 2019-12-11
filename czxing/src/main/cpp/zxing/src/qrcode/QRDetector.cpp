@@ -331,6 +331,9 @@ namespace ZXing {
                 // If we didn't find alignment pattern... well try anyway without it
             }
 
+            // hook 变换之前的位置信息
+            f(1, reinterpret_cast<long>(&image), reinterpret_cast<long>(&info));
+
             PerspectiveTransform transform = CreateTransform(info.topLeft, info.topRight,
                                                              info.bottomLeft, alignmentPattern,
                                                              dimension);

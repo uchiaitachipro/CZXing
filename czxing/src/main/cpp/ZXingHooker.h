@@ -20,6 +20,7 @@ public:
 private:
     void handleThreshold(long matrixPtr,long p2) const ;
     void handleGirdSampling(long binaryImagePtr, bool before) const;
+    void handleFindPositionPattern(long matrixPtr,long finderPatternInfoPtr) const;
 };
 
 
