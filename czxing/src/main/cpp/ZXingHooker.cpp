@@ -9,6 +9,7 @@
 #include <src/BinaryBitmap.h>
 #include <src/qrcode/QRFinderPatternInfo.h>
 #include <src/qrcode/QRAlignmentPattern.h>
+#include <src/qrcode/QRVersion.h>
 #include <src/ResultPoint.h>
 #include "BitMatrix.h"
 #include "android_utils.h"
@@ -77,14 +78,30 @@ void ZXingHooker::handleFindPositionPattern(long matrixPtr,long finderPatternInf
     writeImage(mat,path,"find-pattern-");
 }
 
+void ZXingHooker::handleCalculateVersion(long versionPtr) const {
+    if (versionPtr == 0){
+        return;
+    }
+
+    auto version = reinterpret_cast<QRCode::Version*>(versionPtr);
+    auto dimension = version->dimensionForVersion();
+    auto versionNum = version->versionNumber();
+
+    LOGE("qrcode version num: %d dimension: %d x %d",versionNum,dimension,dimension);
+}
+
 void ZXingHooker::hookHandler(int phrase, long p1, long p2,long p3) const {
     switch (phrase) {
         case HookPhrase::HOOK_THRESHOLD: {
             handleThreshold(p1, p2);
             break;
         }
-        case HookPhrase::HOOK_PERSPECTIVE_TRANSFORM:{
-            handleFindPositionPattern(p1,p2,p3);
+        case HookPhrase::HOOK_CALCULATE_VERSION : {
+            handleCalculateVersion(p1);
+            break;
+        }
+        case HookPhrase::HOOK_PERSPECTIVE_TRANSFORM: {
+            handleFindPositionPattern(p1, p2, p3);
         }
         case HookPhrase::HOOK_BEFORE_GIRD_SAMPLING : {
             handleGirdSampling(p1, true);

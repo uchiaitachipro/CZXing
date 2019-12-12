@@ -299,7 +299,8 @@ namespace ZXing {
             const Version *provisionalVersion = Version::ProvisionalVersionForDimension(dimension);
             if (provisionalVersion == nullptr)
                 return {};
-
+            // hook 计算二维码版本信息
+            f(4, reinterpret_cast<long>(provisionalVersion),0,0);
             int modulesBetweenFPCenters = provisionalVersion->dimensionForVersion() - 7;
 
             AlignmentPattern alignmentPattern;
