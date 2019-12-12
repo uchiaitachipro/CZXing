@@ -15,12 +15,12 @@ public:
         HOOK_AFTER_GIRD_SAMPLING = 3,
     };
 
-    void hookHandler(int phrase,long  params1,long params2) const ;
+    void hookHandler(int phrase,long  params1,long params2,long params3) const ;
 
 private:
     void handleThreshold(long matrixPtr,long p2) const ;
     void handleGirdSampling(long binaryImagePtr, bool before) const;
-    void handleFindPositionPattern(long matrixPtr,long finderPatternInfoPtr) const;
+    void handleFindPositionPattern(long matrixPtr,long finderPatternInfoPtr,long alignPatternPtr) const;
 };
 
 

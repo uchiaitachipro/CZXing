@@ -32,7 +32,7 @@ namespace QRCode {
 class Detector
 {
 public:
-	typedef void (*HookFunction)(int, long, long);
+	typedef void (*HookFunction)(int, long, long,long);
 
 	/**
 	* <p>Detects a QR Code in an image.</p>

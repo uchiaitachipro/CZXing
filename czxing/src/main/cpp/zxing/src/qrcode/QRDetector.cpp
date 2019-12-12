@@ -281,7 +281,7 @@ namespace ZXing {
             return -1; // to signal error;
         }
 
-        typedef void (*HookFunction)(int, long, long);
+        typedef void (*HookFunction)(int, long, long,long);
 
         static DetectorResult
         ProcessFinderPatternInfo(const BitMatrix &image, const FinderPatternInfo &info,
@@ -332,7 +332,7 @@ namespace ZXing {
             }
 
             // hook 变换之前的位置信息
-            f(1, reinterpret_cast<long>(&image), reinterpret_cast<long>(&info));
+            f(1, reinterpret_cast<long>(&image), reinterpret_cast<long>(&info), reinterpret_cast<long>(&alignmentPattern));
 
             PerspectiveTransform transform = CreateTransform(info.topLeft, info.topRight,
                                                              info.bottomLeft, alignmentPattern,
