@@ -13,6 +13,7 @@
 #include <src/qrcode/QRDetector.h>
 #include "BitMatrix.h"
 #include "android_utils.h"
+#include "CopyOfFindAlignmentPattern.h"
 
 using namespace cv;
 using namespace ZXing;
