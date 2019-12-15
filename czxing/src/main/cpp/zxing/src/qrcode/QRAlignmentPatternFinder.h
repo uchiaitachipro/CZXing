@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+#include <HookBase.h>
+
 namespace ZXing {
 
 class BitMatrix;
@@ -38,7 +40,7 @@ class AlignmentPattern;
 *
 * @author Sean Owen
 */
-class AlignmentPatternFinder
+class AlignmentPatternFinder : public HookBase
 {
 public:
 	/**

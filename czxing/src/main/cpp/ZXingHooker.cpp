@@ -18,6 +18,7 @@ using namespace cv;
 using namespace ZXing;
 
 static int currentVersionNum = -1;
+static float currentModuleSize = 0.0f;
 
 cv::Mat convertBitMatrixToMat(long matrixPtr) {
     auto ptr = reinterpret_cast<BitMatrix *>(matrixPtr);
@@ -40,6 +41,15 @@ void ZXingHooker::handleThreshold(long matrixPtr, long p2) const {
     writeImage(image, path, "threshold-hook-");
 }
 
+void ZXingHooker::handleSaveModuleSize(long valuePtr) const{
+    if (valuePtr == 0){
+        return;
+    }
+    auto value = reinterpret_cast<float *>(valuePtr);
+    currentModuleSize  = *value;
+    LOGE("current module size:  %f",currentModuleSize);
+}
+
 void ZXingHooker::handleGirdSampling(long matrixPtr, bool before) const {
     auto image = convertBitMatrixToMat(matrixPtr);
     std::string path = "/storage/emulated/0/scan/sampling/";
@@ -52,29 +62,6 @@ void ZXingHooker::handleGirdSampling(long matrixPtr, bool before) const {
     writeImage(image, path, fileName);
 }
 
-void drawProtentialAlimentArea(Mat &mat,
-                                float overallEstModuleSize,
-                                int estAlignmentX,
-                                int estAlignmentY,
-                                int width,
-                                int height,
-                                float allowanceFactor){
-
-        // Look for an alignment pattern (3 modules in size) around where it
-        // should be
-        int allowance = (int) (allowanceFactor * overallEstModuleSize);
-        int alignmentAreaLeftX = std::max(0, estAlignmentX - allowance);
-        int alignmentAreaRightX = std::min(width - 1, estAlignmentX + allowance);
-        if (alignmentAreaRightX - alignmentAreaLeftX < overallEstModuleSize * 3) {
-            return;
-        }
-
-        int alignmentAreaTopY = std::max(0, estAlignmentY - allowance);
-        int alignmentAreaBottomY = std::min(height - 1, estAlignmentY + allowance);
-        if (alignmentAreaBottomY - alignmentAreaTopY < overallEstModuleSize * 3) {
-            return;
-        }
-}
 
 void ZXingHooker::handleFindPositionPattern(long matrixPtr, long finderPatternInfoPtr,
                                             long alignPatternPtr) const {
@@ -166,6 +153,10 @@ void ZXingHooker::hookHandler(int phrase, long p1, long p2, long p3) const {
         }
         case HOOK_AFTER_GIRD_SAMPLING: {
             handleGirdSampling(p1, false);
+            break;
+        }
+        case HOOK_MODULE_SZIE:{
+            handleSaveModuleSize(p1);
             break;
         }
         default:

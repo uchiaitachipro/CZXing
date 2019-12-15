@@ -287,6 +287,10 @@ namespace ZXing {
                                  HookFunction f) {
             float moduleSize = CalculateModuleSize(image, info.topLeft, info.topRight,
                                                    info.bottomLeft);
+
+            // hook module size
+            f(5, reinterpret_cast<long>(&moduleSize),0,0);
+
             if (moduleSize < 1.0f) {
                 return {};
             }
