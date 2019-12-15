@@ -4,7 +4,7 @@
 
 #ifndef CZXING_ZXINGHOOKER_H
 #define CZXING_ZXINGHOOKER_H
-
+#include <src/qrcode/QRVersion.h>
 class ZXingHooker {
 public:
 
@@ -19,11 +19,13 @@ public:
     void hookHandler(int phrase,long  params1,long params2,long params3) const ;
 
 private:
+
     void handleThreshold(long matrixPtr,long p2) const;
     void handleCalculateVersion(long versionPtr) const;
     void handleFindPositionPattern(long matrixPtr,long finderPatternInfoPtr,long alignPatternPtr) const;
 
     void handleGirdSampling(long binaryImagePtr, bool before) const;
+
 };
 
 

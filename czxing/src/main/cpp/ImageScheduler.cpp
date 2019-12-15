@@ -316,37 +316,37 @@ Result ImageScheduler::readBitmap(const cv::Mat &mat, int left, int top, int wid
 //    writeImage(gray, "convert-gray-");
     bool result = false;
 
-    Mat closelyMat;
-    adaptiveThreshold(gray, closelyMat, 255, ADAPTIVE_THRESH_MEAN_C,
-                      THRESH_BINARY, 55, 3);
-//    writeImage(closelyMat,"closelyMat-");
-    Result closelyAdaptiveResult = decodePixels(closelyMat, -1);
-    result = closelyAdaptiveResult.isValid();
-    if (result) {
-        return closelyAdaptiveResult;
-    }
+//    Mat closelyMat;
+//    adaptiveThreshold(gray, closelyMat, 255, ADAPTIVE_THRESH_MEAN_C,
+//                      THRESH_BINARY, 55, 3);
+////    writeImage(closelyMat,"closelyMat-");
+//    Result closelyAdaptiveResult = decodePixels(closelyMat, -1);
+//    result = closelyAdaptiveResult.isValid();
+//    if (result) {
+//        return closelyAdaptiveResult;
+//    }
 
-
-    Mat thresholdMat;
-    threshold(gray, thresholdMat, 50, 255, CV_THRESH_OTSU);
-//    writeImage(thresholdMat,"thresholdMat-");
-    Result thresholdResult = decodePixels(thresholdMat);
-    result = thresholdResult.isValid();
-    if (result) {
-        return thresholdResult;
-    }
-
-    Mat huangMat;
-    gray.copyTo(huangMat);
-    int thresholdValue = GetHuangFuzzyThreshold(huangMat);
-    thresholdImage(huangMat, thresholdValue);
-    Result huangResult = decodePixels(huangMat, -1);
-//    writeImage(huangMat,"huangMat-");
-    result = huangResult.isValid();
-    if (result) {
-        return huangResult;
-    }
-
+//
+//    Mat thresholdMat;
+//    threshold(gray, thresholdMat, 50, 255, CV_THRESH_OTSU);
+////    writeImage(thresholdMat,"thresholdMat-");
+//    Result thresholdResult = decodePixels(thresholdMat);
+//    result = thresholdResult.isValid();
+//    if (result) {
+//        return thresholdResult;
+//    }
+//
+//    Mat huangMat;
+//    gray.copyTo(huangMat);
+//    int thresholdValue = GetHuangFuzzyThreshold(huangMat);
+//    thresholdImage(huangMat, thresholdValue);
+//    Result huangResult = decodePixels(huangMat, -1);
+////    writeImage(huangMat,"huangMat-");
+//    result = huangResult.isValid();
+//    if (result) {
+//        return huangResult;
+//    }
+//
     Result grayResult = decodePixels(gray, -1);
 //    writeImage(gray,"gray-");
     result = grayResult.isValid();

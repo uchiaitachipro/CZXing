@@ -99,7 +99,6 @@ private:
     int detectType = DetectorType::ZXING;
     int currentStrategyIndex = 0;
     ImageScanner *zbarScanner;
-
     void initThreadPool();
 
     void preTreatMat(const FrameData &frameData);
@@ -123,7 +122,6 @@ private:
     void recognizerQrCode(const Mat &mat);
 
     bool analysisBrightness(const Mat &gray);
-
 };
 
 #endif //CZXING_IMAGESCHEDULER_H
