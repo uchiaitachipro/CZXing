@@ -110,6 +110,17 @@ void ZXingHooker::handleFindPositionPattern(long matrixPtr, long finderPatternIn
     // 画出计算得到的 alignmentX alignmentY
     cv::circle(mat, cv::Point(estAlignmentX, estAlignmentY), 4, cv::Scalar(255, 255,0), -1);
 
+    if (currentModuleSize > 0){
+        for (int i = 4; i <= 16; i <<= 1){
+            findAlignmentInRegion(mat,
+                                  *reinterpret_cast<BitMatrix *>(matrixPtr),
+                                  currentModuleSize,
+                                  estAlignmentX,
+                                  estAlignmentY,
+                                  static_cast<float>(i));
+        }
+    }
+
     if (alignPatternPtr != 0) {
         auto alignPattern = reinterpret_cast<QRCode::AlignmentPattern *>(alignPatternPtr);
         if (alignPattern->isValid()) {

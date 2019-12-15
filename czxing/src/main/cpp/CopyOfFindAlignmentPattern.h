@@ -9,10 +9,12 @@
 #include <src/BitMatrix.h>
 #include <src/ZXContainerAlgorithms.h>
 #include <array>
+#include <opencv2/core/mat.hpp>
 
 using namespace std;
 using namespace ZXing;
 using namespace QRCode;
+using namespace cv;
 using StateCount = std::array<int, 3>;
 
 float copyCenterFromEnd(const StateCount& stateCount, int end)
@@ -31,7 +33,7 @@ bool copyFoundPatternCross(const StateCount& stateCount, float moduleSize)
     return true;
 }
 
-float copyCrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal, float moduleSize)
+float copyCrossCheckVertical(Mat &mat,const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal, float moduleSize)
 {
     int maxI = image.height();
     StateCount stateCount = {};
@@ -80,12 +82,18 @@ float copyCrossCheckVertical(const BitMatrix& image, int startI, int centerJ, in
 }
 
 AlignmentPattern
-copyHandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, std::vector<AlignmentPattern>& possibleCenters)
+copyHandlePossibleCenter(Mat &mat,const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, std::vector<AlignmentPattern>& possibleCenters)
 {
     int stateCountTotal = Accumulate(stateCount, 0);
     float centerJ = copyCenterFromEnd(stateCount, j);
-    float centerI = copyCrossCheckVertical(image, i, static_cast<int>(centerJ), 2 * stateCount[1], stateCountTotal, moduleSize);
+    float centerI = copyCrossCheckVertical(mat,image, i, static_cast<int>(centerJ), 2 * stateCount[1], stateCountTotal, moduleSize);
+
+
+
     if (!std::isnan(centerI)) {
+
+//        cv::line(mat,cv::Point(centerJ,0),cv::Point(centerJ,centerI),Scalar(128,128,128),2);
+
         float estimatedModuleSize = stateCountTotal / 3.0f;
         for (const AlignmentPattern& center : possibleCenters) {
             // Look for about the same center and module size:
@@ -99,12 +107,15 @@ copyHandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, i
     return {};
 }
 
-void findAlignment(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize)
+AlignmentPattern
+findAlignment(Mat &mat,const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize)
 {
     int maxJ = startX + width;
     int middleI = startY + (height / 2);
     std::vector<AlignmentPattern> possibleCenters;
     possibleCenters.reserve(5);
+
+    cv::rectangle(mat,Rect(startX,startY,width,height),Scalar(128,128,128),2);
 
     // We are looking for black/white/black modules in 1:1:1 ratio;
     // this tracks the number of black/white/black modules seen so far
@@ -119,6 +130,9 @@ void findAlignment(const BitMatrix& image, int startX, int startY, int width, in
         while (j < maxJ && !image.get(j, i)) {
             j++;
         }
+
+        cv::circle(mat,cv::Point(j,i),2,Scalar(255,0,0),-1);
+
         int currentState = 0;
         while (j < maxJ) {
             if (image.get(j, i)) {
@@ -129,9 +143,10 @@ void findAlignment(const BitMatrix& image, int startX, int startY, int width, in
                 else { // Counting white pixels
                     if (currentState == 2) { // A winner?
                         if (copyFoundPatternCross(stateCount, moduleSize)) { // Yes
-                            auto result = copyHandlePossibleCenter(image, stateCount, i, j, moduleSize, possibleCenters);
+
+                            auto result = copyHandlePossibleCenter(mat,image, stateCount, i, j, moduleSize, possibleCenters);
                             if (result.isValid()){
-                                return;
+                                return result;
                             }
                         }
                         stateCount[0] = stateCount[2];
@@ -154,7 +169,29 @@ void findAlignment(const BitMatrix& image, int startX, int startY, int width, in
         }
 
     }
-    return;
+    return{};
+}
+
+AlignmentPattern
+findAlignmentInRegion(Mat &mat, const BitMatrix &image, float overallEstModuleSize, int estAlignmentX,
+                      int estAlignmentY, float allowanceFactor) {
+
+    int allowance = (int) (allowanceFactor * overallEstModuleSize);
+    int alignmentAreaLeftX = std::max(0, estAlignmentX - allowance);
+    int alignmentAreaRightX = std::min(image.width() - 1, estAlignmentX + allowance);
+    if (alignmentAreaRightX - alignmentAreaLeftX < overallEstModuleSize * 3) {
+        return {};
+    }
+
+    int alignmentAreaTopY = std::max(0, estAlignmentY - allowance);
+    int alignmentAreaBottomY = std::min(image.height() - 1, estAlignmentY + allowance);
+    if (alignmentAreaBottomY - alignmentAreaTopY < overallEstModuleSize * 3) {
+        return {};
+    }
+    return findAlignment(mat,image, alignmentAreaLeftX, alignmentAreaTopY,
+                         alignmentAreaRightX - alignmentAreaLeftX,
+                         alignmentAreaBottomY - alignmentAreaTopY,
+                         overallEstModuleSize);
 }
 
 #endif //CZXING_COPYOFFINDALIGNMENTPATTERN_H
