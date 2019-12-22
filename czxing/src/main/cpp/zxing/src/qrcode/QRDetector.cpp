@@ -20,6 +20,7 @@
 #include "qrcode/QRFinderPatternInfo.h"
 #include "qrcode/QRAlignmentPattern.h"
 #include "qrcode/QRAlignmentPatternFinder.h"
+#include "qrcode/QRStrictAlignmentPatternFinder.h"
 #include "qrcode/QRVersion.h"
 #include "BitMatrix.h"
 #include "DecodeHints.h"

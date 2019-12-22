@@ -22,9 +22,10 @@
 namespace ZXing {
 namespace QRCode {
 
-AlignmentPattern::AlignmentPattern(float posX, float posY, float estimatedModuleSize) :
+AlignmentPattern::AlignmentPattern(float posX, float posY, float estimatedModuleSize, int count) :
 	ResultPoint(posX, posY),
-	_estimatedModuleSize(estimatedModuleSize)
+	_estimatedModuleSize(estimatedModuleSize),
+	_count(count)
 {
 }
 
@@ -44,10 +45,11 @@ AlignmentPattern::aboutEquals(float moduleSize, float i, float j) const
 */
 AlignmentPattern
 AlignmentPattern::combineEstimate(float i, float j, float newModuleSize) const {
+	int combinedCount = _count + 1;
 	float combinedX = (x() + j) / 2.0f;
 	float combinedY = (y() + i) / 2.0f;
 	float combinedModuleSize = (_estimatedModuleSize + newModuleSize) / 2.0f;
-	return {combinedX, combinedY, combinedModuleSize};
+	return {combinedX, combinedY, combinedModuleSize,combinedCount};
 }
 
 } // QRCode

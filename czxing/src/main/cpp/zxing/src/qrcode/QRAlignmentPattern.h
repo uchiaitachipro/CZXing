@@ -30,13 +30,17 @@ namespace QRCode {
 class AlignmentPattern : public ResultPoint
 {
 	float _estimatedModuleSize = 0;
-
+	int _count = 0;
 public:
 	AlignmentPattern() {}
-	AlignmentPattern(float posX, float posY, float estimatedModuleSize);
+	AlignmentPattern(float posX, float posY, float estimatedModuleSize, int count = 1);
 
 	float estimatedModuleSize() const {
 		return _estimatedModuleSize;
+	}
+
+	int count() const {
+		return _count;
 	}
 
 	bool isValid() const { return _estimatedModuleSize > 0.f; }

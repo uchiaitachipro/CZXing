@@ -337,6 +337,8 @@ if (ENABLE_DECODERS)
             src/qrcode/QRAlignmentPattern.cpp
             src/qrcode/QRAlignmentPatternFinder.h
             src/qrcode/QRAlignmentPatternFinder.cpp
+            src/qrcode/QRStrictAlignmentPatternFinder.h
+            src/qrcode/QRStrictAlignmentPatternFinder.cpp
             src/qrcode/QRBitMatrixParser.h
             src/qrcode/QRBitMatrixParser.cpp
             src/qrcode/QRDataBlock.h

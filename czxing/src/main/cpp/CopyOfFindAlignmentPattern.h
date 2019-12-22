@@ -117,6 +117,11 @@ findAlignment(Mat &mat,const BitMatrix& image, int startX, int startY, int width
 
     cv::rectangle(mat,Rect(startX,startY,width,height),Scalar(128,128,128),2);
 
+    auto startLineColor = 64;
+    auto colorStep = 64;
+
+    auto isDraw = false;
+
     // We are looking for black/white/black modules in 1:1:1 ratio;
     // this tracks the number of black/white/black modules seen so far
     for (int iGen = 0; iGen < height; iGen++) {
@@ -132,7 +137,7 @@ findAlignment(Mat &mat,const BitMatrix& image, int startX, int startY, int width
         }
 
         cv::circle(mat,cv::Point(j,i),2,Scalar(255,0,0),-1);
-
+        int startJ = j;
         int currentState = 0;
         while (j < maxJ) {
             if (image.get(j, i)) {
@@ -153,6 +158,15 @@ findAlignment(Mat &mat,const BitMatrix& image, int startX, int startY, int width
                         stateCount[1] = 1;
                         stateCount[2] = 0;
                         currentState = 1;
+
+                        if (!isDraw){
+                            auto currentColor = startLineColor + colorStep;
+                            cv::line(mat,cv::Point(startJ,i),cv::Point(j,i),Scalar(currentColor,currentColor,currentColor),2);
+                            isDraw = true;
+                        }
+
+//                        startJ = j;
+//                        colorStep += colorStep;
                     }
                     else {
                         stateCount[++currentState]++;

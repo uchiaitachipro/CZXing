@@ -46,6 +46,8 @@ static float CenterFromEnd(const StateCount& stateCount, int end)
 	return (float)(end - stateCount[4] - stateCount[3]) - stateCount[2] / 2.0f;
 }
 
+
+
 /**
  * @param stateCount count of black/white/black/white/black pixels just read
  * @return true iff the proportions of the counts is close enough to the 1/1/3/1/1 ratios
