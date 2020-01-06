@@ -335,6 +335,8 @@ if (ENABLE_DECODERS)
     set (QRCODE_FILES ${QRCODE_FILES}
             src/qrcode/QRAlignmentPattern.h
             src/qrcode/QRAlignmentPattern.cpp
+            src/qrcode/QRStrictAlignmentPatternFinder.h
+            src/qrcode/QRStrictAlignmentPatternFinder.cpp
             src/qrcode/QRAlignmentPatternFinder.h
             src/qrcode/QRAlignmentPatternFinder.cpp
             src/qrcode/QRBitMatrixParser.h

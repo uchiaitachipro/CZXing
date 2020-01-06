@@ -19,6 +19,7 @@
 #include "qrcode/QRFinderPatternFinder.h"
 #include "qrcode/QRFinderPatternInfo.h"
 #include "qrcode/QRAlignmentPattern.h"
+#include "qrcode/QRStrictAlignmentPatternFinder.h"
 #include "qrcode/QRAlignmentPatternFinder.h"
 #include "qrcode/QRVersion.h"
 #include "BitMatrix.h"
@@ -207,7 +208,7 @@ AlignmentPattern FindAlignmentInRegion(const BitMatrix& image, float overallEstM
 		return {};
 	}
 
-	return AlignmentPatternFinder::Find(image, alignmentAreaLeftX, alignmentAreaTopY, alignmentAreaRightX - alignmentAreaLeftX, alignmentAreaBottomY - alignmentAreaTopY, overallEstModuleSize);
+	return StrictAlignmentPatternFinder::Find(image, alignmentAreaLeftX, alignmentAreaTopY, alignmentAreaRightX - alignmentAreaLeftX, alignmentAreaBottomY - alignmentAreaTopY, overallEstModuleSize);
 }
 
 static PerspectiveTransform CreateTransform(const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomLeft, const AlignmentPattern& alignmentPattern, int dimension)
