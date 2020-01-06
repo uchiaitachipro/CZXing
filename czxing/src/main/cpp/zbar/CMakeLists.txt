@@ -4,7 +4,7 @@ include_directories(include zbar ${iconv_SOURCE_DIR}/include)
 
 MESSAGE( "Build Lib ZBar for ${ANDROID_ABI} ${zbarjni_SOURCE_DIR} ${CMAKE_INCLUDE_PATH}" )
 add_library(lib_gperf SHARED IMPORTED)
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} STATIC
 			zbar/img_scanner.c
 			zbar/decoder.c
 			zbar/image.c

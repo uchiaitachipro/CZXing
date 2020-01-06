@@ -43,6 +43,10 @@ add_library(libpng STATIC IMPORTED)
 add_library(libtiff STATIC IMPORTED)
 add_library(libwebp STATIC IMPORTED)
 
+add_compile_options(czxing
+        "-O1"
+        "-fPIC")
+
 #
 ## 设置库路径
 set_target_properties(opencv_core PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../../opencv/libs/${ANDROID_ABI}/libopencv_core.a)

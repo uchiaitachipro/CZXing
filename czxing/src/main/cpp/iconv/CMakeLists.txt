@@ -6,7 +6,7 @@ set(CMAKE_C_FLAGS "-Wno-multichar -DANDROID -DLIBDIR=\"c\" -DBUILDING_LIBICONV -
 
 include_directories(include libcharset lib libcharset/include srclib)
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} STATIC
 			libcharset/lib/localcharset.c
 			lib/iconv.c
 			lib/relocatable.c)
