@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
                         NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY)
 //                .applyAllDecodeStrategiesInFrame()
                 .setDetectorType(NativeSdk.DETECTOR_ALL)
-                .setLaserLineMoveInterval(1500)
                 .setFrameCornerInside(true)
                 .setTipText("")
                 .setCoreThreadPoolSize(4)

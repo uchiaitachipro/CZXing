@@ -71,6 +71,8 @@ if (ENABLE_DECODERS)
             src/GenericLuminanceSource.cpp
             src/GlobalHistogramBinarizer.h
             src/GlobalHistogramBinarizer.cpp
+            src/BirdgeBinaryBitmap.h
+            src/BirdgeBinaryBitmap.cpp
             src/GridSampler.h
             src/GridSampler.cpp
             src/HybridBinarizer.h
