@@ -17,6 +17,7 @@
 #include "QRCodeFinder.h"
 #include <mutex>
 #include "zbar/include/zbar.h"
+#include "TimeProfiler.h"
 
 using namespace cv;
 using namespace ZXing;
@@ -97,7 +98,6 @@ private:
     bool isApplyAllStrategies = false;
     int detectType = DetectorType::ZXING;
     int currentStrategyIndex = 0;
-    ImageScanner *zbarScanner;
 
     void initThreadPool();
 

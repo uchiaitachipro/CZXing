@@ -21,7 +21,6 @@ ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
     this->reader = _reader;
     this->javaCallHelper = javaCallHelper;
     qrCodeRecognizer = new QRCodeRecognizer();
-//    zbarScanner->set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
     stopProcessing.store(false);
     isProcessing.store(false);
     abortTask.store(false);
@@ -31,7 +30,6 @@ ImageScheduler::~ImageScheduler() {
     DELETE(env);
     DELETE(reader);
     DELETE(javaCallHelper);
-//    DELETE(zbarScanner);
     DELETE(qrCodeRecognizer);
 
     delete &isProcessing;
