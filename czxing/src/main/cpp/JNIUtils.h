@@ -56,6 +56,9 @@ BinaryBitmapFromBytesC4(JNIEnv *env, void *rgbScale, int cropLeft, int cropTop, 
 std::shared_ptr<ZXing::BinaryBitmap>
 BinaryBitmapFromBytesC1(void *grayScale, int cropLeft, int cropTop, int cropWidth, int cropHeight);
 
+std::shared_ptr<ZXing::BinaryBitmap>
+EmptyBinaryBitmapFromBytesC1(void *pixels, int left, int top, int width, int height);
+
 std::string UnicodeToANSI(const std::wstring &wstr);
 
 std::wstring ANSIToUnicode(const std::string &src);

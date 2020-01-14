@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
 //                .applyAllDecodeStrategiesInFrame()
                 .setDetectorType(NativeSdk.PURE_ZXING)
                 .setLaserLineMoveInterval(1500)
-                .setFrameCornerInside(true)
                 .setTipText("")
                 .setCoreThreadPoolSize(1)
                 .setMaxThreadPoolSize(1)
