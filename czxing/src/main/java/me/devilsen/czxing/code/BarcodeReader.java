@@ -22,6 +22,7 @@ public class BarcodeReader {
     private AtomicInteger counter = new AtomicInteger(0);
 
     private boolean applyAllDecodeStrategies = false;
+    private boolean isStopped = true;
     private int detectorType = NativeSdk.DETECTOR_ZXING;
 
     public static BarcodeReader getInstance() {
@@ -122,10 +123,18 @@ public class BarcodeReader {
     }
 
     public void prepareRead() {
+        if (!isStopped){
+            return;
+        }
+        isStopped = false;
         NativeSdk.getInstance().prepareRead(_nativePtr);
     }
 
     public void stopRead() {
+        if (isStopped){
+            return;
+        }
+        isStopped = true;
         NativeSdk.getInstance().stopRead(_nativePtr);
     }
 

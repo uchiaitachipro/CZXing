@@ -14,7 +14,6 @@
 #include "JavaCallHelper.h"
 #include "QRCodeRecognizer.h"
 #include "safe_queue.h"
-#include "QRCodeFinder.h"
 #include <mutex>
 #include "zbar/include/zbar.h"
 #include "TimeProfiler.h"
@@ -92,14 +91,11 @@ private:
     vector<int> _strategies;
     QRCodeRecognizer *qrCodeRecognizer;
     SafeQueue<FrameData> frameQueue;
-    QRCodeFinder qrCodeFinder;
-    pthread_t prepareThread{};
+    TimeProfiler profiler;
     double cameraLight{};
     bool isApplyAllStrategies = false;
     int detectType = DetectorType::ZXING;
     int currentStrategyIndex = 0;
-
-    void initThreadPool();
 
     void preTreatMat(const FrameData &frameData);
 
@@ -118,8 +114,6 @@ private:
     Result decodeAdaptivePixels(Mat &gray,int adaptiveMethod,int blockSize,int delta);
 
     void recognizerQrCode(const Mat &mat);
-
-    void filterColorInImage(const Mat &raw, Mat &outImage);
 
     bool analysisBrightness(const Mat &gray);
 

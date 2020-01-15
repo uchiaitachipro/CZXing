@@ -35,7 +35,6 @@ ImageScheduler::~ImageScheduler() {
     delete &isProcessing;
     delete &stopProcessing;
     delete &cameraLight;
-    delete &prepareThread;
 }
 
 
@@ -78,6 +77,16 @@ void ImageScheduler::stop() {
 //    abortTask.store(true);
 //    frameQueue.setWork(0);
 //    frameQueue.clear();
+    auto d = profiler.GetRecords();
+    double sum{0.0};
+    int count{0};
+    std::for_each(d->begin(), d->end(), [&](std::map<std::string,long> element) {
+        for(auto &e : element){
+          sum += e.second;
+          ++count;
+        }
+    });
+    LOGE("mean value: %6.2f ", sum / count);
 }
 
 void
@@ -108,7 +117,11 @@ ImageScheduler::process(jbyte *bytes, int left, int top,
     frameData.bytes = bytes;
     currentStrategyIndex = strategyIndex;
 //    frameQueue.enQueue(frameData);
+    profiler.Prepare();
+    profiler.StartRecord("total");
     preTreatMat(frameData);
+    profiler.CompleteRecord();
+    profiler.Commit();
     LOGE("frame data size : %d", frameQueue.size());
 
 }
@@ -117,6 +130,7 @@ ImageScheduler::process(jbyte *bytes, int left, int top,
  * 预处理二进制数据
  */
 void ImageScheduler::preTreatMat(const FrameData &frameData) {
+
     try {
         LOGE("start preTreatMat...");
 
@@ -187,11 +201,11 @@ void ImageScheduler::applyStrategy(Mat &mat) {
                 //    writeImage(lightMat, std::string("adaptive-close-threshold-"));
                 break;
             }
-            case DecodeStrategy::STRATEGY_HUANG_FUZZY :{
+            case DecodeStrategy::STRATEGY_HUANG_FUZZY : {
                 Mat huang;
                 rotate(mat, huang, ROTATE_90_COUNTERCLOCKWISE);
                 int thresholdValue = GetHuangFuzzyThreshold(huang);
-                Result huangFuzzyResult = decodePixels(huang,thresholdValue);
+                Result huangFuzzyResult = decodePixels(huang, thresholdValue);
                 break;
             }
             case DecodeStrategy::STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY: {
@@ -219,50 +233,6 @@ void ImageScheduler::applyStrategy(Mat &mat) {
     if (!result) {
         recognizerQrCode(mat);
     }
-}
-
-void ImageScheduler::filterColorInImage(const Mat &src, Mat &outImage) {
-    Mat rgbMat;
-//    cvtColor(src, rgbMat, COLOR_YUV2BGR_NV21);
-    Mat hsv;
-    cvtColor(rgbMat, hsv, CV_BGR2HSV);
-
-    for (int w = 0; w < rgbMat.rows; w++) {
-        for (int h = 0; h < rgbMat.cols; h++) {
-            auto pixel = rgbMat.at<Vec3b>(w, h);
-
-            auto b = pixel[0];
-            auto g = pixel[1];
-
-            if (b < 100 || g < 100) {
-                continue;
-            }
-
-            rgbMat.at<Vec3b>(w, h)[0] = 255;
-            rgbMat.at<Vec3b>(w, h)[1] = 255;
-            rgbMat.at<Vec3b>(w, h)[2] = 255;
-
-//           if (pixel[1] >= 140 && pixel[2] >= 130 && pixel[0] >= 87 && pixel[0] <= 124){
-//               H += pixel[0];
-//               s += pixel[1];
-//               v += pixel[2];
-//               ++count;
-//               hsv.at<Vec3b>(w,h)[0] = 180;
-//               hsv.at<Vec3b>(w,h)[1] = 30;
-//               hsv.at<Vec3b>(w,h)[2] = 255;
-//           }
-
-        }
-    }
-
-//    LOGE("h channel average: %lf", (H / count));
-//    LOGE("s channel average: %lf", (s / count));
-//    LOGE("v channel average: %lf", (v / count));
-//    cvtColor(hsv,rgbMat,CV_HSV2BGR);
-    Mat th;
-    cvtColor(rgbMat, th, COLOR_BGR2GRAY);
-    threshold(th, th, 50, 255, CV_THRESH_OTSU);
-    writeImage(th, "color");
 }
 
 Result ImageScheduler::decodeGrayPixels(Mat &gray) {
@@ -312,12 +282,7 @@ Result ImageScheduler::decodeAdaptivePixels(Mat &gray, int adaptiveMethod, int b
 void ImageScheduler::recognizerQrCode(const Mat &mat) {
     LOGE("start recognizerQrCode...");
     cv::Rect rect;
-//    rotate(mat, mat, ROTATE_90_COUNTERCLOCKWISE);
-//    rect = qrCodeFinder.locateQRCode(mat, 200, 5, false);
-//
-//    if (rect.empty()){
     qrCodeRecognizer->processData(mat, &rect);
-//    }
 
     if (rect.empty()) {
         return;
@@ -448,7 +413,7 @@ Result ImageScheduler::decodeZXing(const Mat &mat, int threshold) {
             }
         }
 
-        auto binImage = EmptyBinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
+        auto binImage = BinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
         Result result = reader->read(*binImage);
 
         delete[]pixels;
@@ -472,7 +437,7 @@ Result ImageScheduler::decodeZBar(Mat &gray, int threshold) {
     int width = gray.cols;
     int height = gray.rows;
 
-    thresholdImage(gray,threshold);
+    thresholdImage(gray, threshold);
     ImageScanner scanner;
     scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
     const void *raw = gray.data;
