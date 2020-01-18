@@ -83,7 +83,6 @@ target_link_libraries(
         ZXingCore
         zbarjni
         iconv
-#        zbar_core
 
         opencv_highgui
         opencv_imgcodecs
@@ -93,7 +92,6 @@ target_link_libraries(
         cpufeatures
         tbb
         tegra_hal
-        #        opencv_java4
 
         IlmImf
         libjasper

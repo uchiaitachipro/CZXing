@@ -63,6 +63,12 @@ public class NativeSdk {
         }
     }
 
+    public void onCollectPerformanceData(String jsonData){
+        if (readCodeListener != null){
+            readCodeListener.onCollectPerformanceData(jsonData);
+        }
+    }
+
     // read
     native long createInstance(int[] formats);
 

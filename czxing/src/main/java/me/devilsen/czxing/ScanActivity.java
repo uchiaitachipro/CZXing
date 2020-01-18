@@ -160,11 +160,8 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
 
         if (scanDelegate != null) {
             scanDelegate.onScanResult(result);
-        } else {
-            Intent intent = new Intent(this, ResultActivity.class);
-            intent.putExtra("result", result);
-            startActivity(intent);
         }
+
         if (option != null && option.getContinuousScanTime() < 0){
             finish();
         }

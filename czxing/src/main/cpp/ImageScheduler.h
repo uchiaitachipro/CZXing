@@ -117,6 +117,7 @@ private:
 
     bool analysisBrightness(const Mat &gray);
 
+    void collectPerformanceData();
 };
 
 #endif //CZXING_IMAGESCHEDULER_H

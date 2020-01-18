@@ -11,9 +11,11 @@
 #include "android_utils.h"
 #include "ThresholdTool.h"
 #include <math.h>
+#include "json.hpp"
 
 #define DEFAULT_MIN_LIGHT 70;
 
+using json = nlohmann::json;
 
 ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
                                JavaCallHelper *javaCallHelper) {
@@ -71,23 +73,35 @@ void ImageScheduler::start() {
 //    }
 }
 
+void ImageScheduler::collectPerformanceData() {
+    auto d = profiler.GetRecords();
+    json json_array = json::array();
+    std::for_each(d->begin(), d->end(), [&](std::map<std::string,long> element) {
+
+        if (element.empty()){
+            return;
+        }
+        json _json;
+        for(auto &e : element){
+            _json[e.first] = e.second;
+        }
+        json_array.push_back(_json);
+    });
+
+    std::string str = json_array.dump();
+    javaCallHelper->onCollect(str);
+}
+
 void ImageScheduler::stop() {
 //    isProcessing.store(false);
 //    stopProcessing.store(true);
 //    abortTask.store(true);
 //    frameQueue.setWork(0);
 //    frameQueue.clear();
-    auto d = profiler.GetRecords();
-    double sum{0.0};
-    int count{0};
-    std::for_each(d->begin(), d->end(), [&](std::map<std::string,long> element) {
-        for(auto &e : element){
-          sum += e.second;
-          ++count;
-        }
-    });
-    LOGE("mean value: %6.2f ", sum / count);
+    collectPerformanceData();
 }
+
+
 
 void
 ImageScheduler::process(jbyte *bytes, int left, int top,

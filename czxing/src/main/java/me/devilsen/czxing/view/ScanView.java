@@ -206,6 +206,11 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
         }
     }
 
+    @Override
+    public void onCollectPerformanceData(String jsonData) {
+
+    }
+
     public void resetZoom() {
         setZoomValue(0);
     }

@@ -19,12 +19,15 @@ public:
 
     void onBrightness(const bool isDark);
 
+    void onCollect(const std::string data);
+
 private:
     JavaVM *javaVM;
     JNIEnv *env;
     jobject jSdkObject;
     jmethodID jmid_on_result;
     jmethodID jmid_on_brightness;
+    jmethodID jmid_on_collect_performance_data;
 
 };
 

@@ -37,7 +37,7 @@ JavaCallHelper::JavaCallHelper(JavaVM *_javaVM, JNIEnv *_env, jobject &_jobj) : 
 
     jmid_on_result = env->GetMethodID(jSdkClass, "onDecodeCallback", "(Ljava/lang/String;DI[F)V");
     jmid_on_brightness = env->GetMethodID(jSdkClass, "onBrightnessCallback", "(Z)V");
-
+    jmid_on_collect_performance_data = env->GetMethodID(jSdkClass,"onCollectPerformanceData","(Ljava/lang/String;)V");
     if (jmid_on_result == nullptr) {
         LOGE("jmid_on_result is null");
     }
@@ -127,4 +127,38 @@ void JavaCallHelper::onBrightness(const bool isDark) {
         javaVM->DetachCurrentThread();
     }
 
+}
+
+void JavaCallHelper::onCollect(const std::string data) {
+
+    int getEnvStat = javaVM->GetEnv((void **) &env, JNI_VERSION_1_6);
+    int mNeedDetach = JNI_FALSE;
+    if (getEnvStat == JNI_EDETACHED) {
+        //如果没有， 主动附加到jvm环境中，获取到env
+        if (javaVM->AttachCurrentThread(&env, nullptr) != JNI_OK) {
+            return;
+        }
+        mNeedDetach = JNI_TRUE;
+    }
+
+    auto c_string = data.c_str();
+    //定义java String类 strClass
+    jclass strClass = env->FindClass("java/lang/String");
+    //获取String(byte[],String)的构造器,用于将本地byte[]数组转换为一个新String
+    jmethodID ctorID = env->GetMethodID(strClass, "<init>", "([BLjava/lang/String;)V");
+    //建立byte数组
+    jbyteArray bytes = env->NewByteArray(strlen(c_string));
+    //将char* 转换为byte数组
+    (env)->SetByteArrayRegion(bytes, 0, strlen(c_string), (jbyte*) c_string);
+    // 设置String, 保存语言类型,用于byte数组转换至String时的参数
+    jstring encoding = env->NewStringUTF("GB2312");
+    //将byte数组转换为java String,并输出
+    auto result = (jstring) env->NewObject(strClass, ctorID, bytes, encoding);
+
+    env->CallVoidMethod(jSdkObject, jmid_on_collect_performance_data, result);
+
+    //释放当前线程
+    if (mNeedDetach) {
+        javaVM->DetachCurrentThread();
+    }
 }

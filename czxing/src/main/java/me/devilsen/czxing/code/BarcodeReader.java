@@ -162,5 +162,7 @@ public class BarcodeReader {
         void onReadCodeResult(CodeResult result);
 
         void onAnalysisBrightness(boolean isDark);
+
+        void onCollectPerformanceData(String jsonData);
     }
 }
