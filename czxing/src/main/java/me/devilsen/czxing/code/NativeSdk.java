@@ -2,6 +2,8 @@ package me.devilsen.czxing.code;
 
 import android.graphics.Bitmap;
 
+import me.devilsen.czxing.thread.FrameData;
+
 /**
  * desc: Jni connector
  * date: 2019/08/17 0017
@@ -45,7 +47,7 @@ public class NativeSdk {
      * @param formatIndex 格式
      * @param points      定位点的位置
      */
-    public void onDecodeCallback(String content,double cameraLight, int formatIndex, float[] points) {
+    public void onDecodeCallback(String content, double cameraLight, int formatIndex, float[] points, FrameData rowData) {
         if (readCodeListener != null) {
             readCodeListener.onReadCodeResult(new CodeResult(content, cameraLight,formatIndex, points));
         }

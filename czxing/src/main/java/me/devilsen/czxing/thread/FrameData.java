@@ -16,6 +16,11 @@ public class FrameData {
     public int rowWidth;
     public int rowHeight;
 
+    public FrameData(){
+        data = null;
+        left = top = width = height = rowWidth = rowHeight = -1;
+    }
+
     public FrameData(byte[] data, int left, int top, int width, int height, int rowWidth, int rowHeight) {
         this.data = data;
         this.left = left;

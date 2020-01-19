@@ -23,9 +23,6 @@ ImageScheduler::ImageScheduler(JNIEnv *env, MultiFormatReader *_reader,
     this->reader = _reader;
     this->javaCallHelper = javaCallHelper;
     qrCodeRecognizer = new QRCodeRecognizer();
-    stopProcessing.store(false);
-    isProcessing.store(false);
-    abortTask.store(false);
 }
 
 ImageScheduler::~ImageScheduler() {
@@ -33,44 +30,15 @@ ImageScheduler::~ImageScheduler() {
     DELETE(reader);
     DELETE(javaCallHelper);
     DELETE(qrCodeRecognizer);
-
-    delete &isProcessing;
-    delete &stopProcessing;
     delete &cameraLight;
 }
 
 
-void *prepareMethod(void *arg) {
-//    auto scheduler = static_cast<ImageScheduler *>(arg);
-//    scheduler->start();
-//    return nullptr;
-}
-
 void ImageScheduler::prepare() {
-//    pthread_create(&prepareThread, nullptr, prepareMethod, this);
 }
 
 void ImageScheduler::start() {
-//    stopProcessing.store(false);
-//    isProcessing.store(false);
-//    frameQueue.setWork(1);
-//    while (true) {
-//        if (stopProcessing.load()) {
-//            break;
-//        }
-//
-//        if (isProcessing.load()) {
-//            continue;
-//        }
-//
-//        FrameData frameData;
-//        int ret = frameQueue.deQueue(frameData);
-//        if (ret) {
-//            isProcessing.store(true);
-//            preTreatMat(frameData);
-//            isProcessing.store(false);
-//        }
-//    }
+
 }
 
 void ImageScheduler::collectPerformanceData() {
@@ -93,11 +61,6 @@ void ImageScheduler::collectPerformanceData() {
 }
 
 void ImageScheduler::stop() {
-//    isProcessing.store(false);
-//    stopProcessing.store(true);
-//    abortTask.store(true);
-//    frameQueue.setWork(0);
-//    frameQueue.clear();
     collectPerformanceData();
 }
 
@@ -107,10 +70,6 @@ void
 ImageScheduler::process(jbyte *bytes, int left, int top,
                         int cropWidth, int cropHeight, int rowWidth,
                         int rowHeight, int strategyIndex) {
-    if (isProcessing.load()) {
-        return;
-    }
-
     FrameData frameData;
     frameData.left = left;
     frameData.top = top;
@@ -130,14 +89,11 @@ ImageScheduler::process(jbyte *bytes, int left, int top,
     frameData.rowHeight = rowHeight;
     frameData.bytes = bytes;
     currentStrategyIndex = strategyIndex;
-//    frameQueue.enQueue(frameData);
     profiler.Prepare();
     profiler.StartRecord("total");
     preTreatMat(frameData);
     profiler.CompleteRecord();
     profiler.Commit();
-    LOGE("frame data size : %d", frameQueue.size());
-
 }
 
 /**
@@ -165,14 +121,14 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
         if (cameraLight < 40) {
             return;
         }
-        applyStrategy(gray);
+        applyStrategy(gray,frameData);
 //        writeImage(gray,"raw");
     } catch (const std::exception &e) {
         LOGE("preTreatMat error...");
     }
 }
 
-void ImageScheduler::applyStrategy(Mat &mat) {
+void ImageScheduler::applyStrategy(Mat &mat, const FrameData &sourceData) {
 
     int startIndex = isApplyAllStrategies ? 0 : currentStrategyIndex;
     startIndex = startIndex <= 0 ? 0 : startIndex % _strategies.size();

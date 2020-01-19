@@ -23,6 +23,8 @@
 #include <src/ResultPoint.h>
 #include <opencv2/core/types.hpp>
 
+#include "FrameData.h"
+
 #define ZX_LOG_TAG "ZXing"
 #define DEBUG
 
@@ -68,3 +70,5 @@ void ThrowJavaException(JNIEnv *env, const char *message);
 jstring ToJavaString(JNIEnv *env, const std::wstring &str);
 
 jfloatArray ToJavaArray(JNIEnv *env, const std::vector<ZXing::ResultPoint> &vector);
+
+jobject createJavaFrameData(JNIEnv *env, const FrameData &data);

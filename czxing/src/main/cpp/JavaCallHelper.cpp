@@ -35,7 +35,7 @@ JavaCallHelper::JavaCallHelper(JavaVM *_javaVM, JNIEnv *_env, jobject &_jobj) : 
         return;
     }
 
-    jmid_on_result = env->GetMethodID(jSdkClass, "onDecodeCallback", "(Ljava/lang/String;DI[F)V");
+    jmid_on_result = env->GetMethodID(jSdkClass, "onDecodeCallback", "(Ljava/lang/String;DI[FLme/devilsen/czxing/thread/FrameData;)V");
     jmid_on_brightness = env->GetMethodID(jSdkClass, "onBrightnessCallback", "(Z)V");
     jmid_on_collect_performance_data = env->GetMethodID(jSdkClass,"onCollectPerformanceData","(Ljava/lang/String;)V");
     if (jmid_on_result == nullptr) {
@@ -100,7 +100,7 @@ void JavaCallHelper::onResult(const ZXing::Result &result,double cameraLight = 0
     }
 
 
-    env->CallVoidMethod(jSdkObject, jmid_on_result, mJstring,cameraLight, format, pointsArray);
+    env->CallVoidMethod(jSdkObject, jmid_on_result, mJstring,cameraLight, format, pointsArray,NULL);
 
     //释放当前线程
     if (mNeedDetach) {

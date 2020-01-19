@@ -6,7 +6,7 @@
 #define CZXING_IMAGESCHEDULER_H
 
 
-#include <jni.h>
+#include "FrameData.h"
 #include <opencv2/core/mat.hpp>
 #include <src/MultiFormatReader.h>
 #include <src/BinaryBitmap.h>
@@ -22,15 +22,7 @@ using namespace cv;
 using namespace ZXing;
 using namespace zbar;
 
-typedef struct FrameData {
-    jbyte *bytes;
-    int left;
-    int top;
-    int cropWidth;
-    int cropHeight;
-    int rowWidth;
-    int rowHeight;
-} FrameData;
+
 
 class ImageScheduler {
 
@@ -86,11 +78,8 @@ private:
     MultiFormatReader *reader;
     JavaCallHelper *javaCallHelper;
     std::atomic<bool> isProcessing{};
-    std::atomic<bool> stopProcessing{};
-    std::atomic<bool> abortTask{};
     vector<int> _strategies;
     QRCodeRecognizer *qrCodeRecognizer;
-    SafeQueue<FrameData> frameQueue;
     TimeProfiler profiler;
     double cameraLight{};
     bool isApplyAllStrategies = false;
@@ -99,7 +88,7 @@ private:
 
     void preTreatMat(const FrameData &frameData);
 
-    void applyStrategy(Mat &mat);
+    void applyStrategy(Mat &mat, const FrameData &sourceData);
 
     Result decodePixels(Mat &mat,int threshold = -1);
 
