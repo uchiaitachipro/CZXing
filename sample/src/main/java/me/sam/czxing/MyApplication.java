@@ -5,6 +5,8 @@ import android.content.Context;
 
 import com.tencent.bugly.crashreport.CrashReport;
 
+import me.sam.czxing.db.DatabaseHelper;
+
 /**
  * desc :
  * date : 2019-06-25
@@ -12,17 +14,9 @@ import com.tencent.bugly.crashreport.CrashReport;
  * @author : dongSen
  */
 public class MyApplication extends Application {
-
-    private static Application instance;
-
     @Override
     public void onCreate() {
         super.onCreate();
-        instance = this;
-//        CrashReport.initCrashReport(getApplicationContext(), "378dbc83d2", true);
-    }
-
-    public static Context getContext() {
-        return instance.getApplicationContext();
+        DatabaseHelper.getInstance().init(this);
     }
 }

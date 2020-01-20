@@ -19,6 +19,8 @@ public class ProfileModel {
 
     public int type;
 
+    public boolean isSuccess;
+
     public Date currentTime;
 
 }
