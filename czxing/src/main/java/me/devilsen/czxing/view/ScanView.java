@@ -15,7 +15,6 @@ import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.util.BarCodeUtil;
-import me.devilsen.czxing.util.SaveImageUtil;
 
 import static me.devilsen.czxing.ScannerManager.FIND_POTENTIAL_AREA_FOCUS;
 import static me.devilsen.czxing.ScannerManager.FIND_POTENTIAL_AREA_ZOOM;
@@ -70,13 +69,6 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
         super(context, attrs, defStyleAttr);
         mScanBoxView.setScanBoxClickListener(this);
         reader = BarcodeReader.getInstance();
-        reader.setBarcodeFormat(
-                BarcodeFormat.QR_CODE,
-                BarcodeFormat.CODABAR,
-                BarcodeFormat.CODE_128,
-                BarcodeFormat.EAN_13,
-                BarcodeFormat.UPC_A
-        );
     }
 
     @Override
@@ -90,7 +82,6 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
             isFirstFrame = false;
         }
         reader.readAsync(data, left, top, width, height, rowWidth, rowHeight);
-//        SaveImageUtil.saveData(data, left, top, width, height, rowWidth);
     }
 
     @Override
@@ -144,7 +135,8 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
                         result.getCameraLight(),
                         scanSuccessDuration,
                         getCurrentZoom(),
-                        getCurrentExposureCompensation()));
+                        getCurrentExposureCompensation(),
+                        result.getPreviewData()));
                 return;
             }
         } else if (result.getPoints() != null) {
@@ -266,6 +258,10 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
 
         reader.setDetectorType(option.getDetectorType());
 
+        if (option.isDumpCameraPreviewData()){
+            reader.dumpPreviewCameraData(true);
+        }
+
         if (option.getCoreThreadPoolSize() != -1) {
             reader.getDispatcher().setCorePoolSize(option.getCoreThreadPoolSize());
         }
@@ -273,6 +269,8 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
         if (option.getMaxThreadPoolSize() != -1) {
             reader.getDispatcher().setMaximumPoolSize(option.getMaxThreadPoolSize());
         }
+
+
     }
 
     public void onResume() {
@@ -286,10 +284,6 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
     }
 
     private void setScanMode() {
-
-        if (option.getScanMode() == -1) {
-            return;
-        }
 
         switch (option.getScanMode()) {
             case ScannerManager.PRODUCT_MODE:

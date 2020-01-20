@@ -73,6 +73,10 @@ public:
         detectType = type;
     }
 
+    void dumpCameraPreviewData(bool dump){
+        dumpPreviewData = dump;
+    }
+
 private:
     JNIEnv *env;
     MultiFormatReader *reader;
@@ -83,6 +87,7 @@ private:
     TimeProfiler profiler;
     double cameraLight{};
     bool isApplyAllStrategies = false;
+    bool dumpPreviewData = false;
     int detectType = DetectorType::ZXING;
     int currentStrategyIndex = 0;
 

@@ -16,7 +16,7 @@ public:
 
     ~JavaCallHelper();
 
-    void onResult(const FrameData &frameData,const ZXing::Result &result,double cameraLight);
+    void onResult(const FrameData &frameData,const ZXing::Result &result,bool dumpData,double cameraLight);
 
     void onBrightness(const bool isDark);
 

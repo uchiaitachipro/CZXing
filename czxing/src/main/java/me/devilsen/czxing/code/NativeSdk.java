@@ -50,12 +50,7 @@ public class NativeSdk {
      */
     public void onDecodeCallback(String content, double cameraLight, int formatIndex, float[] points, FrameData rawData) {
         if (readCodeListener != null) {
-
-            if (rawData != null){
-                SaveImageUtil.saveDataForYUV(rawData.data,rawData.left,rawData.top,rawData.width,rawData.height,rawData.rowWidth,rawData.rowHeight);
-            }
-
-            readCodeListener.onReadCodeResult(new CodeResult(content, cameraLight,formatIndex, points));
+            readCodeListener.onReadCodeResult(new CodeResult(content, cameraLight,formatIndex, points,rawData));
         }
     }
 
@@ -77,7 +72,6 @@ public class NativeSdk {
         }
     }
 
-    // read
     native long createInstance(int[] formats);
 
     native void destroyInstance(long objPtr);
@@ -94,7 +88,8 @@ public class NativeSdk {
 
     native void setDetectorType(long objPtr,int type);
 
-    // write
+    native void dumpPreviewData(long objPtr,boolean dump);
+
     native int writeCode(String content, int width, int height, int color, String format, Object[] result);
 
     native void setDecodeStrategies(long objPtr,int[] strategyArray);

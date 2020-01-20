@@ -6,12 +6,15 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import me.devilsen.czxing.thread.FrameData;
 
 /**
  * desc :
@@ -21,49 +24,24 @@ import java.io.IOException;
  */
 public class SaveImageUtil {
 
-    public static void saveData(byte[] data, int left, int top, int width, int height, int rowWidth) {
-        if (System.currentTimeMillis() - time < 5000) {
-            return;
-        }
-        time = System.currentTimeMillis();
-
-//        left -= 120;
-
-        Log.e("save >>> ", "left = " + left + " top= " + top +
-                " width=" + width + " height= " + height + " row=" + rowWidth);
-
-        int[] rgba = applyGrayScaleRotate(data, left, top, width, height, rowWidth);
-//        int[] rgbaRotate = rotate(rgba, width, height, width);
-
-//        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//        bmp.setPixels(rgba, 0, width, 0, 0, width, height);
-        // 当长宽不一样时，要注意图像的正反
-        Bitmap bmp = Bitmap.createBitmap(height, width, Bitmap.Config.ARGB_8888);
-        bmp.setPixels(rgba, 0, height, 0, 0, height, width);
-        saveImage(bmp);
-
-//        bmp = getBinaryzationBitmap(bmp);
-//        Bitmap bmp = rawByteArray2RGBABitmap2(data, rowWidth, width);
-
-//        saveImage(bmp);
-
-        bmp.recycle();
+    public static void saveDataForYUV(String prefix, FrameData data) {
+        saveDataForYUV(prefix, data.data, data.left, data.top, data.width, data.height, data.rowWidth, data.rowHeight);
     }
 
-    public static void saveDataForYUV(byte[] data, int left, int top, int width, int height, int rowWidth,int rowHeight){
+    public static void saveDataForYUV(String prefix, byte[] data, int left, int top, int width, int height, int rowWidth, int rowHeight) {
 
         YuvImage image = new YuvImage(data, ImageFormat.NV21, rowWidth, rowHeight, null);
-        try{
-            if(image!=null) {
+        try {
+            if (image != null) {
 
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 image.compressToJpeg(new Rect(0, 0, rowWidth, rowHeight), 80, stream);
                 Bitmap bmp = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size());
-                bmp = BitmapUtil.rotateBitmap(bmp,90);
-                saveImage(bmp);
+                bmp = BitmapUtil.rotateBitmap(bmp, 90);
+                saveImage(prefix, bmp);
                 stream.close();
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -199,8 +177,9 @@ public class SaveImageUtil {
 
     private static long time;
 
-    public static void saveImage(Bitmap bitmap) {
-        String thumbPath = System.currentTimeMillis() + ".jpg";
+    public static void saveImage(String prefix, Bitmap bitmap) {
+        prefix = TextUtils.isEmpty(prefix) ? "" : prefix;
+        String thumbPath = prefix + System.currentTimeMillis() + ".jpg";
         String fold = Environment.getExternalStorageDirectory().getAbsolutePath() + "/scan/";
         File file = new File(fold, thumbPath);
 

@@ -23,6 +23,7 @@ public class BarcodeReader {
 
     private boolean applyAllDecodeStrategies = false;
     private boolean isStopped = true;
+    private boolean dumpPreviewData = false;
     private int detectorType = NativeSdk.DETECTOR_ZXING;
 
     public static BarcodeReader getInstance() {
@@ -37,7 +38,6 @@ public class BarcodeReader {
     }
 
     private BarcodeReader() {
-        setBarcodeFormat(BarcodeFormat.QR_CODE);
         dispatcher = new Dispatcher();
     }
 
@@ -50,6 +50,7 @@ public class BarcodeReader {
         setDetectorType(detectorType);
         setDecodeStrategies(decodeStrategies);
         setApplyAllDecodeStrategies(applyAllDecodeStrategies);
+        dumpPreviewCameraData(dumpPreviewData);
     }
 
     public void setDecodeStrategies(int[] strategies) {
@@ -74,6 +75,14 @@ public class BarcodeReader {
         }
         this.detectorType = type;
         NativeSdk.getInstance().setDetectorType(_nativePtr,this.detectorType);
+    }
+
+    public void dumpPreviewCameraData(boolean dump){
+        if (_nativePtr <= 0){
+            return;
+        }
+        this.dumpPreviewData = dump;
+        NativeSdk.getInstance().dumpPreviewData(_nativePtr,dump);
     }
 
     public CodeResult read(Bitmap bitmap) {

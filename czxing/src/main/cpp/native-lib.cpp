@@ -238,3 +238,16 @@ Java_me_devilsen_czxing_code_NativeSdk_setDetectorType(JNIEnv *env, jobject inst
         ThrowJavaException(env, "Unknown exception");
     }
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_me_devilsen_czxing_code_NativeSdk_dumpPreviewData(JNIEnv *env, jobject instance, jlong objPtr,jboolean type){
+    try {
+        auto imageScheduler = reinterpret_cast<ImageScheduler *>(objPtr);
+        imageScheduler->dumpCameraPreviewData(type);
+    } catch (const std::exception &e) {
+        ThrowJavaException(env, e.what());
+    } catch (...) {
+        ThrowJavaException(env, "Unknown exception");
+    }
+}

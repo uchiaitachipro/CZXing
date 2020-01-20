@@ -83,7 +83,10 @@ public final class Dispatcher {
             return;
         }
 
-        Runnable first = blockingDeque.getFirst();
+        Runnable first = blockingDeque.pollFirst();
+        if (first == null){
+            return;
+        }
         execute(first);
     }
 

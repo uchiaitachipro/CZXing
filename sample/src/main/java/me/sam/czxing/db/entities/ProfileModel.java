@@ -15,6 +15,8 @@ public class ProfileModel {
 
     public long thresholdTime;
 
+    public long reLocationTime;
+
     public long decodeTime;
 
     public int type;

@@ -258,6 +258,11 @@ public class ScannerManager {
         return this;
     }
 
+    public ScannerManager dumpCameraPreviewData(boolean dump){
+        scanOption.dumpCameraPreviewData = dump;
+        return this;
+    }
+
     public ScanOption build() {
         return scanOption;
     }
@@ -308,6 +313,7 @@ public class ScannerManager {
         private int laserLineHeight;
 
         private int detectorType = NativeSdk.DETECTOR_ZXING;
+        private boolean dumpCameraPreviewData = false;
 
         public ScanOption() {
         }
@@ -346,6 +352,7 @@ public class ScannerManager {
             detectorType = in.readInt();
             applyFrameStrategies = (ArrayList<Integer>) in.readSerializable();
             scanLineColors = (ArrayList<Integer>) in.readSerializable();
+            dumpCameraPreviewData = in.readByte() == 1;
         }
 
         @Override
@@ -382,6 +389,7 @@ public class ScannerManager {
             dest.writeInt(detectorType);
             dest.writeSerializable(applyFrameStrategies);
             dest.writeSerializable(scanLineColors);
+            dest.writeByte(dumpCameraPreviewData ? (byte) 1 : 0);
         }
 
         @Override
@@ -532,6 +540,10 @@ public class ScannerManager {
 
         public int getDetectorType() {
             return detectorType;
+        }
+
+        public boolean isDumpCameraPreviewData() {
+            return dumpCameraPreviewData;
         }
     }
 }

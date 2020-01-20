@@ -1,5 +1,7 @@
 package me.devilsen.czxing.code;
 
+import me.devilsen.czxing.thread.FrameData;
+
 /**
  * desc: code result model
  * date: 2019/08/17
@@ -12,14 +14,14 @@ public class CodeResult {
     private String text;
     private float[] points;
     private double cameraLight;
-
+    private FrameData previewData;
 
     CodeResult(BarcodeFormat format, String text) {
         this.format = format;
         this.text = text;
     }
 
-    public CodeResult(String content,double cameraLight, int formatIndex, float[] points) {
+    public CodeResult(String content,double cameraLight, int formatIndex, float[] points,FrameData data) {
         this.text = content;
         this.cameraLight = cameraLight;
         if (formatIndex < 0) {
@@ -28,6 +30,7 @@ public class CodeResult {
             this.format = BarcodeFormat.values()[formatIndex];
         }
         this.points = points;
+        this.previewData = data;
     }
 
     public void setPoint(float[] lists) {
@@ -48,6 +51,10 @@ public class CodeResult {
 
     public double getCameraLight() {
         return cameraLight;
+    }
+
+    public FrameData getPreviewData() {
+        return previewData;
     }
 
     @Override

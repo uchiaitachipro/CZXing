@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import me.devilsen.czxing.code.BarcodeFormat;
+import me.devilsen.czxing.thread.FrameData;
 
 /**
  * Created by uchia on 2019-10-21
@@ -16,6 +17,7 @@ public class ScanResult implements Parcelable {
     private long scanSuccessDuration;
     private int zoomTimes;
     private int exposureCompensation;
+    private FrameData previewData;
 
     public ScanResult(
             String content,
@@ -23,13 +25,15 @@ public class ScanResult implements Parcelable {
             double cameraLight,
             long scanSuccessDuration,
             int zoomTimes,
-            int exposureCompensation){
+            int exposureCompensation,
+            FrameData previewData){
         this.content = content;
         this.format = format;
         this.cameraLight = cameraLight;
         this.scanSuccessDuration = scanSuccessDuration;
         this.zoomTimes = zoomTimes;
         this.exposureCompensation = exposureCompensation;
+        this.previewData = previewData;
     }
 
     protected ScanResult(Parcel in) {
@@ -91,6 +95,11 @@ public class ScanResult implements Parcelable {
     public int getExposureCompensation() {
         return exposureCompensation;
     }
+
+    public FrameData getPreviewData() {
+        return previewData;
+    }
+
 
     @Override
     public String toString() {

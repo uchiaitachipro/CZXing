@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.RadioGroup;
@@ -44,6 +45,8 @@ import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.code.NativeSdk;
 import me.devilsen.czxing.util.BarCodeUtil;
+import me.devilsen.czxing.util.BitmapUtil;
+import me.devilsen.czxing.util.SaveImageUtil;
 import me.devilsen.czxing.view.ScanActivityDelegate;
 import me.devilsen.czxing.view.ScanView;
 import me.sam.czxing.R;
@@ -160,10 +163,11 @@ public class MainActivity extends AppCompatActivity {
 //                .applyAllDecodeStrategiesInFrame()
                 .setDetectorType(currentDecoderType)
                 .setFrameCornerInside(true)
-                .setScanMode(ScannerManager.QR_CODE_MODE)
+//                .setScanMode(ScannerManager.QR_CODE_MODE)
                 .setTipText("")
-                .setCoreThreadPoolSize(1)
-                .setMaxThreadPoolSize(1)
+                .setCoreThreadPoolSize(4)
+                .setMaxThreadPoolSize(4)
+                .dumpCameraPreviewData(true)
 //                .setContinuousScanTime(100)
 //                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
 //                .setFrameSize(BarCodeUtil.dp2px(this,325), BarCodeUtil.dp2px(this,250))
@@ -196,6 +200,11 @@ public class MainActivity extends AppCompatActivity {
                                 + " exposure: " + result.getExposureCompensation()
                                 + " duration: " + result.getScanSuccessDuration()
                                 + "  code: " + result.getContent();
+
+                        if (!TextUtils.isEmpty(result.getContent()) && result.getPreviewData() != null){
+                            SaveImageUtil.saveDataForYUV(result.getFormat().name() + "-",result.getPreviewData());
+                        }
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

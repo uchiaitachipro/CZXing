@@ -44,13 +44,13 @@ void ImageScheduler::start() {
 void ImageScheduler::collectPerformanceData() {
     auto d = profiler.GetRecords();
     json json_array = json::array();
-    std::for_each(d->begin(), d->end(), [&](std::map<std::string,long> element) {
+    std::for_each(d->begin(), d->end(), [&](std::map<std::string, long> element) {
 
-        if (element.empty()){
+        if (element.empty()) {
             return;
         }
         json _json;
-        for(auto &e : element){
+        for (auto &e : element) {
             _json[e.first] = e.second;
         }
         json_array.push_back(_json);
@@ -61,13 +61,12 @@ void ImageScheduler::collectPerformanceData() {
 }
 
 void ImageScheduler::stop() {
-    collectPerformanceData();
+//    collectPerformanceData();
 }
 
 
-
 void
-ImageScheduler::process(const jbyteArray &rawData,jbyte *bytes, int left, int top,
+ImageScheduler::process(const jbyteArray &rawData, jbyte *bytes, int left, int top,
                         int cropWidth, int cropHeight, int rowWidth,
                         int rowHeight, int strategyIndex) {
     FrameData frameData;
@@ -122,7 +121,7 @@ void ImageScheduler::preTreatMat(const FrameData &frameData) {
         if (cameraLight < 40) {
             return;
         }
-        applyStrategy(gray,frameData);
+        applyStrategy(gray, frameData);
 //        writeImage(gray,"raw");
     } catch (const std::exception &e) {
         LOGE("preTreatMat error...");
@@ -143,7 +142,8 @@ void ImageScheduler::applyStrategy(Mat &mat, const FrameData &sourceData) {
                 if (grayResult.isValid()) {
                     //        writeImage(gray,"gray-");
                     //        qrCodeFinder.locateQRCode(mat, 200, 5, false);
-                    javaCallHelper->onResult(sourceData,grayResult, cameraLight);
+                    javaCallHelper->onResult(sourceData, grayResult, dumpPreviewData,
+                                             cameraLight);
                 }
             }
 
@@ -152,7 +152,8 @@ void ImageScheduler::applyStrategy(Mat &mat, const FrameData &sourceData) {
                 Result thresholdResult = decodeThresholdPixels(mat);
                 result = thresholdResult.isValid();
                 if (result) {
-                    javaCallHelper->onResult(sourceData,thresholdResult, cameraLight);
+                    javaCallHelper->onResult(sourceData, thresholdResult, dumpPreviewData,
+                                             cameraLight);
                     //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
                     //        writeImage(mat, std::string("threshold-"));
                 }
@@ -165,7 +166,8 @@ void ImageScheduler::applyStrategy(Mat &mat, const FrameData &sourceData) {
                                                                   3);
                 result = closeAdaptiveResult.isValid();
                 if (result) {
-                    javaCallHelper->onResult(sourceData,closeAdaptiveResult, cameraLight);
+                    javaCallHelper->onResult(sourceData, closeAdaptiveResult, dumpPreviewData,
+                                             cameraLight);
                     //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
                     //        writeImage(mat, std::string("adaptive-threshold-ROI-"));
                 }
@@ -184,7 +186,8 @@ void ImageScheduler::applyStrategy(Mat &mat, const FrameData &sourceData) {
                                                                    25, 5);
                 result = remoteAdaptiveResult.isValid();
                 if (result) {
-                    javaCallHelper->onResult(sourceData,remoteAdaptiveResult, cameraLight);
+                    javaCallHelper->onResult(sourceData, remoteAdaptiveResult,
+                                             dumpPreviewData, cameraLight);
                     //        Rect rect =  qrCodeFinder.locateQRCode(mat, 200, 5, false);
                     //        writeImage(mat, std::string("adaptive-remote-threshold-ROI-"));
                 }
@@ -202,7 +205,11 @@ void ImageScheduler::applyStrategy(Mat &mat, const FrameData &sourceData) {
     }
 
     if (!result) {
-        recognizerQrCode(sourceData,mat);
+//        profiler.Prepare();
+//        profiler.StartRecord("reLocationTime");
+        recognizerQrCode(sourceData, mat);
+//        profiler.CompleteRecord();
+//        profiler.Commit();
     }
 }
 
@@ -250,7 +257,7 @@ Result ImageScheduler::decodeAdaptivePixels(Mat &gray, int adaptiveMethod, int b
     return result;
 }
 
-void ImageScheduler::recognizerQrCode(const FrameData &rowData,const Mat &mat) {
+void ImageScheduler::recognizerQrCode(const FrameData &rowData, const Mat &mat) {
     LOGE("start recognizerQrCode...");
     cv::Rect rect;
     qrCodeRecognizer->processData(mat, &rect);
@@ -271,7 +278,7 @@ void ImageScheduler::recognizerQrCode(const FrameData &rowData,const Mat &mat) {
     Result result(DecodeStatus::NotFound);
     result.setResultPoints(std::move(points));
 
-    javaCallHelper->onResult(rowData,result, cameraLight);
+    javaCallHelper->onResult(rowData, result, dumpPreviewData, cameraLight);
 
     LOGE("end recognizerQrCode...");
 
