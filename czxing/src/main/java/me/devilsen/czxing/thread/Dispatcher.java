@@ -15,6 +15,7 @@ import me.devilsen.czxing.util.BarCodeUtil;
  *
  * @author : dongSen
  */
+//TODO: 场景扫码配置
 public final class Dispatcher {
 
     private static final String TAG = Dispatcher.class.getSimpleName();
