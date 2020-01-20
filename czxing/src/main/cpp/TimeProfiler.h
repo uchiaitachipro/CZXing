@@ -31,13 +31,9 @@ public:
     void StartRecord(const std::string& prefix){
         _prefixStack.push(std::string(prefix));
         _startTimePointStack.push(high_resolution_clock::now());
-        isStart = true;
     }
 
     void CompleteRecord(){
-        if(!isStart){
-            return;
-        }
         if (_startTimePointStack.empty() || _prefixStack.empty()){
             return;
         }
@@ -48,7 +44,6 @@ public:
         _currentRecord[prefix] = timeInterval.count();
         _startTimePointStack.pop();
         _prefixStack.pop();
-        isStart = false;
     }
 
     void Commit(){
@@ -66,7 +61,6 @@ public:
 
 private:
     bool isPrepared = false;
-    bool isStart = false;
     std::shared_ptr<std::vector<std::map<std::string,long>>> _data;
     std::map<std::string,long> _currentRecord;
     std::stack<std::string> _prefixStack;

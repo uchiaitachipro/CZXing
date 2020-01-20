@@ -61,7 +61,7 @@ void ImageScheduler::collectPerformanceData() {
 }
 
 void ImageScheduler::stop() {
-//    collectPerformanceData();
+    collectPerformanceData();
 }
 
 
@@ -204,13 +204,13 @@ void ImageScheduler::applyStrategy(Mat &mat, const FrameData &sourceData) {
         }
     }
 
-    if (!result) {
-//        profiler.Prepare();
-//        profiler.StartRecord("reLocationTime");
-        recognizerQrCode(sourceData, mat);
-//        profiler.CompleteRecord();
-//        profiler.Commit();
-    }
+//    if (!result) {
+////        profiler.Prepare();
+////        profiler.StartRecord("reLocationTime");
+//        recognizerQrCode(sourceData, mat);
+////        profiler.CompleteRecord();
+////        profiler.Commit();
+//    }
 }
 
 Result ImageScheduler::decodeGrayPixels(Mat &gray) {
@@ -226,6 +226,7 @@ Result ImageScheduler::decodeGrayPixels(Mat &gray) {
 Result ImageScheduler::decodeThresholdPixels(Mat &gray) {
     LOGE("start ThresholdPixels...");
 
+    profiler.StartRecord("thresholdTime");
     Mat mat;
     rotate(gray, mat, ROTATE_90_COUNTERCLOCKWISE);
 //    rotate(gray, mat, ROTATE_180);
@@ -236,6 +237,7 @@ Result ImageScheduler::decodeThresholdPixels(Mat &gray) {
     }
 
     threshold(mat, mat, 50, 255, CV_THRESH_OTSU);
+    profiler.CompleteRecord();
     Result result = decodePixels(mat);
     return result;
 }
@@ -243,7 +245,7 @@ Result ImageScheduler::decodeThresholdPixels(Mat &gray) {
 Result ImageScheduler::decodeAdaptivePixels(Mat &gray, int adaptiveMethod, int blockSize,
                                             int delta) {
     LOGE("start AdaptivePixels...");
-
+    profiler.StartRecord("thresholdTime");
     Mat mat;
     rotate(gray, mat, ROTATE_90_COUNTERCLOCKWISE);
 
@@ -253,6 +255,7 @@ Result ImageScheduler::decodeAdaptivePixels(Mat &gray, int adaptiveMethod, int b
 
     adaptiveThreshold(lightMat, lightMat, 255, adaptiveMethod,
                       THRESH_BINARY, blockSize, delta);
+    profiler.CompleteRecord();
     Result result = decodePixels(lightMat);
     return result;
 }
@@ -369,7 +372,9 @@ Result ImageScheduler::readBitmap(const cv::Mat &mat, int left, int top, int wid
 
 Result ImageScheduler::decodeZXing(const Mat &mat, int threshold) {
     LOGE("detect by zxing");
+
     try {
+        profiler.StartRecord("zxingTime");
         int width = mat.cols;
         int height = mat.rows;
 
@@ -391,11 +396,11 @@ Result ImageScheduler::decodeZXing(const Mat &mat, int threshold) {
             }
         }
 
-        auto binImage = BinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
+        auto binImage = EmptyBinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
         Result result = reader->read(*binImage);
 
         delete[]pixels;
-
+        profiler.CompleteRecord();
         if (result.isValid()) {
             return result;
         }
@@ -411,7 +416,7 @@ Result ImageScheduler::decodeZXing(const Mat &mat, int threshold) {
 
 Result ImageScheduler::decodeZBar(Mat &gray, int threshold) {
     LOGE("detect by zbar");
-
+    profiler.StartRecord("zbarTime");
     int width = gray.cols;
     int height = gray.rows;
 
@@ -421,6 +426,7 @@ Result ImageScheduler::decodeZBar(Mat &gray, int threshold) {
     const void *raw = gray.data;
     Image image(width, height, "Y800", raw, width * height);
     int n = scanner.scan(image);
+    profiler.CompleteRecord();
     // 检测到二维码
     if (n > 0) {
         Image::SymbolIterator symbol = image.symbol_begin();

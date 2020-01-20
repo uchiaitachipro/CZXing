@@ -17,7 +17,9 @@ public class ProfileModel {
 
     public long reLocationTime;
 
-    public long decodeTime;
+    public long zxingTime;
+
+    public long zbarTime;
 
     public int type;
 
