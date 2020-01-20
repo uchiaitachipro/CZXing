@@ -42,6 +42,8 @@ public class ScanActivityDelegate {
 
     public interface OnScanDelegate {
         void onScanResult(ScanResult result);
+
+        void onCollectProfileData(String json);
     }
 
     public interface OnClickAlbumDelegate {

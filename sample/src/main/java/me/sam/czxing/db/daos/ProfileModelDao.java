@@ -31,4 +31,8 @@ public interface ProfileModelDao {
 
     @Query("DELETE FROM profile_time")
     void deleteAll();
+
+
+    @Query("DELETE FROM profile_time WHERE type = :type")
+    void deleteByType(int type);
 }

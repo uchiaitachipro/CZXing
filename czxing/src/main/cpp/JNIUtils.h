@@ -70,5 +70,3 @@ void ThrowJavaException(JNIEnv *env, const char *message);
 jstring ToJavaString(JNIEnv *env, const std::wstring &str);
 
 jfloatArray ToJavaArray(JNIEnv *env, const std::vector<ZXing::ResultPoint> &vector);
-
-jobject createJavaFrameData(JNIEnv *env, const FrameData &data);

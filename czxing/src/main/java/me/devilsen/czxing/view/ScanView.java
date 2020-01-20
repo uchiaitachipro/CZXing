@@ -15,6 +15,7 @@ import me.devilsen.czxing.code.BarcodeFormat;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.util.BarCodeUtil;
+import me.devilsen.czxing.util.SaveImageUtil;
 
 import static me.devilsen.czxing.ScannerManager.FIND_POTENTIAL_AREA_FOCUS;
 import static me.devilsen.czxing.ScannerManager.FIND_POTENTIAL_AREA_ZOOM;
@@ -208,7 +209,9 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
 
     @Override
     public void onCollectPerformanceData(String jsonData) {
-
+        if (this.paramsChangedCallback != null){
+            this.paramsChangedCallback.onCollectProfileData(jsonData);
+        }
     }
 
     public void resetZoom() {
@@ -332,6 +335,7 @@ public class ScanView extends BarCoderView implements ScanBoxView.ScanBoxListene
     public interface ScanBoxParamsChangedListener {
         void onLightChanged(boolean isLight);
         void onScanRectSizeChanged(Rect area);
+        void onCollectProfileData(String json);
     }
 
 }

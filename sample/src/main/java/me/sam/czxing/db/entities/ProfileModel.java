@@ -8,7 +8,7 @@ import java.util.Date;
 @Entity(tableName = "profile_time")
 public class ProfileModel {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     public int id;
 
     public long total;

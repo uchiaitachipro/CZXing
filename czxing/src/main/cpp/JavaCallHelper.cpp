@@ -49,7 +49,7 @@ JavaCallHelper::~JavaCallHelper() {
     DELETE(env);
 }
 
-void JavaCallHelper::onResult(const ZXing::Result &result,double cameraLight = 0) {
+void JavaCallHelper::onResult(const FrameData &frameData,const ZXing::Result &result,double cameraLight = 0) {
 //    if (result.format() == ZXing::BarcodeFormat::QR_CODE) {
 //        if (result.resultPoints().size() < 2) {
 //            return;
@@ -100,7 +100,32 @@ void JavaCallHelper::onResult(const ZXing::Result &result,double cameraLight = 0
     }
 
 
-    env->CallVoidMethod(jSdkObject, jmid_on_result, mJstring,cameraLight, format, pointsArray,NULL);
+    auto frameDataClazz = env->FindClass("me/devilsen/czxing/thread/FrameData");
+    auto ctor = env->GetMethodID(frameDataClazz, "<init>", "()V");
+    auto obj = env->NewObject(frameDataClazz,ctor);
+
+    auto leftField = env->GetFieldID(frameDataClazz,"left","I");
+    env->SetIntField(obj,leftField,frameData.left);
+
+    auto topField = env->GetFieldID(frameDataClazz,"top","I");
+    env->SetIntField(obj,topField,frameData.top);
+
+    auto widthField = env->GetFieldID(frameDataClazz,"width","I");
+    env->SetIntField(obj,widthField,frameData.cropWidth);
+
+    auto heightField = env->GetFieldID(frameDataClazz,"height","I");
+    env->SetIntField(obj,heightField,frameData.cropHeight);
+
+    auto rowWidthField = env->GetFieldID(frameDataClazz,"rowWidth","I");
+    env->SetIntField(obj,rowWidthField,frameData.rowWidth);
+
+    auto rowHeightField = env->GetFieldID(frameDataClazz,"rowHeight","I");
+    env->SetIntField(obj,rowHeightField,frameData.rowHeight);
+
+    auto getDataMethodId = env->GetMethodID(frameDataClazz,"setData","([B)V");
+    env->CallVoidMethod(obj,getDataMethodId,*frameData.rawData);
+
+    env->CallVoidMethod(jSdkObject, jmid_on_result, mJstring,cameraLight, format, pointsArray,obj);
 
     //释放当前线程
     if (mNeedDetach) {

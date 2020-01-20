@@ -107,7 +107,7 @@ Java_me_devilsen_czxing_code_NativeSdk_readBarcodeByte(JNIEnv *env, jobject inst
     jbyte *bytes = env->GetByteArrayElements(bytes_, NULL);
 
     auto imageScheduler = reinterpret_cast<ImageScheduler *>(objPtr);
-    imageScheduler->process(bytes, left, top, cropWidth, cropHeight, rowWidth, rowHeight,strategyIndex);
+    imageScheduler->process(bytes_,bytes, left, top, cropWidth, cropHeight, rowWidth, rowHeight,strategyIndex);
 
     env->ReleaseByteArrayElements(bytes_, bytes, 0);
     return -1;

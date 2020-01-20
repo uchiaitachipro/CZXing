@@ -15,22 +15,31 @@ import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.runtime.Permission;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
+import io.reactivex.Flowable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import me.devilsen.czxing.ScanResult;
 import me.devilsen.czxing.Scanner;
+import me.devilsen.czxing.ScannerManager;
 import me.devilsen.czxing.code.BarcodeReader;
 import me.devilsen.czxing.code.CodeResult;
 import me.devilsen.czxing.code.NativeSdk;
@@ -38,13 +47,19 @@ import me.devilsen.czxing.util.BarCodeUtil;
 import me.devilsen.czxing.view.ScanActivityDelegate;
 import me.devilsen.czxing.view.ScanView;
 import me.sam.czxing.R;
+import me.sam.czxing.db.DatabaseHelper;
+import me.sam.czxing.db.entities.ProfileModel;
 import me.sam.czxing.loaders.GlideEngine;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int CODE_SELECT_IMAGE = 1;
     private static final int REQUEST_CODE_CHOOSE = 0x2019;
+
+    private int currentDecoderType = NativeSdk.DETECTOR_ZXING;
+
     private TextView resultTxt;
+    private RadioGroup group;
     private BarcodeReader reader;
     private HandlerThread thread = new HandlerThread("decode-");
     private Handler handler;
@@ -53,12 +68,55 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        resultTxt = findViewById(R.id.text_view_result);
+        initView();
         reader = BarcodeReader.getInstance();
         requestPermission();
         thread.start();
         handler = new Handler(thread.getLooper());
+    }
+
+    private void initView(){
+        group = findViewById(R.id.group);
+        resultTxt = findViewById(R.id.text_view_result);
+        group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == R.id.zxing){
+                    currentDecoderType = NativeSdk.DETECTOR_ZXING;
+                } else if (checkedId == R.id.zbar){
+                    currentDecoderType = NativeSdk.DETECTOR_ZBAR;
+                } else {
+                    currentDecoderType = NativeSdk.DETECTOR_ALL;
+                }
+            }
+        });
+        findViewById(R.id.clear_zxing).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatabaseHelper.getInstance().deleteZXingRecord();
+            }
+        });
+
+        findViewById(R.id.clear_zbar).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatabaseHelper.getInstance().deleteZBarRecord();
+            }
+        });
+
+        findViewById(R.id.mixed).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatabaseHelper.getInstance().deleteMixedDecordRecord();
+            }
+        });
+
+        findViewById(R.id.clear_all).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatabaseHelper.getInstance().deleteAllScanRecord();
+            }
+        });
     }
 
     public void scan(View view) {
@@ -100,8 +158,9 @@ public class MainActivity extends AppCompatActivity {
                         NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_CLOSELY,
                         NativeSdk.STRATEGY_ADAPTIVE_THRESHOLD_REMOTELY)
 //                .applyAllDecodeStrategiesInFrame()
-                .setDetectorType(NativeSdk.DETECTOR_ZXING)
+                .setDetectorType(currentDecoderType)
                 .setFrameCornerInside(true)
+                .setScanMode(ScannerManager.QR_CODE_MODE)
                 .setTipText("")
                 .setCoreThreadPoolSize(1)
                 .setMaxThreadPoolSize(1)
@@ -143,6 +202,27 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.makeText(MainActivity.this, showContent, Toast.LENGTH_SHORT).show();
                             }
                         });
+                    }
+
+                    @Override
+                    public void onCollectProfileData(String json) {
+                        Gson gson = new Gson();
+                        Type t = new  TypeToken<List<ProfileModel>>(){}.getType();
+                        final List<ProfileModel> models = gson.fromJson(json,t);
+                        Date d = new Date();
+                        for (ProfileModel m : models){
+                            m.currentTime = d;
+                            m.type = currentDecoderType;
+                        }
+
+                        Flowable.just(1)
+                                .subscribeOn(Schedulers.io())
+                                .subscribe(new Consumer<Integer>() {
+                                    @Override
+                                    public void accept(Integer integer) throws Exception {
+                                        DatabaseHelper.getInstance().getDatabase().profileModelDao().insertProfileData(models);
+                                    }
+                                });
                     }
                 })
                 .start();

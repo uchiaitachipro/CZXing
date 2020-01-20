@@ -6,9 +6,10 @@
 #define CZXING_FRAMEDATA_H
 
 #include <jni.h>
-
+#include <memory>
 typedef struct FrameData {
     jbyte *bytes;
+    std::shared_ptr<jbyteArray> rawData;
     int left;
     int top;
     int cropWidth;

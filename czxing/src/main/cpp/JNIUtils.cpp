@@ -211,7 +211,3 @@ ToJavaArray(JNIEnv *env, const std::vector<ZXing::ResultPoint> &input) {
 
     return array;
 }
-
-jobject createJavaFrameData(JNIEnv *env, const FrameData &data){
-
-}

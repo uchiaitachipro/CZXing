@@ -3,6 +3,7 @@ package me.sam.czxing;
 import android.app.Application;
 import android.content.Context;
 
+import com.facebook.stetho.Stetho;
 import com.tencent.bugly.crashreport.CrashReport;
 
 import me.sam.czxing.db.DatabaseHelper;
@@ -18,5 +19,6 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         DatabaseHelper.getInstance().init(this);
+        Stetho.initializeWithDefaults(this);
     }
 }

@@ -3,6 +3,7 @@ package me.devilsen.czxing.code;
 import android.graphics.Bitmap;
 
 import me.devilsen.czxing.thread.FrameData;
+import me.devilsen.czxing.util.SaveImageUtil;
 
 /**
  * desc: Jni connector
@@ -47,8 +48,13 @@ public class NativeSdk {
      * @param formatIndex 格式
      * @param points      定位点的位置
      */
-    public void onDecodeCallback(String content, double cameraLight, int formatIndex, float[] points, FrameData rowData) {
+    public void onDecodeCallback(String content, double cameraLight, int formatIndex, float[] points, FrameData rawData) {
         if (readCodeListener != null) {
+
+            if (rawData != null){
+                SaveImageUtil.saveDataForYUV(rawData.data,rawData.left,rawData.top,rawData.width,rawData.height,rawData.rowWidth,rawData.rowHeight);
+            }
+
             readCodeListener.onReadCodeResult(new CodeResult(content, cameraLight,formatIndex, points));
         }
     }

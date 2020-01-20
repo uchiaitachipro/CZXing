@@ -8,6 +8,7 @@
 
 #include <jni.h>
 #include "Result.h"
+#include "FrameData.h"
 
 class JavaCallHelper {
 public:
@@ -15,7 +16,7 @@ public:
 
     ~JavaCallHelper();
 
-    void onResult(const ZXing::Result &result,double cameraLight);
+    void onResult(const FrameData &frameData,const ZXing::Result &result,double cameraLight);
 
     void onBrightness(const bool isDark);
 

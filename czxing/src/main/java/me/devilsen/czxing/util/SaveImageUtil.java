@@ -50,6 +50,25 @@ public class SaveImageUtil {
         bmp.recycle();
     }
 
+    public static void saveDataForYUV(byte[] data, int left, int top, int width, int height, int rowWidth,int rowHeight){
+
+        YuvImage image = new YuvImage(data, ImageFormat.NV21, rowWidth, rowHeight, null);
+        try{
+            if(image!=null) {
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                image.compressToJpeg(new Rect(0, 0, rowWidth, rowHeight), 80, stream);
+                Bitmap bmp = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size());
+                bmp = BitmapUtil.rotateBitmap(bmp,90);
+                saveImage(bmp);
+                stream.close();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
     private static int[] applyGrayScale(byte[] data, int left, int top, int width, int height, int rowWidth) {
         int p;
         int[] pixels = new int[width * height];
@@ -197,7 +216,7 @@ public class SaveImageUtil {
 
             out = new FileOutputStream(file);
 
-            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)) {
+            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) {
                 out.flush();
                 out.close();
                 Log.e("save >>> ", "save image success");

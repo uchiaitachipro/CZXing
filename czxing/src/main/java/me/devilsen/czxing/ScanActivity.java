@@ -100,6 +100,11 @@ public class ScanActivity extends Activity implements ScanListener, View.OnClick
             public void onScanRectSizeChanged(Rect area) {
 //                Toast.makeText(ScanActivity.this,"Rect: " + area,Toast.LENGTH_SHORT).show();
             }
+
+            @Override
+            public void onCollectProfileData(String json) {
+                scanDelegate.onCollectProfileData(json);
+            }
         });
         // 标题栏
         String title = option.getTitle();

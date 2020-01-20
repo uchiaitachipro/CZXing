@@ -53,7 +53,7 @@ public:
     void stop();
 
     void
-    process(jbyte *bytes, int left, int top, int width, int height, int rowWidth, int rowHeight,int strategyIndex);
+    process(const jbyteArray &rawData,jbyte *bytes, int left, int top, int width, int height, int rowWidth, int rowHeight,int strategyIndex);
 
     Result readBitmap(const cv::Mat &mat, int left, int top, int width, int height);
 
@@ -102,7 +102,7 @@ private:
 
     Result decodeAdaptivePixels(Mat &gray,int adaptiveMethod,int blockSize,int delta);
 
-    void recognizerQrCode(const Mat &mat);
+    void recognizerQrCode(const FrameData &rowData,const Mat &mat);
 
     bool analysisBrightness(const Mat &gray);
 

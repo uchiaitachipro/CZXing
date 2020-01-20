@@ -30,4 +30,12 @@ public class FrameData {
         this.rowWidth = rowWidth;
         this.rowHeight = rowHeight;
     }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
+    }
 }
