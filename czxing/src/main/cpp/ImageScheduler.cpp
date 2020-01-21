@@ -430,7 +430,7 @@ Result ImageScheduler::decodeZXing(const Mat &mat, int threshold) {
             }
         }
 
-        auto binImage = BinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
+        auto binImage = EmptyBinaryBitmapFromBytesC1(pixels, 0, 0, width, height);
         Result result = reader->read(*binImage);
 
         delete[]pixels;

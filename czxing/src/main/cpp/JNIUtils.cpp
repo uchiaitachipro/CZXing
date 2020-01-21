@@ -16,6 +16,7 @@
 #include "JNIUtils.h"
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
+#include "BirdgeBinaryBitmap.h"
 
 #include <android/bitmap.h>
 #include <stdexcept>
@@ -107,6 +108,16 @@ BinaryBitmapFromBytesC1(void *pixels, int left, int top, int width, int height) 
             pixels, width * sizeof(unsigned char));
 
     return std::make_shared<HybridBinarizer>(luminance);
+}
+
+std::shared_ptr<ZXing::BinaryBitmap>
+EmptyBinaryBitmapFromBytesC1(void *pixels, int left, int top, int width, int height){
+    using namespace ZXing;
+    std::shared_ptr<GenericLuminanceSource> luminance = std::make_shared<GenericLuminanceSource>(
+            left, top, width, height,
+            pixels, width * sizeof(unsigned char));
+
+    return std::make_shared<BirdgeBinaryBitmap>(luminance);
 }
 
 /**
