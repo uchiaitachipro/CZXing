@@ -102,7 +102,7 @@ static bool CheckNotOutOfRange(
 static bool CollectPixelCount(const BitMatrix& image, int centerI, int centerJ,
         int width,int height,int maxCount,
         int horizontalStep,int verticalStep,
-        int originalStateCountTotal, float moduleSize,H f) {
+        int originalStateCountTotal, float moduleSize) {
     int horizontalStart = centerJ - width / 2;
     int verticalStart = centerI - height / 2;
     int horizontalEnd = centerJ + width / 2;
@@ -117,7 +117,7 @@ static bool CollectPixelCount(const BitMatrix& image, int centerI, int centerJ,
     int t = centerI;
     int l = centerJ;
     while (CheckNotOutOfRange(horizontalStart, horizontalEnd, verticalStart, verticalEnd, l, t) && image.get(l, t) && diagonalLine[1] <= maxCount) {
-        f(l,t);
+//        f(l,t);
         diagonalLine[1]++;
         t -= verticalStep;
         l -= horizontalStep;
@@ -129,7 +129,7 @@ static bool CollectPixelCount(const BitMatrix& image, int centerI, int centerJ,
 
     while (CheckNotOutOfRange(horizontalStart, horizontalEnd, verticalStart, verticalEnd, l, t) && !image.get(l, t) && diagonalLine[0] <= maxCount) {
         diagonalLine[0]++;
-        f(l,t);
+//        f(l,t);
         t -= verticalStep;
         l -= horizontalStep;
     }
@@ -141,7 +141,7 @@ static bool CollectPixelCount(const BitMatrix& image, int centerI, int centerJ,
     l = centerJ + 1;
     while (CheckNotOutOfRange(horizontalStart, horizontalEnd, verticalStart, verticalEnd, l, t) && image.get(l, t) && diagonalLine[1] <= maxCount) {
         diagonalLine[1]++;
-        f(l,t);
+//        f(l,t);
         t += verticalStep;
         l += horizontalStep;
     }
@@ -152,7 +152,7 @@ static bool CollectPixelCount(const BitMatrix& image, int centerI, int centerJ,
 
     while (CheckNotOutOfRange(horizontalStart, horizontalEnd, verticalStart, verticalEnd, l, t) && !image.get(l, t) && diagonalLine[2] <= maxCount) {
         diagonalLine[2]++;
-        f(l,t);
+//        f(l,t);
         t += verticalStep;
         l += horizontalStep;
     }
@@ -170,29 +170,29 @@ static bool CollectPixelCount(const BitMatrix& image, int centerI, int centerJ,
 
 static bool CrossCheckDualDiagonal(const BitMatrix& image, int centerI, int centerJ,
         int width,int height,int maxCount,
-        int originalStateCountTotal, float moduleSize,H f){
+        int originalStateCountTotal, float moduleSize){
     auto leftDiagonalResult = CollectPixelCount(image,centerI,centerJ,
             width,height,maxCount,
-            1,1,originalStateCountTotal,moduleSize,f);
+            1,1,originalStateCountTotal,moduleSize);
     if (!leftDiagonalResult){
         return false;
     }
 
     auto rightDiagonalResult = CollectPixelCount(image,centerI,centerJ,
             width,height,maxCount,
-            -1,1,originalStateCountTotal,moduleSize,f);
+            -1,1,originalStateCountTotal,moduleSize);
 
     return rightDiagonalResult;
 }
 
 
 static AlignmentPattern
-HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j,int width,int height, float moduleSize, std::vector<AlignmentPattern>& possibleCenters,H f)
+HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j,int width,int height, float moduleSize, std::vector<AlignmentPattern>& possibleCenters)
 {
     int stateCountTotal = Accumulate(stateCount, 0);
     float centerJ = CenterFromEnd(stateCount, j);
     float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), 2 * stateCount[1], stateCountTotal, moduleSize);
-    if (!CrossCheckDualDiagonal(image,centerI,centerJ,width,height,2 * moduleSize,stateCountTotal,moduleSize,f)){
+    if (!CrossCheckDualDiagonal(image,centerI,centerJ,width,height,2 * moduleSize,stateCountTotal,moduleSize)){
         return {};
     }
     if (!std::isnan(centerI)) {
@@ -210,7 +210,7 @@ HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i
 }
 
 AlignmentPattern
-StrictAlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize,H f)
+StrictAlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize)
 {
     int maxJ = startX + width;
     int middleI = startY + (height / 2);
@@ -240,7 +240,7 @@ StrictAlignmentPatternFinder::Find(const BitMatrix& image, int startX, int start
                 else { // Counting white pixels
                     if (currentState == 2) { // A winner?
                         if (FoundPatternCross(stateCount, moduleSize)) { // Yes
-                            auto result = HandlePossibleCenter(image, stateCount, i, j,width,height, moduleSize, possibleCenters,f);
+                            auto result = HandlePossibleCenter(image, stateCount, i, j,width,height, moduleSize, possibleCenters);
                             if (result.isValid())
                                 return result;
                         }
@@ -263,7 +263,7 @@ StrictAlignmentPatternFinder::Find(const BitMatrix& image, int startX, int start
             j++;
         }
         if (FoundPatternCross(stateCount, moduleSize)) {
-            auto result = HandlePossibleCenter(image, stateCount, i, maxJ,width,height, moduleSize, possibleCenters,f);
+            auto result = HandlePossibleCenter(image, stateCount, i, maxJ,width,height, moduleSize, possibleCenters);
             if (result.isValid())
                 return result;
         }

@@ -11,8 +11,6 @@ class BitMatrix;
 namespace QRCode{
 class AlignmentPattern;
 
-typedef void (*H)(int,int);
-
 class StrictAlignmentPatternFinder {
 
 
@@ -33,7 +31,7 @@ public:
     * @return {@link AlignmentPattern} if found
     * @throws NotFoundException if not found
     */
-    static AlignmentPattern Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize,H f);
+    static AlignmentPattern Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize);
 };
 }
 }

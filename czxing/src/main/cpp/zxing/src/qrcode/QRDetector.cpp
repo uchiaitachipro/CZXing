@@ -211,7 +211,7 @@ namespace ZXing {
             if (alignmentAreaBottomY - alignmentAreaTopY < overallEstModuleSize * 3) {
                 return {};
             }
-            return AlignmentPatternFinder::Find(image, alignmentAreaLeftX, alignmentAreaTopY,
+            return StrictAlignmentPatternFinder::Find(image, alignmentAreaLeftX, alignmentAreaTopY,
                                                 alignmentAreaRightX - alignmentAreaLeftX,
                                                 alignmentAreaBottomY - alignmentAreaTopY,
                                                 overallEstModuleSize);
@@ -330,12 +330,6 @@ namespace ZXing {
                 for (int i = 4; i <= 16; i <<= 1) {
                     auto findPattern = FindAlignmentInRegion(image, moduleSize, estAlignmentX,
                                                              estAlignmentY, static_cast<float>(i));
-
-//                    if (alignmentPattern.isValid() && abs(alignmentPattern.x() - estAlignmentX) <= moduleSize
-//                        && abs(alignmentPattern.y() - estAlignmentY) <= moduleSize){
-//                        alignmentPattern = findPattern;
-//                        break;
-//                    }
 
                     alignmentPattern = findPattern;
                     if (alignmentPattern.isValid()){

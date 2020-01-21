@@ -160,7 +160,7 @@ static bool CrossCheckDiagonal(const BitMatrix& image, int centerI, int centerJ)
 * observed in any reading state, based on the results of the horizontal scan
 * @return vertical center of finder pattern, or {@link Float#NaN} if not found
 */
-static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal)
+static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal)
 {
 	StateCount stateCount = {};
 	int maxI = image.height();
@@ -172,7 +172,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 		i--;
 	}
 	if (i < 0) {
-		return std::numeric_limits<float>::quiet_NaN();
+		return {std::numeric_limits<float>::quiet_NaN(),-1};
 	}
 	while (i >= 0 && !image.get(centerJ, i) && stateCount[1] <= maxCount) {
 		stateCount[1]++;
@@ -180,14 +180,14 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 	}
 	// If already too many modules in this state or ran off the edge:
 	if (i < 0 || stateCount[1] > maxCount) {
-		return std::numeric_limits<float>::quiet_NaN();
+		return {std::numeric_limits<float>::quiet_NaN(),-1};
 	}
 	while (i >= 0 && image.get(centerJ, i) && stateCount[0] <= maxCount) {
 		stateCount[0]++;
 		i--;
 	}
 	if (stateCount[0] > maxCount) {
-		return std::numeric_limits<float>::quiet_NaN();
+		return {std::numeric_limits<float>::quiet_NaN(),-1};
 	}
 
 	// Now also count down from center
@@ -197,31 +197,31 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 		i++;
 	}
 	if (i == maxI) {
-		return std::numeric_limits<float>::quiet_NaN();
+		return {std::numeric_limits<float>::quiet_NaN(),-1};
 	}
 	while (i < maxI && !image.get(centerJ, i) && stateCount[3] < maxCount) {
 		stateCount[3]++;
 		i++;
 	}
 	if (i == maxI || stateCount[3] >= maxCount) {
-		return std::numeric_limits<float>::quiet_NaN();
+		return {std::numeric_limits<float>::quiet_NaN(),-1};
 	}
 	while (i < maxI && image.get(centerJ, i) && stateCount[4] < maxCount) {
 		stateCount[4]++;
 		i++;
 	}
 	if (stateCount[4] >= maxCount) {
-		return std::numeric_limits<float>::quiet_NaN();
+		return {std::numeric_limits<float>::quiet_NaN(),-1};
 	}
 
-	// If we found a finder-pattern-like section, but its size is more than 40% different than
-	// the original, assume it's a false positive
-	int stateCountTotal = Accumulate(stateCount, 0);
-	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= 2 * originalStateCountTotal) {
-		return std::numeric_limits<float>::quiet_NaN();
-	}
+//	// If we found a finder-pattern-like section, but its size is more than 40% different than
+//	// the original, assume it's a false positive
+//	int stateCountTotal = Accumulate(stateCount, 0);
+//	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= 3 * originalStateCountTotal) {
+//		return std::numeric_limits<float>::quiet_NaN();
+//	}
 
-	return FinderPatternFinder::FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, i) : std::numeric_limits<float>::quiet_NaN();
+	return {FinderPatternFinder::FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, i) : std::numeric_limits<float>::quiet_NaN(),Accumulate(stateCount, 0)};
 }
 
 /**
@@ -636,9 +636,14 @@ FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCou
 {
 	int stateCountTotal = Accumulate(stateCount, 0);
 	float centerJ = CenterFromEnd(stateCount, j);
-	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
+	auto verticalResult = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
+	auto centerI = verticalResult.first;
 	if (std::isnan(centerI))
 		return false;
+
+	if ( 5 * std::min(stateCountTotal,verticalResult.second) >= 3 * std::max(stateCountTotal,verticalResult.second)){
+		return false;
+	}
 
 	// Re-cross check
 	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2],

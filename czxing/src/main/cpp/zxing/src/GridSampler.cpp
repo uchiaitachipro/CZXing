@@ -139,7 +139,18 @@ public:
 				return {};
 			try {
 				for (int x = 0; x < max; x += 2) {
-					if (image.get(static_cast<int>(points[x]), static_cast<int>(points[x + 1]))) {
+
+				    int pointX = static_cast<int>(points[x]);
+				    if (pointX < 0 || pointX >= image.width()){
+                        continue;
+				    }
+
+				    int pointY = static_cast<int>(points[x + 1]);
+				    if (pointY < 0 || pointY >= image.height()){
+                        continue;
+				    }
+
+					if (image.get(pointX,pointY)) {
 						// Black(-ish) pixel
 						result.set(x / 2, y);
 					}

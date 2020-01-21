@@ -114,56 +114,56 @@ void ZXingHooker::handleFindPositionPattern(long matrixPtr, long finderPatternIn
                                                             (bottomRightY -
                                                              topLeft.y()));
 
-//    // 画出计算得到的 alignmentX alignmentY
-//    cv::circle(mat, cv::Point(estAlignmentX, estAlignmentY), 4, cv::Scalar(255, 255,0), -1);
-
-    if (currentModuleSize > 0){
-        for (int i = 4; i <= 16; i <<= 1){
-            findAlignmentInRegion(mat,
-                                  *reinterpret_cast<BitMatrix *>(matrixPtr),
-                                  currentModuleSize,
-                                  estAlignmentX,
-                                  estAlignmentY,
-                                  static_cast<float>(i));
-        }
-
-        diagonalPixels = {};
-        for (int i = 4;i <= 16; i<<=1){
-            auto image = reinterpret_cast<BitMatrix *>(matrixPtr);
-            int allowance = (int) (i * currentModuleSize);
-            int alignmentAreaLeftX = std::max(0, estAlignmentX - allowance);
-            int alignmentAreaRightX = std::min(image->width() - 1, estAlignmentX + allowance);
-            if (alignmentAreaRightX - alignmentAreaLeftX < currentModuleSize * 3) {
-                continue;
-            }
-
-            int alignmentAreaTopY = std::max(0, estAlignmentY - allowance);
-            int alignmentAreaBottomY = std::min(image->height() - 1, estAlignmentY + allowance);
-            if (alignmentAreaBottomY - alignmentAreaTopY < currentModuleSize * 3) {
-                continue;
-            }
-            auto result = StrictAlignmentPatternFinder::Find(*image,
-                                               alignmentAreaLeftX, alignmentAreaTopY,
-                                               alignmentAreaRightX - alignmentAreaLeftX,
-                                               alignmentAreaBottomY - alignmentAreaTopY,
-                                               currentModuleSize,CollectDiagonalData);
-            if (result.isValid()){
-                cv::circle(mat, cv::Point(result.x(), result.y()), 2, cv::Scalar(255, 0,255), -1);
-                break;
-            }
-        }
-        std::for_each(diagonalPixels.begin(),diagonalPixels.end(),[&](cv::Point p){
-            cv::circle(mat, p, 1, cv::Scalar(128, 128,128), -1);
-        });
-    }
-
-//    if (alignPatternPtr != 0) {
-//        auto alignPattern = reinterpret_cast<QRCode::AlignmentPattern *>(alignPatternPtr);
-//        if (alignPattern->isValid()) {
-//            cv::circle(mat, cv::Point(alignPattern->x(), alignPattern->y()), 4,
-//                       cv::Scalar(0, 255, 255), -1);
+////    // 画出计算得到的 alignmentX alignmentY
+////    cv::circle(mat, cv::Point(estAlignmentX, estAlignmentY), 4, cv::Scalar(255, 255,0), -1);
+//
+//    if (currentModuleSize > 0){
+//        for (int i = 4; i <= 16; i <<= 1){
+//            findAlignmentInRegion(mat,
+//                                  *reinterpret_cast<BitMatrix *>(matrixPtr),
+//                                  currentModuleSize,
+//                                  estAlignmentX,
+//                                  estAlignmentY,
+//                                  static_cast<float>(i));
 //        }
-//    }
+//
+//        diagonalPixels = {};
+//        for (int i = 4;i <= 16; i<<=1){
+//            auto image = reinterpret_cast<BitMatrix *>(matrixPtr);
+//            int allowance = (int) (i * currentModuleSize);
+//            int alignmentAreaLeftX = std::max(0, estAlignmentX - allowance);
+//            int alignmentAreaRightX = std::min(image->width() - 1, estAlignmentX + allowance);
+//            if (alignmentAreaRightX - alignmentAreaLeftX < currentModuleSize * 3) {
+//                continue;
+//            }
+//
+//            int alignmentAreaTopY = std::max(0, estAlignmentY - allowance);
+//            int alignmentAreaBottomY = std::min(image->height() - 1, estAlignmentY + allowance);
+//            if (alignmentAreaBottomY - alignmentAreaTopY < currentModuleSize * 3) {
+//                continue;
+//            }
+//            auto result = StrictAlignmentPatternFinder::Find(*image,
+//                                               alignmentAreaLeftX, alignmentAreaTopY,
+//                                               alignmentAreaRightX - alignmentAreaLeftX,
+//                                               alignmentAreaBottomY - alignmentAreaTopY,
+//                                               currentModuleSize,CollectDiagonalData);
+//            if (result.isValid()){
+//                cv::circle(mat, cv::Point(result.x(), result.y()), 2, cv::Scalar(255, 0,255), -1);
+//                break;
+//            }
+//        }
+//        std::for_each(diagonalPixels.begin(),diagonalPixels.end(),[&](cv::Point p){
+//            cv::circle(mat, p, 1, cv::Scalar(128, 128,128), -1);
+//        });
+////    }
+
+    if (alignPatternPtr != 0) {
+        auto alignPattern = reinterpret_cast<QRCode::AlignmentPattern *>(alignPatternPtr);
+        if (alignPattern->isValid()) {
+            cv::circle(mat, cv::Point(alignPattern->x(), alignPattern->y()), 4,
+                       cv::Scalar(0, 255, 255), -1);
+        }
+    }
 
     writeImage(mat, path, "find-pattern-");
 }
