@@ -641,7 +641,7 @@ FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCou
 	if (std::isnan(centerI))
 		return false;
 
-	if ( 5 * std::min(stateCountTotal,verticalResult.second) >= 3 * std::max(stateCountTotal,verticalResult.second)){
+	if (5 * std::abs(verticalResult.second - stateCountTotal) >= 3 * std::max(stateCountTotal,verticalResult.second)){
 		return false;
 	}
 
