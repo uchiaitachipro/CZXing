@@ -420,7 +420,6 @@ Result ImageScheduler::decodeZBar(Mat &gray, int threshold) {
     int width = gray.cols;
     int height = gray.rows;
 
-    thresholdImage(gray, threshold);
     ImageScanner scanner;
     scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1);
     const void *raw = gray.data;
