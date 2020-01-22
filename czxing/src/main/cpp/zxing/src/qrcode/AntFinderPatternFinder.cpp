@@ -283,57 +283,43 @@ static float CenterFromEnd(const StateCount& stateCount, int end)
     return (float)(end - stateCount[2]) - stateCount[1] / 2.0f;
 }
 
-static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal)
+static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount)
 {
     StateCount stateCount = {};
     int maxI = image.height();
 
     // Start counting up from center
     int i = startI;
-    while (i >= 0 && image.get(centerJ, i)) {
-        stateCount[2]++;
-        i--;
-    }
-    if (i < 0) {
-        return {std::numeric_limits<float>::quiet_NaN(),-1};
-    }
-    while (i >= 0 && !image.get(centerJ, i) && stateCount[1] <= maxCount) {
+    while (i >= 0 && !image.get(centerJ, i)) {
         stateCount[1]++;
         i--;
     }
-    // If already too many modules in this state or ran off the edge:
-    if (i < 0 || stateCount[1] > maxCount) {
+    if (i < 0) {
         return {std::numeric_limits<float>::quiet_NaN(),-1};
     }
     while (i >= 0 && image.get(centerJ, i) && stateCount[0] <= maxCount) {
         stateCount[0]++;
         i--;
     }
-    if (stateCount[0] > maxCount) {
+    // If already too many modules in this state or ran off the edge:
+    if (i < 0 || stateCount[0] > maxCount) {
         return {std::numeric_limits<float>::quiet_NaN(),-1};
     }
 
     // Now also count down from center
     i = startI + 1;
-    while (i < maxI && image.get(centerJ, i)) {
-        stateCount[2]++;
+    while (i < maxI && !image.get(centerJ, i)) {
+        stateCount[1]++;
         i++;
     }
     if (i == maxI) {
         return {std::numeric_limits<float>::quiet_NaN(),-1};
     }
-    while (i < maxI && !image.get(centerJ, i) && stateCount[3] < maxCount) {
-        stateCount[3]++;
+    while (i < maxI && image.get(centerJ, i) && stateCount[2] < maxCount) {
+        stateCount[2]++;
         i++;
     }
-    if (i == maxI || stateCount[3] >= maxCount) {
-        return {std::numeric_limits<float>::quiet_NaN(),-1};
-    }
-    while (i < maxI && image.get(centerJ, i) && stateCount[4] < maxCount) {
-        stateCount[4]++;
-        i++;
-    }
-    if (stateCount[4] >= maxCount) {
+    if (i == maxI || stateCount[2] >= maxCount) {
         return {std::numeric_limits<float>::quiet_NaN(),-1};
     }
 
@@ -344,7 +330,7 @@ bool AntFinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const 
 {
     int stateCountTotal = Accumulate(stateCount, 0);
     float centerJ = CenterFromEnd(stateCount, j);
-    auto verticalResult = CrossCheckVertical(image, i, static_cast<int>(stateCount[0] + stateCount[1] * 0.2f), stateCount[1], stateCountTotal);
+    auto verticalResult = CrossCheckVertical(image, i, static_cast<int>(stateCount[0] + stateCount[1] * 0.2f), stateCount[1]);
     auto centerI = verticalResult.first;
     if (std::isnan(centerI)){
         return false;
@@ -353,6 +339,8 @@ bool AntFinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const 
     if (5 * std::abs(verticalResult.second - stateCountTotal) >= 3 * std::max(stateCountTotal,verticalResult.second)){
         return false;
     }
+
+
 
     return false;
 }
