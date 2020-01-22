@@ -326,11 +326,92 @@ static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int star
     return {AntFinderPatternFinder::FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, i) : std::numeric_limits<float>::quiet_NaN(),Accumulate(stateCount, 0)};
 }
 
+static bool FoundPatternDiagonal(const StateCount& stateCount) {
+    int totalModuleSize = 0;
+    for (int i = 0; i < 3; i++) {
+        int count = stateCount[i];
+        if (count == 0) {
+            return false;
+        }
+        totalModuleSize += count;
+    }
+    if (totalModuleSize < 7) {
+        return false;
+    }
+    float moduleSize = totalModuleSize / 7.0f;
+    float maxVariance = moduleSize / 1.333f;
+    // Allow less than 75% variance from 1-1-3-1-1 proportions
+    return  std::abs(moduleSize - stateCount[0]) < maxVariance &&
+            std::abs(5.0f * moduleSize - stateCount[1]) < 5 * maxVariance &&
+            std::abs(moduleSize - stateCount[2]) < maxVariance;
+}
+
+static bool CrossCheckDiagonal(const BitMatrix& image, int centerI, int centerJ)
+{
+    StateCount stateCount = {};
+
+    // Start counting up, left from center finding black center mass
+    int i = 0;
+    while (centerI >= i && centerJ >= i && image.get(centerJ - i, centerI - i)) {
+        stateCount[2]++;
+        i++;
+}
+    if (stateCount[2] == 0) {
+        return false;
+    }
+
+    // Continue up, left finding white space
+    while (centerI >= i && centerJ >= i && !image.get(centerJ - i, centerI - i)) {
+        stateCount[1]++;
+        i++;
+    }
+    if (stateCount[1] == 0) {
+        return false;
+    }
+
+    // Continue up, left finding black border
+    while (centerI >= i && centerJ >= i && image.get(centerJ - i, centerI - i)) {
+        stateCount[0]++;
+        i++;
+    }
+    if (stateCount[0] == 0) {
+        return false;
+    }
+
+    int maxI = image.height();
+    int maxJ = image.width();
+
+    // Now also count down, right from center
+    i = 1;
+    while (centerI + i < maxI && centerJ + i < maxJ && image.get(centerJ + i, centerI + i)) {
+        stateCount[2]++;
+        i++;
+    }
+
+    while (centerI + i < maxI && centerJ + i < maxJ && !image.get(centerJ + i, centerI + i)) {
+        stateCount[3]++;
+        i++;
+    }
+    if (stateCount[3] == 0) {
+        return false;
+    }
+
+    while (centerI + i < maxI && centerJ + i < maxJ && image.get(centerJ + i, centerI + i)) {
+        stateCount[4]++;
+        i++;
+    }
+    if (stateCount[4] == 0) {
+        return false;
+    }
+
+    return FoundPatternDiagonal(stateCount);
+}
+
 bool AntFinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, std::vector<FinderPattern>& possibleCenters)
 {
     int stateCountTotal = Accumulate(stateCount, 0);
     float centerJ = CenterFromEnd(stateCount, j);
-    auto verticalResult = CrossCheckVertical(image, i, static_cast<int>(stateCount[0] + stateCount[1] * 0.2f), stateCount[1]);
+    auto verticalResult = CrossCheckVertical(image, i, static_cast<int>(stateCount[0] + stateCount[1] * 0.1f), stateCount[1]);
     auto centerI = verticalResult.first;
     if (std::isnan(centerI)){
         return false;
