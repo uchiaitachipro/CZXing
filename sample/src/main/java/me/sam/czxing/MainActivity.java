@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 //                .setFrameTopMargin(-BarCodeUtil.dp2px(this,200))
 //                .setFrameSize(BarCodeUtil.dp2px(this,325), BarCodeUtil.dp2px(this,250))
                 .setCaptureMode(ScanView.CAPTURE_MODE_TINY)
-//                .setScanMode(ScannerManager.QR_CODE_MODE)
+                .setScanMode(ScannerManager.ALL_MODE)
                 .setTitle("我的扫一扫")
                 .showAlbum(true)
                 .setOnClickAlbumDelegate(new ScanActivityDelegate.OnClickAlbumDelegate() {

@@ -359,8 +359,8 @@ Result ImageScheduler::readBitmap(const cv::Mat &mat, int left, int top, int wid
 }
 
 void hookZXingPhrases(int phrase,long p1,long p2,long p3){
-//    ZXingHooker hooker;
-//    hooker.hookHandler(phrase,p1,p2,p3);
+    ZXingHooker hooker;
+    hooker.hookHandler(phrase,p1,p2,p3);
 }
 Result ImageScheduler::hookZXing(const Mat &mat, int threshold){
     LOGE("detect by zxing");

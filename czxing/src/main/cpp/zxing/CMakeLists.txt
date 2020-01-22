@@ -357,6 +357,8 @@ if (ENABLE_DECODERS)
             src/qrcode/QRFinderPattern.cpp
             src/qrcode/QRFinderPatternFinder.h
             src/qrcode/QRFinderPatternFinder.cpp
+            src/qrcode/AntFinderPatternFinder.h
+            src/qrcode/AntFinderPatternFinder.cpp
             src/qrcode/QRFinderPatternInfo.h
             src/qrcode/QRFormatInformation.h
             src/qrcode/QRFormatInformation.cpp

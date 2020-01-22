@@ -17,6 +17,7 @@
 
 #include "qrcode/QRDetector.h"
 #include "qrcode/QRFinderPatternFinder.h"
+#include "qrcode/AntFinderPatternFinder.h"
 #include "qrcode/QRFinderPatternInfo.h"
 #include "qrcode/QRAlignmentPattern.h"
 #include "qrcode/QRAlignmentPatternFinder.h"
