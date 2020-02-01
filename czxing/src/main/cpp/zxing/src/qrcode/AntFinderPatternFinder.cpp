@@ -170,7 +170,7 @@ static int FindRowSkip(const std::vector<FinderPattern>& possibleCenters, bool& 
     return 0;
 }
 
-FinderPatternInfo AntFinderPatternFinder::Find(const BitMatrix& image, bool tryHarder)
+FinderPatternInfo AntFinderPatternFinder::Find(const BitMatrix& image, bool tryHarder,HookFunction f)
 {
     int maxI = image.height();
     int maxJ = image.width();
@@ -206,7 +206,7 @@ FinderPatternInfo AntFinderPatternFinder::Find(const BitMatrix& image, bool tryH
                 if ((currentState & 1) == 0) { // Counting black pixels
                     if (currentState == 2) { // A winner?
                         if (FoundPatternCross(stateCount)) { // Yes
-                            bool confirmed = HandlePossibleCenter(image, stateCount, i, j, possibleCenters);
+                            bool confirmed = HandlePossibleCenter(image, stateCount, i, j, possibleCenters,f);
                             if (confirmed) {
                                 // Start examining every other line. Checking each line turned out to be too
                                 // expensive and didn't improve performance.
@@ -258,7 +258,7 @@ FinderPatternInfo AntFinderPatternFinder::Find(const BitMatrix& image, bool tryH
             }
         }
         if (AntFinderPatternFinder::FoundPatternCross(stateCount)) {
-            bool confirmed = AntFinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, possibleCenters);
+            bool confirmed = AntFinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, possibleCenters,f);
             if (confirmed) {
                 iSkip = stateCount[0];
                 if (hasSkipped) {
@@ -283,15 +283,16 @@ static float CenterFromEnd(const StateCount& stateCount, int end)
     return (float)(end - stateCount[2]) - stateCount[1] / 2.0f;
 }
 
-static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount)
+static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount,HookFunction f)
 {
     StateCount stateCount = {};
     int maxI = image.height();
-
+//    f(6,0,0,0);
     // Start counting up from center
     int i = startI;
     while (i >= 0 && !image.get(centerJ, i)) {
         stateCount[1]++;
+        f(7,0,centerJ,i);
         i--;
     }
     if (i < 0) {
@@ -299,6 +300,7 @@ static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int star
     }
     while (i >= 0 && image.get(centerJ, i) && stateCount[0] <= maxCount) {
         stateCount[0]++;
+//        f(7,0,centerJ,i);
         i--;
     }
     // If already too many modules in this state or ran off the edge:
@@ -310,6 +312,7 @@ static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int star
     i = startI + 1;
     while (i < maxI && !image.get(centerJ, i)) {
         stateCount[1]++;
+//        f(7,0,centerJ,i);
         i++;
     }
     if (i == maxI) {
@@ -317,18 +320,19 @@ static std::pair<float ,int> CrossCheckVertical(const BitMatrix& image, int star
     }
     while (i < maxI && image.get(centerJ, i) && stateCount[2] < maxCount) {
         stateCount[2]++;
+//        f(7,0,centerJ,i);
         i++;
     }
     if (i == maxI || stateCount[2] >= maxCount) {
         return {std::numeric_limits<float>::quiet_NaN(),-1};
     }
-
+//    f(8, reinterpret_cast<long>(&image),0,0);
     return {AntFinderPatternFinder::FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, i) : std::numeric_limits<float>::quiet_NaN(),Accumulate(stateCount, 0)};
 }
 
-static bool FoundPatternDiagonal(const StateCount& stateCount) {
+static bool FoundPatternDiagonal(const std::array<int,5>& stateCount) {
     int totalModuleSize = 0;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         int count = stateCount[i];
         if (count == 0) {
             return false;
@@ -341,21 +345,23 @@ static bool FoundPatternDiagonal(const StateCount& stateCount) {
     float moduleSize = totalModuleSize / 7.0f;
     float maxVariance = moduleSize / 1.333f;
     // Allow less than 75% variance from 1-1-3-1-1 proportions
-    return  std::abs(moduleSize - stateCount[0]) < maxVariance &&
-            std::abs(5.0f * moduleSize - stateCount[1]) < 5 * maxVariance &&
-            std::abs(moduleSize - stateCount[2]) < maxVariance;
+    return std::abs(moduleSize - stateCount[0]) < maxVariance &&
+            std::abs(moduleSize - stateCount[1]) < maxVariance &&
+            std::abs(3.0f * moduleSize - stateCount[2]) < 3 * maxVariance &&
+            std::abs(moduleSize - stateCount[3]) < maxVariance &&
+            std::abs(moduleSize - stateCount[4]) < maxVariance;
 }
 
 static bool CrossCheckDiagonal(const BitMatrix& image, int centerI, int centerJ)
 {
-    StateCount stateCount = {};
+    std::array<int, 5> stateCount = {};
 
     // Start counting up, left from center finding black center mass
     int i = 0;
     while (centerI >= i && centerJ >= i && image.get(centerJ - i, centerI - i)) {
         stateCount[2]++;
         i++;
-}
+    }
     if (stateCount[2] == 0) {
         return false;
     }
@@ -407,23 +413,44 @@ static bool CrossCheckDiagonal(const BitMatrix& image, int centerI, int centerJ)
     return FoundPatternDiagonal(stateCount);
 }
 
-bool AntFinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, std::vector<FinderPattern>& possibleCenters)
+bool AntFinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, std::vector<FinderPattern>& possibleCenters,HookFunction f)
 {
     int stateCountTotal = Accumulate(stateCount, 0);
     float centerJ = CenterFromEnd(stateCount, j);
-    auto verticalResult = CrossCheckVertical(image, i, static_cast<int>(stateCount[0] + stateCount[1] * 0.1f), stateCount[1]);
-    auto centerI = verticalResult.first;
+    int startX = (int)(j - stateCount[2] - 0.9 * stateCount[1]);
+    auto v1 = CrossCheckVertical(image, i,startX, stateCount[1],f);
+    auto centerI = v1.first;
     if (std::isnan(centerI)){
         return false;
     }
 
-    if (5 * std::abs(verticalResult.second - stateCountTotal) >= 3 * std::max(stateCountTotal,verticalResult.second)){
+    if (5 * std::abs(v1.second - stateCountTotal) >= 3 * std::max(stateCountTotal,v1.second)){
         return false;
     }
 
+    startX = (int)(j - stateCount[2] - 0.1 * stateCount[1]);
+    auto v2 = CrossCheckVertical(image, i,startX, stateCount[1],f);
+    if (std::isnan(centerI)){
+        return false;
+    }
+    float estimatedModuleSize = stateCountTotal / 7.0f;
 
+    if (std::abs(centerI - v2.first) >= 0.1 * estimatedModuleSize){
+        return false;
+    }
 
-    return false;
+    if (std::isnan(centerJ) || !CrossCheckDiagonal(image, (int)centerI, (int)centerJ))
+        return false;
+
+    auto center = ZXing::FindIf(possibleCenters, [=](const FinderPattern& center) {
+        return center.aboutEquals(estimatedModuleSize, centerI, centerJ);
+    });
+    if (center != possibleCenters.end())
+        *center = center->combineEstimate(centerI, centerJ, estimatedModuleSize);
+    else
+        possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
+
+    return true;
 }
 
 bool AntFinderPatternFinder::FoundPatternCross(const StateCount& stateCount){

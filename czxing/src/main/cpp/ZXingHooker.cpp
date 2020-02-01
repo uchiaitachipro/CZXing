@@ -22,13 +22,14 @@ using namespace std;
 
 static int currentVersionNum = -1;
 static float currentModuleSize = 0.0f;
-std::vector<cv::Point> diagonalPixels;
+std::vector<cv::Point> pixels;
 
-void CollectDiagonalData(int x,int y){
-    diagonalPixels.push_back(cv::Point(x,y));
+
+void CollectData(int x,int y){
+    pixels.push_back(cv::Point(x, y));
 }
 
-cv::Mat convertBitMatrixToMat(long matrixPtr) {
+cv::Mat ConvertBitMatrixToMat(long matrixPtr) {
     auto ptr = reinterpret_cast<BitMatrix *>(matrixPtr);
     auto width = ptr->width();
     auto height = ptr->height();
@@ -43,13 +44,13 @@ cv::Mat convertBitMatrixToMat(long matrixPtr) {
     return image;
 }
 
-void ZXingHooker::handleThreshold(long matrixPtr, long p2) const {
-    auto image = convertBitMatrixToMat(matrixPtr);
+void ZXingHooker::HandleThreshold(long matrixPtr, long p2) const {
+    auto image = ConvertBitMatrixToMat(matrixPtr);
     std::string path = "/storage/emulated/0/scan/threshold/";
     writeImage(image, path, "threshold-hook-");
 }
 
-void ZXingHooker::handleSaveModuleSize(long valuePtr) const{
+void ZXingHooker::HandleSaveModuleSize(long valuePtr) const{
     if (valuePtr == 0){
         return;
     }
@@ -58,8 +59,8 @@ void ZXingHooker::handleSaveModuleSize(long valuePtr) const{
     LOGE("current module size:  %f",currentModuleSize);
 }
 
-void ZXingHooker::handleGirdSampling(long matrixPtr, bool before) const {
-    auto image = convertBitMatrixToMat(matrixPtr);
+void ZXingHooker::HandleGirdSampling(long matrixPtr, bool before) const {
+    auto image = ConvertBitMatrixToMat(matrixPtr);
     std::string path = "/storage/emulated/0/scan/sampling/";
     std::string fileName;
     if (before) {
@@ -71,7 +72,7 @@ void ZXingHooker::handleGirdSampling(long matrixPtr, bool before) const {
 }
 
 
-void ZXingHooker::handleFindPositionPattern(long matrixPtr, long finderPatternInfoPtr,
+void ZXingHooker::HandleFindPositionPattern(long matrixPtr, long finderPatternInfoPtr,
                                             long alignPatternPtr) const {
 
     if (finderPatternInfoPtr == 0) {
@@ -80,7 +81,7 @@ void ZXingHooker::handleFindPositionPattern(long matrixPtr, long finderPatternIn
 
     std::string path = "/storage/emulated/0/scan/findpattern/";
 
-    auto mat = convertBitMatrixToMat(matrixPtr);
+    auto mat = ConvertBitMatrixToMat(matrixPtr);
     auto findPattern = reinterpret_cast<QRCode::FinderPatternInfo *>(finderPatternInfoPtr);
     auto topLeft = findPattern->topLeft;
     auto topRight = findPattern->topRight;
@@ -127,7 +128,7 @@ void ZXingHooker::handleFindPositionPattern(long matrixPtr, long finderPatternIn
 //                                  static_cast<float>(i));
 //        }
 //
-//        diagonalPixels = {};
+//        pixels = {};
 //        for (int i = 4;i <= 16; i<<=1){
 //            auto image = reinterpret_cast<BitMatrix *>(matrixPtr);
 //            int allowance = (int) (i * currentModuleSize);
@@ -152,7 +153,7 @@ void ZXingHooker::handleFindPositionPattern(long matrixPtr, long finderPatternIn
 //                break;
 //            }
 //        }
-//        std::for_each(diagonalPixels.begin(),diagonalPixels.end(),[&](cv::Point p){
+//        std::for_each(pixels.begin(),pixels.end(),[&](cv::Point p){
 //            cv::circle(mat, p, 1, cv::Scalar(128, 128,128), -1);
 //        });
 ////    }
@@ -168,7 +169,7 @@ void ZXingHooker::handleFindPositionPattern(long matrixPtr, long finderPatternIn
     writeImage(mat, path, "find-pattern-");
 }
 
-void ZXingHooker::handleCalculateVersion(long versionPtr) const {
+void ZXingHooker::HandleCalculateVersion(long versionPtr) const {
     if (versionPtr == 0) {
         return;
     }
@@ -182,32 +183,60 @@ void ZXingHooker::handleCalculateVersion(long versionPtr) const {
     LOGE("qrcode version num: %d dimension: %d x %d", versionNum, dimension, dimension);
 }
 
-void ZXingHooker::hookHandler(int phrase, long p1, long p2, long p3) const {
+void ZXingHooker::HookHandler(int phrase, long p1, long p2, long p3) const {
     switch (phrase) {
         case HookPhrase::HOOK_THRESHOLD: {
-            handleThreshold(p1, p2);
+            HandleThreshold(p1, p2);
             break;
         }
         case HookPhrase::HOOK_CALCULATE_VERSION : {
-            handleCalculateVersion(p1);
+            HandleCalculateVersion(p1);
             break;
         }
-        case HookPhrase::HOOK_PERSPECTIVE_TRANSFORM: {
-            handleFindPositionPattern(p1, p2, p3);
+        case HookPhrase::HOOK_FIND_POSITION_PATTERN: {
+            HandleFindPositionPattern(p1, p2, p3);
         }
         case HookPhrase::HOOK_BEFORE_GIRD_SAMPLING : {
-            handleGirdSampling(p1, true);
+            HandleGirdSampling(p1, true);
             break;
         }
-        case HOOK_AFTER_GIRD_SAMPLING: {
-            handleGirdSampling(p1, false);
+        case HookPhrase::HOOK_AFTER_GIRD_SAMPLING: {
+            HandleGirdSampling(p1, false);
             break;
         }
-        case HOOK_MODULE_SZIE:{
-            handleSaveModuleSize(p1);
+        case HookPhrase::HOOK_MODULE_SIZE:{
+            HandleSaveModuleSize(p1);
+            break;
+        }
+        case HookPhrase::HOOK_FINISH_CONFIRM_POSITION:
+        case HookPhrase::HOOK_CONFIRMING_POSITION:
+        case HookPhrase::HOOK_START_CONFIRM_POSITION:{
+//            HandleConfirmPositionPattern(phrase,p1,p2,p3);
             break;
         }
         default:
             break;
+    }
+}
+
+void ZXingHooker::HandleConfirmPositionPattern(int phrase, long matrixPtr, long x, long y) const {
+    if (phrase == ZXingHooker::HOOK_START_CONFIRM_POSITION){
+        pixels.clear();
+        return;
+    }
+    if (phrase == ZXingHooker::HOOK_CONFIRMING_POSITION){
+        CollectData(x,y);
+        return;
+    }
+    if (phrase == ZXingHooker::HOOK_FINISH_CONFIRM_POSITION){
+        auto mat = ConvertBitMatrixToMat(matrixPtr);
+        if (pixels.empty()){
+            return;
+        }
+        std::string path = "/storage/emulated/0/scan/finding/";
+        std::for_each(pixels.begin(),pixels.end(),[&](auto point){
+            cv::circle(mat,point,1,Scalar(0,0,255));
+            writeImage(mat,path,"finding-");
+        });
     }
 }
